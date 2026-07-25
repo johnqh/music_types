@@ -1,0 +1,574 @@
+/**
+ * @sudobility/music_types — types and Zod schemas for the ScoreSmith music family.
+ *
+ * Single sectioned entry point (sudojo_types convention):
+ *   1. Score model types (spec §4 of the ScoreSmith spec)
+ *   2. Type guards
+ *   3. Selection / fragment types
+ *   4. Zod schemas for the score tree
+ *   5. AI generation contracts (requests, results, provider interface)
+ *   6. Zod schemas for the generation contracts
+ *   7. Project API types (music_api payloads)
+ *   8. Zod schemas for the project API
+ *   9. Response envelope + error codes
+ *
+ * This package contains types, schemas, and pure helpers only — no domain
+ * logic (tick math, factories, commands live in @sudobility/music_lib).
+ */
+import { z } from 'zod';
+
+// ---------------------------------------------------------------------------
+// 1. Score model types
+// ---------------------------------------------------------------------------
+
+export type UUID = string;
+
+export type Fraction = { numerator: number; denominator: number };
+
+export type PitchStep = 'C' | 'D' | 'E' | 'F' | 'G' | 'A' | 'B';
+
+/** -2 = double flat, -1 = flat, 0 = natural, 1 = sharp, 2 = double sharp. */
+export type Accidental = -2 | -1 | 0 | 1 | 2;
+
+export type Pitch = { step: PitchStep; accidental: Accidental; octave: number };
+
+export type TimeSignature = { numerator: number; denominator: number };
+
+export type KeySignature = { fifths: number; mode: 'major' | 'minor' };
+
+export type TempoEvent = { id: UUID; tick: number; bpm: number };
+
+/**
+ * Renderable note-duration names: base values (whole down to thirty-second),
+ * their dotted (1.5x) variants, and their triplet (2/3x) variants.
+ */
+export type DurationName =
+  | 'whole'
+  | 'half'
+  | 'quarter'
+  | 'eighth'
+  | 'sixteenth'
+  | 'thirtysecond'
+  | 'dotted-whole'
+  | 'dotted-half'
+  | 'dotted-quarter'
+  | 'dotted-eighth'
+  | 'dotted-sixteenth'
+  | 'dotted-thirtysecond'
+  | 'triplet-whole'
+  | 'triplet-half'
+  | 'triplet-quarter'
+  | 'triplet-eighth'
+  | 'triplet-sixteenth'
+  | 'triplet-thirtysecond';
+
+export type Articulation = 'staccato' | 'accent' | 'tenuto' | 'marcato';
+
+export type Clef = 'treble' | 'bass' | 'alto' | 'tenor' | 'percussion';
+
+export type NoteEvent = {
+  id: UUID;
+  pitch: Pitch;
+  startTick: number;
+  durationTicks: number;
+  velocity: number;
+  voiceId: UUID;
+  trackId: UUID;
+  tieStart?: boolean;
+  tieStop?: boolean;
+  articulation?: Articulation;
+};
+
+export type RestEvent = {
+  id: UUID;
+  startTick: number;
+  durationTicks: number;
+  voiceId: UUID;
+  trackId: UUID;
+};
+
+export type MusicalEvent = NoteEvent | RestEvent;
+
+export type Voice = { id: UUID; name: string; events: MusicalEvent[] };
+
+export type Measure = {
+  id: UUID;
+  index: number;
+  startTick: number;
+  durationTicks: number;
+  timeSignature: TimeSignature;
+  keySignature: KeySignature;
+  voices: Voice[];
+};
+
+export type Track = {
+  id: UUID;
+  name: string;
+  instrumentName: string;
+  midiProgram: number;
+  midiChannel: number;
+  clef: Clef;
+  volume: number;
+  pan: number;
+  muted: boolean;
+  solo: boolean;
+  measures: Measure[];
+};
+
+export type ScoreMetadata = {
+  title: string;
+  composer?: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type Score = {
+  id: UUID;
+  version: number;
+  ppq: number;
+  metadata: ScoreMetadata;
+  tempoMap: TempoEvent[];
+  tracks: Track[];
+};
+
+// ---------------------------------------------------------------------------
+// 2. Type guards
+// ---------------------------------------------------------------------------
+
+/** True for `NoteEvent`s (distinguished from `RestEvent` by the `pitch` property). */
+export function isNoteEvent(event: MusicalEvent): event is NoteEvent {
+  return 'pitch' in event;
+}
+
+/** True for `RestEvent`s (distinguished from `NoteEvent` by lacking a `pitch` property). */
+export function isRestEvent(event: MusicalEvent): event is RestEvent {
+  return !('pitch' in event);
+}
+
+// ---------------------------------------------------------------------------
+// 3. Selection / fragment types
+// ---------------------------------------------------------------------------
+
+/** A tick range scoped to a set of tracks (e.g. a loop region or regeneration target). */
+export type ScoreRange = { startTick: number; endTick: number; trackIds: string[] };
+
+export type ScoreSelection = {
+  eventIds: string[];
+  measureIds: string[];
+  trackIds: string[];
+  range?: ScoreRange;
+};
+
+/** A region of a score extracted for regeneration/preview: measures per track over a range. */
+export type ScoreFragment = {
+  range: ScoreRange;
+  ppq: number;
+  tracks: Array<{ trackId: UUID; measures: Measure[] }>;
+};
+
+// ---------------------------------------------------------------------------
+// 4. Zod schemas for the score tree
+// ---------------------------------------------------------------------------
+// Runtime constraints: velocity 0-127, midiProgram 0-127, midiChannel 0-15,
+// ppq positive int, accidental -2..2, octave -1..9. `noteEventSchema` /
+// `restEventSchema` are `.strict()` so an object with a stray `pitch` field
+// cannot be silently accepted as a rest (and vice versa); every other schema
+// stays permissive to tolerate forward-compatible additions.
+
+export const uuidSchema = z.string().min(1);
+
+export const pitchStepSchema = z.enum(['C', 'D', 'E', 'F', 'G', 'A', 'B']);
+
+export const accidentalSchema = z.union([
+  z.literal(-2),
+  z.literal(-1),
+  z.literal(0),
+  z.literal(1),
+  z.literal(2),
+]);
+
+export const pitchSchema = z.object({
+  step: pitchStepSchema,
+  accidental: accidentalSchema,
+  octave: z.number().int().min(-1).max(9),
+});
+
+export const timeSignatureSchema = z.object({
+  numerator: z.number().int().positive(),
+  denominator: z.number().int().positive(),
+});
+
+export const keySignatureSchema = z.object({
+  fifths: z.number().int(),
+  mode: z.enum(['major', 'minor']),
+});
+
+export const tempoEventSchema = z.object({
+  id: uuidSchema,
+  tick: z.number().int().nonnegative(),
+  bpm: z.number().positive(),
+});
+
+export const articulationSchema = z.enum(['staccato', 'accent', 'tenuto', 'marcato']);
+
+export const clefSchema = z.enum(['treble', 'bass', 'alto', 'tenor', 'percussion']);
+
+export const noteEventSchema = z
+  .object({
+    id: uuidSchema,
+    pitch: pitchSchema,
+    startTick: z.number().int().nonnegative(),
+    durationTicks: z.number().int().positive(),
+    velocity: z.number().int().min(0).max(127),
+    voiceId: uuidSchema,
+    trackId: uuidSchema,
+    tieStart: z.boolean().optional(),
+    tieStop: z.boolean().optional(),
+    articulation: articulationSchema.optional(),
+  })
+  .strict();
+
+export const restEventSchema = z
+  .object({
+    id: uuidSchema,
+    startTick: z.number().int().nonnegative(),
+    durationTicks: z.number().int().positive(),
+    voiceId: uuidSchema,
+    trackId: uuidSchema,
+  })
+  .strict();
+
+export const musicalEventSchema = z.union([noteEventSchema, restEventSchema]);
+
+export const voiceSchema = z.object({
+  id: uuidSchema,
+  name: z.string(),
+  events: z.array(musicalEventSchema),
+});
+
+export const measureSchema = z.object({
+  id: uuidSchema,
+  index: z.number().int().nonnegative(),
+  startTick: z.number().int().nonnegative(),
+  durationTicks: z.number().int().positive(),
+  timeSignature: timeSignatureSchema,
+  keySignature: keySignatureSchema,
+  voices: z.array(voiceSchema),
+});
+
+export const trackSchema = z.object({
+  id: uuidSchema,
+  name: z.string(),
+  instrumentName: z.string(),
+  midiProgram: z.number().int().min(0).max(127),
+  midiChannel: z.number().int().min(0).max(15),
+  clef: clefSchema,
+  volume: z.number(),
+  pan: z.number(),
+  muted: z.boolean(),
+  solo: z.boolean(),
+  measures: z.array(measureSchema),
+});
+
+export const scoreMetadataSchema = z.object({
+  title: z.string(),
+  composer: z.string().optional(),
+  description: z.string().optional(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export const scoreSchema = z.object({
+  id: uuidSchema,
+  version: z.number().int().nonnegative(),
+  ppq: z.number().int().positive(),
+  metadata: scoreMetadataSchema,
+  tempoMap: z.array(tempoEventSchema),
+  tracks: z.array(trackSchema),
+});
+
+/** Parses and validates untrusted JSON as a `Score`. Throws `ZodError` on invalid input. */
+export function parseScore(json: unknown): Score {
+  return scoreSchema.parse(json) as Score;
+}
+
+// ---------------------------------------------------------------------------
+// 5. AI generation contracts
+// ---------------------------------------------------------------------------
+
+export type GenerateScoreRequestTrack = {
+  name: string;
+  instrumentName: string;
+  midiProgram: number;
+  clef: Track['clef'];
+  range?: { lowestMidi: number; highestMidi: number };
+  maximumPolyphony?: number;
+};
+
+export type GenerateScoreRequest = {
+  prompt: string;
+  title?: string;
+  style?: string;
+  mood?: string;
+  durationMeasures: number;
+  tempo?: number;
+  timeSignature?: TimeSignature;
+  keySignature?: KeySignature;
+  tracks: GenerateScoreRequestTrack[];
+  complexity?: 'simple' | 'moderate' | 'complex';
+};
+
+/** Never a rendered/notation payload and never raw MIDI: always a structured `Score`. */
+export type GenerateScoreResult = { score: Score; warnings: string[] };
+
+export type RegenerationConstraints = {
+  preserveMeasureCount: true;
+  preserveTimeSignatures: true;
+  preserveTempoEvents: true;
+  preserveBoundaryNotes?: boolean;
+  preserveHarmony?: boolean;
+  preserveRhythm?: boolean;
+  preserveMelody?: boolean;
+  maximumPolyphony?: number;
+  allowedPitchRangeByTrack?: Record<string, { lowestMidi: number; highestMidi: number }>;
+};
+
+export type RegenerateRegionRequest = {
+  scoreId: string;
+  instruction: string;
+  range: ScoreRange;
+  precedingContext: ScoreFragment;
+  selectedFragment: ScoreFragment;
+  followingContext: ScoreFragment;
+  constraints: RegenerationConstraints;
+  candidateCount: number;
+};
+
+export type RegenerationCandidate = { id: string; label: string; fragment: ScoreFragment };
+
+export type RegenerateRegionResult = { candidates: RegenerationCandidate[]; warnings: string[] };
+
+export interface MusicGenerationProvider {
+  id: string;
+  name: string;
+  generateScore(request: GenerateScoreRequest, signal?: AbortSignal): Promise<GenerateScoreResult>;
+  regenerateRegion(
+    request: RegenerateRegionRequest,
+    signal?: AbortSignal
+  ): Promise<RegenerateRegionResult>;
+}
+
+// ---------------------------------------------------------------------------
+// 6. Zod schemas for the generation contracts
+// ---------------------------------------------------------------------------
+
+export const midiRangeSchema = z.object({
+  lowestMidi: z.number().int().min(0).max(127),
+  highestMidi: z.number().int().min(0).max(127),
+});
+
+export const scoreRangeSchema = z.object({
+  startTick: z.number().int().nonnegative(),
+  endTick: z.number().int().nonnegative(),
+  trackIds: z.array(z.string().min(1)),
+});
+
+export const scoreFragmentSchema = z.object({
+  range: scoreRangeSchema,
+  ppq: z.number().int().positive(),
+  tracks: z.array(z.object({ trackId: z.string().min(1), measures: z.array(measureSchema) })),
+});
+
+export const generateScoreRequestTrackSchema = z.object({
+  name: z.string(),
+  instrumentName: z.string(),
+  midiProgram: z.number().int().min(0).max(127),
+  clef: clefSchema,
+  range: midiRangeSchema.optional(),
+  maximumPolyphony: z.number().int().positive().optional(),
+});
+
+export const generateScoreRequestSchema = z.object({
+  prompt: z.string(),
+  title: z.string().optional(),
+  style: z.string().optional(),
+  mood: z.string().optional(),
+  durationMeasures: z.number().int().positive(),
+  tempo: z.number().positive().optional(),
+  timeSignature: timeSignatureSchema.optional(),
+  keySignature: keySignatureSchema.optional(),
+  tracks: z.array(generateScoreRequestTrackSchema),
+  complexity: z.enum(['simple', 'moderate', 'complex']).optional(),
+});
+
+export const generateScoreResultSchema = z.object({
+  score: scoreSchema,
+  warnings: z.array(z.string()),
+});
+
+export const regenerationConstraintsSchema = z.object({
+  preserveMeasureCount: z.literal(true),
+  preserveTimeSignatures: z.literal(true),
+  preserveTempoEvents: z.literal(true),
+  preserveBoundaryNotes: z.boolean().optional(),
+  preserveHarmony: z.boolean().optional(),
+  preserveRhythm: z.boolean().optional(),
+  preserveMelody: z.boolean().optional(),
+  maximumPolyphony: z.number().int().positive().optional(),
+  allowedPitchRangeByTrack: z.record(z.string(), midiRangeSchema).optional(),
+});
+
+export const regenerateRegionRequestSchema = z.object({
+  scoreId: z.string().min(1),
+  instruction: z.string(),
+  range: scoreRangeSchema,
+  precedingContext: scoreFragmentSchema,
+  selectedFragment: scoreFragmentSchema,
+  followingContext: scoreFragmentSchema,
+  constraints: regenerationConstraintsSchema,
+  candidateCount: z.number().int().positive(),
+});
+
+export const regenerationCandidateSchema = z.object({
+  id: z.string().min(1),
+  label: z.string(),
+  fragment: scoreFragmentSchema,
+});
+
+export const regenerateRegionResultSchema = z.object({
+  candidates: z.array(regenerationCandidateSchema),
+  warnings: z.array(z.string()),
+});
+
+/** Parses and validates untrusted JSON as a `GenerateScoreRequest`. Throws `ZodError` on invalid input. */
+export function parseGenerateScoreRequest(json: unknown): GenerateScoreRequest {
+  return generateScoreRequestSchema.parse(json) as GenerateScoreRequest;
+}
+
+/** Parses and validates untrusted JSON as a `GenerateScoreResult`. Throws `ZodError` on invalid input. */
+export function parseGenerateScoreResult(json: unknown): GenerateScoreResult {
+  return generateScoreResultSchema.parse(json) as GenerateScoreResult;
+}
+
+/** Parses and validates untrusted JSON as a `RegenerateRegionRequest`. Throws `ZodError` on invalid input. */
+export function parseRegenerateRegionRequest(json: unknown): RegenerateRegionRequest {
+  return regenerateRegionRequestSchema.parse(json) as RegenerateRegionRequest;
+}
+
+/** Parses and validates untrusted JSON as a `RegenerateRegionResult`. Throws `ZodError` on invalid input. */
+export function parseRegenerateRegionResult(json: unknown): RegenerateRegionResult {
+  return regenerateRegionResultSchema.parse(json) as RegenerateRegionResult;
+}
+
+/** Parses and validates untrusted JSON as a `RegenerationCandidate`. Throws `ZodError` on invalid input. */
+export function parseRegenerationCandidate(json: unknown): RegenerationCandidate {
+  return regenerationCandidateSchema.parse(json) as RegenerationCandidate;
+}
+
+// ---------------------------------------------------------------------------
+// 7. Project API types (music_api payloads)
+// ---------------------------------------------------------------------------
+
+export type ProjectUiPrefs = { view: 'notation' | 'piano-roll'; zoom: number };
+
+/** Project list item — everything but the (potentially large) score payload. */
+export type ProjectSummary = {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+  schemaVersion: number;
+};
+
+export type ProjectRecord = ProjectSummary & {
+  score: Score;
+  uiPrefs?: ProjectUiPrefs;
+};
+
+export type ProjectCreateRequest = {
+  name: string;
+  score: Score;
+  uiPrefs?: ProjectUiPrefs;
+};
+
+export type ProjectUpdateRequest = {
+  name?: string;
+  score?: Score;
+  uiPrefs?: ProjectUiPrefs;
+};
+
+export type ProjectListQuery = {
+  search?: string;
+  sort?: 'updatedAt' | 'name';
+};
+
+// ---------------------------------------------------------------------------
+// 8. Zod schemas for the project API
+// ---------------------------------------------------------------------------
+
+export const projectUiPrefsSchema = z.object({
+  view: z.enum(['notation', 'piano-roll']),
+  zoom: z.number().positive(),
+});
+
+export const projectSummarySchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  schemaVersion: z.number().int().nonnegative(),
+});
+
+export const projectRecordSchema = projectSummarySchema.extend({
+  score: scoreSchema,
+  uiPrefs: projectUiPrefsSchema.optional(),
+});
+
+export const projectCreateRequestSchema = z.object({
+  name: z.string().min(1),
+  score: scoreSchema,
+  uiPrefs: projectUiPrefsSchema.optional(),
+});
+
+export const projectUpdateRequestSchema = z.object({
+  name: z.string().min(1).optional(),
+  score: scoreSchema.optional(),
+  uiPrefs: projectUiPrefsSchema.optional(),
+});
+
+export const projectListQuerySchema = z.object({
+  search: z.string().optional(),
+  sort: z.enum(['updatedAt', 'name']).optional(),
+});
+
+// ---------------------------------------------------------------------------
+// 9. Response envelope + error codes
+// ---------------------------------------------------------------------------
+
+export const API_ERROR_CODES = {
+  QUOTA_EXCEEDED: 'QUOTA_EXCEEDED',
+  AI_GENERATION_FAILED: 'AI_GENERATION_FAILED',
+  AI_OUTPUT_INVALID: 'AI_OUTPUT_INVALID',
+  PROJECT_NOT_FOUND: 'PROJECT_NOT_FOUND',
+  UNAUTHORIZED: 'UNAUTHORIZED',
+} as const;
+
+export type ApiErrorCode = (typeof API_ERROR_CODES)[keyof typeof API_ERROR_CODES];
+
+export type ApiResponse<T> = {
+  success: boolean;
+  data?: T;
+  error?: string;
+  code?: ApiErrorCode;
+};
+
+/** Wraps payload data in the standard success envelope. */
+export function successResponse<T>(data: T): ApiResponse<T> {
+  return { success: true, data };
+}
+
+/** Wraps an error message (and optional typed code) in the standard error envelope. */
+export function errorResponse(message: string, code?: ApiErrorCode): ApiResponse<never> {
+  return code ? { success: false, error: message, code } : { success: false, error: message };
+}
