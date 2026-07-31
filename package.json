@@ -1,6 +1,6 @@
 {
   "name": "@sudobility/music_types",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "TypeScript types and Zod schemas for the ScoreSmith music API - scores, generation contracts, project payloads",
   "type": "module",
   "main": "./dist/index.js",
@@ -21,8 +21,17 @@
     "verify": "bun run typecheck && bun run lint && bun run test && bun run build",
     "prepublishOnly": "bun run clean && bun run verify"
   },
-  "files": ["dist/**/*", "CLAUDE.md"],
-  "keywords": ["typescript", "types", "music", "scoresmith", "api"],
+  "files": [
+    "dist/**/*",
+    "CLAUDE.md"
+  ],
+  "keywords": [
+    "typescript",
+    "types",
+    "music",
+    "scoresmith",
+    "api"
+  ],
   "author": "Sudobility",
   "license": "BUSL-1.1",
   "dependencies": {
@@ -42,6 +51,11 @@
     "typescript": "^5.9.3",
     "vitest": "^4.0.15"
   },
-  "publishConfig": { "access": "public" },
-  "repository": { "type": "git", "url": "https://github.com/johnqh/music_types.git" }
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/johnqh/music_types.git"
+  }
 }

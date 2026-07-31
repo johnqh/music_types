@@ -572,3 +572,8 @@ export function successResponse<T>(data: T): ApiResponse<T> {
 export function errorResponse(message: string, code?: ApiErrorCode): ApiResponse<never> {
   return code ? { success: false, error: message, code } : { success: false, error: message };
 }
+
+// ---------------------------------------------------------------------------
+// 10. Platform interfaces (implementations live in @sudobility/music_io)
+// ---------------------------------------------------------------------------
+export * from './platform/index.js';
