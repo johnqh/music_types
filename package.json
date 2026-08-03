@@ -1,6 +1,6 @@
 {
   "name": "@sudobility/music_types",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "TypeScript types and Zod schemas for the ScoreSmith music API - scores, generation contracts, project payloads",
   "type": "module",
   "main": "./dist/index.js",

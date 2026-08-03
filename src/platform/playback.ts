@@ -38,6 +38,18 @@ export interface PlaybackEngine {
   setMetronome(enabled: boolean): void;
   /** Sets overall output level, 0-1 linear gain. */
   setMasterVolume(volume: number): void;
+  /**
+   * Sounds `midi` immediately on `program`'s voice and holds it, independent of
+   * the transport — for auditioning a key while editing.
+   *
+   * Separate from `play` because the two answer different questions: `play`
+   * renders the written score along a timeline, this makes a sound *now*, for
+   * as long as the caller holds it, whether or not a score is even loaded.
+   * Implementations must not disturb transport state.
+   */
+  noteOn(midi: number, program: number): void;
+  /** Releases a pitch started by `noteOn`. Silent no-op if it is not sounding. */
+  noteOff(midi: number): void;
   /** Registers (or, with `null`, clears) the single observer receiving position/active-note/state updates. */
   setObserver(observer: PlaybackObserver | null): void;
   dispose(): void;
