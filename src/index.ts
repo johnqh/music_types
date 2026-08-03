@@ -470,7 +470,20 @@ export function parseRegenerationCandidate(json: unknown): RegenerationCandidate
 // 7. Project API types (music_api payloads)
 // ---------------------------------------------------------------------------
 
-export type ProjectUiPrefs = { view: 'notation' | 'piano-roll'; zoom: number };
+export type ProjectUiPrefs = {
+  zoom: number;
+  /**
+   * Track ids to draw. **Absent means every track is visible** — a project
+   * saved before this field existed, or one that never hid anything, needs no
+   * migration and no backfill. An empty array is not a valid value: a blank
+   * page is never what anyone meant.
+   *
+   * Ids naming tracks that no longer exist are ignored on load rather than
+   * treated as an error, so hiding a track, deleting it, and undoing the
+   * deletion all behave.
+   */
+  visibleTrackIds?: string[];
+};
 
 /** Project list item — everything but the (potentially large) score payload. */
 export type ProjectSummary = {
@@ -508,8 +521,8 @@ export type ProjectListQuery = {
 // ---------------------------------------------------------------------------
 
 export const projectUiPrefsSchema = z.object({
-  view: z.enum(['notation', 'piano-roll']),
   zoom: z.number().positive(),
+  visibleTrackIds: z.array(z.string().min(1)).nonempty().optional(),
 });
 
 export const projectSummarySchema = z.object({

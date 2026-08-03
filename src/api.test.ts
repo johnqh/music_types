@@ -40,7 +40,7 @@ describe('project schemas', () => {
     const parsed = projectCreateRequestSchema.parse({
       name: 'My Song',
       score,
-      uiPrefs: { view: 'notation', zoom: 1 },
+      uiPrefs: { zoom: 1 },
     });
     expect(parsed.name).toBe('My Song');
   });
@@ -60,9 +60,21 @@ describe('project schemas', () => {
     expect(projectUpdateRequestSchema.parse({ name: 'Renamed' }).name).toBe('Renamed');
   });
 
-  it('rejects an update with an invalid uiPrefs view', () => {
+  it('accepts uiPrefs carrying visibleTrackIds', () => {
+    const parsed = projectUpdateRequestSchema.parse({
+      uiPrefs: { zoom: 1, visibleTrackIds: ['t1', 't2'] },
+    });
+    expect(parsed.uiPrefs?.visibleTrackIds).toEqual(['t1', 't2']);
+  });
+
+  it('accepts uiPrefs without visibleTrackIds, meaning all tracks visible', () => {
+    const parsed = projectUpdateRequestSchema.parse({ uiPrefs: { zoom: 1 } });
+    expect(parsed.uiPrefs?.visibleTrackIds).toBeUndefined();
+  });
+
+  it('rejects an empty visibleTrackIds, which would mean a blank page', () => {
     expect(() =>
-      projectUpdateRequestSchema.parse({ uiPrefs: { view: 'timeline', zoom: 1 } })
+      projectUpdateRequestSchema.parse({ uiPrefs: { zoom: 1, visibleTrackIds: [] } })
     ).toThrow();
   });
 
