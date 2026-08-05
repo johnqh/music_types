@@ -45,6 +45,100 @@ describe('project schemas', () => {
     expect(parsed.name).toBe('My Song');
   });
 
+  it('accepts a measure carrying a multi-measure rest count', () => {
+    const withCount = {
+      ...score,
+      tracks: score.tracks.map((t) => ({
+        ...t,
+        measures: t.measures.map((m) => ({ ...m, multiMeasureRestCount: 24 })),
+      })),
+    };
+    const parsed = projectCreateRequestSchema.parse({ name: 'P', score: withCount });
+    expect(parsed.score.tracks[0].measures[0].multiMeasureRestCount).toBe(24);
+  });
+
+  it('accepts a measure without one, which is every ordinary measure', () => {
+    const parsed = projectCreateRequestSchema.parse({ name: 'P', score });
+    expect(parsed.score.tracks[0].measures[0].multiMeasureRestCount).toBeUndefined();
+  });
+
+  it('rejects a count of one, which is not a multi-measure rest', () => {
+    // One bar of silence is written out; a "1" over a bar is noise.
+    const withOne = {
+      ...score,
+      tracks: score.tracks.map((t) => ({
+        ...t,
+        measures: t.measures.map((m) => ({ ...m, multiMeasureRestCount: 1 })),
+      })),
+    };
+    expect(() => projectCreateRequestSchema.parse({ name: 'P', score: withOne })).toThrow();
+  });
+
+  it('accepts a measure carrying a rehearsal mark', () => {
+    const withMark = {
+      ...score,
+      tracks: score.tracks.map((t) => ({
+        ...t,
+        measures: t.measures.map((m) => ({ ...m, rehearsalMark: 'B' })),
+      })),
+    };
+    const parsed = projectCreateRequestSchema.parse({ name: 'P', score: withMark });
+    expect(parsed.score.tracks[0].measures[0].rehearsalMark).toBe('B');
+  });
+
+  it('rejects an empty rehearsal mark', () => {
+    // A mark nobody can call out is not a mark.
+    const withEmpty = {
+      ...score,
+      tracks: score.tracks.map((t) => ({
+        ...t,
+        measures: t.measures.map((m) => ({ ...m, rehearsalMark: '' })),
+      })),
+    };
+    expect(() => projectCreateRequestSchema.parse({ name: 'P', score: withEmpty })).toThrow();
+  });
+
+  it('accepts a measure carrying a cue', () => {
+    const withCue = {
+      ...score,
+      tracks: score.tracks.map((t) => ({
+        ...t,
+        measures: t.measures.map((m) => ({
+          ...m,
+          cue: {
+            label: 'Flute',
+            events: [
+              {
+                id: 'cue-1',
+                pitch: { step: 'C', accidental: 0, octave: 5 },
+                startTick: 0,
+                durationTicks: 480,
+                velocity: 80,
+                voiceId: 'v1',
+                trackId: 't1',
+              },
+            ],
+          },
+        })),
+      })),
+    };
+    const parsed = projectCreateRequestSchema.parse({ name: 'P', score: withCue });
+    expect(parsed.score.tracks[0].measures[0].cue?.label).toBe('Flute');
+    expect(parsed.score.tracks[0].measures[0].cue?.events).toHaveLength(1);
+  });
+
+  it('rejects a cue with no label', () => {
+    // An unlabelled cue is notes the player cannot attribute — worse than none.
+    const withEmpty = {
+      ...score,
+      tracks: score.tracks.map((t) => ({
+        ...t,
+        measures: t.measures.map((m) => ({ ...m, cue: { label: '', events: [] } })),
+      })),
+    };
+    expect(() => projectCreateRequestSchema.parse({ name: 'P', score: withEmpty })).toThrow();
+  });
+
   it('rejects a create request with an empty name', () => {
     expect(() => projectCreateRequestSchema.parse({ name: '', score })).toThrow();
   });

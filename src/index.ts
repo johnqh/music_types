@@ -91,6 +91,22 @@ export type MusicalEvent = NoteEvent | RestEvent;
 
 export type Voice = { id: UUID; name: string; events: MusicalEvent[] };
 
+/**
+ * Small-print notes from another instrument, printed in the bar before a long
+ * entry so the player knows where they are.
+ *
+ * Print-only and derived (see `measureCues` in music_lib). Deliberately not
+ * part of `Measure.voices`: a cue is not the player's music, and keeping it
+ * out is what lets playback, export, selection and note-counting stay correct
+ * without learning to skip it.
+ */
+export type MeasureCue = {
+  /** Which instrument this is, e.g. "Flute". Drawn above the notes. */
+  label: string;
+  /** The cued bar's notes. Never sounded, never selectable. */
+  events: MusicalEvent[];
+};
+
 export type Measure = {
   id: UUID;
   index: number;
@@ -99,6 +115,25 @@ export type Measure = {
   timeSignature: TimeSignature;
   keySignature: KeySignature;
   voices: Voice[];
+  /**
+   * How many measures of silence this one stands for, when it is a
+   * multi-measure rest. Absent for an ordinary measure.
+   *
+   * Only ever set on a derived, print-only part (see `extractPart` in
+   * music_lib). A stored score always writes its rests out in full, because
+   * collapsing loses which bar is which — and the editor needs every bar.
+   */
+  multiMeasureRestCount?: number;
+  /**
+   * Rehearsal mark shown above this measure, e.g. "B".
+   *
+   * Print-only and derived (see `rehearsalMarks` in music_lib): a stored score
+   * carries none, and the editor never shows them, because a mark you cannot
+   * move would be a control that looks editable and is not.
+   */
+  rehearsalMark?: string;
+  /** Cue notes printed in this measure. Print-only. */
+  cue?: MeasureCue;
 };
 
 export type Track = {
@@ -255,6 +290,13 @@ export const measureSchema = z.object({
   timeSignature: timeSignatureSchema,
   keySignature: keySignatureSchema,
   voices: z.array(voiceSchema),
+  // Minimum 2, not 1: a count of one is not a multi-measure rest, and
+  // rejecting it here stops a meaningless value reaching the renderer.
+  multiMeasureRestCount: z.number().int().min(2).optional(),
+  rehearsalMark: z.string().min(1).optional(),
+  cue: z
+    .object({ label: z.string().min(1), events: z.array(musicalEventSchema) })
+    .optional(),
 });
 
 export const trackSchema = z.object({
