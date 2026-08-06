@@ -11,6 +11,9 @@ import {
   projectRecordSchema,
   projectSummarySchema,
   projectUpdateRequestSchema,
+  snapshotCreateRequestSchema,
+  snapshotSchema,
+  snapshotSummarySchema,
   successResponse,
 } from './index';
 import { createEmptyScore } from './test-helpers';
@@ -189,5 +192,67 @@ describe('project schemas', () => {
     expect(projectListQuerySchema.parse({})).toEqual({});
     expect(projectListQuerySchema.parse({ sort: 'name', search: 'so' }).sort).toBe('name');
     expect(() => projectListQuerySchema.parse({ sort: 'oldest' })).toThrow();
+  });
+});
+
+describe('snapshot schemas', () => {
+  const score = createEmptyScore({ title: 'P', measures: 1, tracks: [{ name: 'Piano' }] });
+  const base = {
+    id: '11111111-1111-4111-8111-111111111111',
+    projectId: '22222222-2222-4222-8222-222222222222',
+    parentId: null,
+    name: 'Version 1',
+    score,
+    createdAt: '2026-01-01T00:00:00.000Z',
+  };
+
+  it('accepts a snapshot with no parent, which is the first in a project', () => {
+    expect(snapshotSchema.parse(base).parentId).toBeNull();
+  });
+
+  it('accepts a snapshot that grew from another', () => {
+    const child = { ...base, id: '33333333-3333-4333-8333-333333333333', parentId: base.id };
+    expect(snapshotSchema.parse(child).parentId).toBe(base.id);
+  });
+
+  it('rejects an unnamed snapshot', () => {
+    // A nameless version cannot be chosen from a picker.
+    expect(() => snapshotSchema.parse({ ...base, name: '' })).toThrow();
+  });
+
+  it('summarises without the score, which the picker never needs', () => {
+    const summary = snapshotSummarySchema.parse({ ...base, score: undefined });
+    expect('score' in summary).toBe(false);
+  });
+
+  it('accepts a create request carrying just a name', () => {
+    expect(snapshotCreateRequestSchema.parse({ name: 'Before the coda' }).name).toBe(
+      'Before the coda',
+    );
+  });
+
+  it('accepts a project record that knows which snapshot it descends from', () => {
+    const record = projectRecordSchema.parse({
+      id: 'p1',
+      name: 'A',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+      schemaVersion: 1,
+      score,
+      parentSnapshotId: base.id,
+    });
+    expect(record.parentSnapshotId).toBe(base.id);
+  });
+
+  it('accepts a project record with no parent, which is one never snapshotted', () => {
+    const record = projectRecordSchema.parse({
+      id: 'p1',
+      name: 'A',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+      schemaVersion: 1,
+      score,
+    });
+    expect(record.parentSnapshotId ?? null).toBeNull();
   });
 });

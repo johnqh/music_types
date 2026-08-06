@@ -539,7 +539,30 @@ export type ProjectSummary = {
 export type ProjectRecord = ProjectSummary & {
   score: Score;
   uiPrefs?: ProjectUiPrefs;
+  /** Which snapshot the live work descends from, so a new one attaches there. */
+  parentSnapshotId?: UUID | null;
 };
+
+/**
+ * A project pinned at a moment, which never changes again.
+ *
+ * Holds its **own full copy** of the score rather than a delta: reconstructing
+ * a version by replaying diffs is exactly the thing that quietly stops being
+ * reproducible, and immutability is the whole point here.
+ */
+export type Snapshot = {
+  id: UUID;
+  projectId: UUID;
+  /** The snapshot this one grew from. Null for the first in a project. */
+  parentId: UUID | null;
+  name: string;
+  score: Score;
+  uiPrefs?: ProjectUiPrefs;
+  createdAt: string;
+};
+
+/** A snapshot without its score — what the picker lists, so it stays cheap. */
+export type SnapshotSummary = Omit<Snapshot, 'score' | 'uiPrefs'>;
 
 export type ProjectCreateRequest = {
   name: string;
@@ -578,6 +601,25 @@ export const projectSummarySchema = z.object({
 export const projectRecordSchema = projectSummarySchema.extend({
   score: scoreSchema,
   uiPrefs: projectUiPrefsSchema.optional(),
+  /** Which snapshot the live work descends from, so a new one attaches there. */
+  parentSnapshotId: z.string().min(1).nullable().optional(),
+});
+
+export const snapshotSummarySchema = z.object({
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  parentId: z.string().min(1).nullable(),
+  name: z.string().min(1),
+  createdAt: z.string().min(1),
+});
+
+export const snapshotSchema = snapshotSummarySchema.extend({
+  score: scoreSchema,
+  uiPrefs: projectUiPrefsSchema.optional(),
+});
+
+export const snapshotCreateRequestSchema = z.object({
+  name: z.string().min(1).max(200),
 });
 
 export const projectCreateRequestSchema = z.object({
