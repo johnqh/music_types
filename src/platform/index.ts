@@ -1,3 +1,4 @@
+export * from './audio.js';
 /**
  * Platform interfaces. Type-only contracts whose implementations live in
  * `@sudobility/music_io`, which serves web and React Native from one import

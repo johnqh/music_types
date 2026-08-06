@@ -11,6 +11,9 @@ import {
   projectRecordSchema,
   projectSummarySchema,
   projectUpdateRequestSchema,
+  communityItemSchema,
+  publishRequestSchema,
+  publishedSnapshotSchema,
   snapshotCreateRequestSchema,
   snapshotSchema,
   snapshotSummarySchema,
@@ -254,5 +257,60 @@ describe('snapshot schemas', () => {
       score,
     });
     expect(record.parentSnapshotId ?? null).toBeNull();
+  });
+});
+
+describe('publishing schemas', () => {
+  const score = createEmptyScore({ title: 'P', measures: 1, tracks: [{ name: 'Piano' }] });
+  const published = {
+    publicId: 'pub_abc123',
+    name: 'Version 1',
+    publisherName: 'Jane',
+    score,
+    createdAt: '2026-01-01T00:00:00.000Z',
+  };
+
+  it('accepts a published snapshot', () => {
+    expect(publishedSnapshotSchema.parse(published).publicId).toBe('pub_abc123');
+  });
+
+  it('rejects a published snapshot with no publisher name', () => {
+    // The Community list would show an anonymous row it cannot attribute.
+    expect(() => publishedSnapshotSchema.parse({ ...published, publisherName: '' })).toThrow();
+  });
+
+  it('strips anything not on the public shape', () => {
+    // The guard that matters: no userId, no email, ever reaches a public page.
+    const parsed = publishedSnapshotSchema.parse({
+      ...published,
+      userId: 'uid-1',
+      email: 'a@b.c',
+    }) as Record<string, unknown>;
+    expect(parsed.userId).toBeUndefined();
+    expect(parsed.email).toBeUndefined();
+  });
+
+  it('lists a community item without its score', () => {
+    const item = communityItemSchema.parse({ ...published, score: undefined });
+    expect('score' in item).toBe(false);
+  });
+
+  it('accepts a publish request carrying a publisher name', () => {
+    expect(publishRequestSchema.parse({ publisherName: 'Jane' }).publisherName).toBe('Jane');
+  });
+
+  it('accepts a snapshot that is published, and one that is not', () => {
+    const base = {
+      id: '11111111-1111-4111-8111-111111111111',
+      projectId: '22222222-2222-4222-8222-222222222222',
+      parentId: null,
+      name: 'Version 1',
+      score,
+      createdAt: '2026-01-01T00:00:00.000Z',
+    };
+    expect(snapshotSchema.parse(base).publicId).toBeUndefined();
+    expect(
+      snapshotSchema.parse({ ...base, publicId: 'pub_x', publisherName: 'Jane' }).publicId,
+    ).toBe('pub_x');
   });
 });

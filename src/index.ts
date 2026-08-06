@@ -558,8 +558,29 @@ export type Snapshot = {
   name: string;
   score: Score;
   uiPrefs?: ProjectUiPrefs;
+  /**
+   * Set when published; the public URL is /p/<publicId>. Absent when not.
+   *
+   * Publishing is metadata about *sharing*, not part of the music — which is
+   * why it may change on a snapshot that otherwise never does.
+   */
+  publicId?: string;
+  /** Shown on the Community list. Never the account email. */
+  publisherName?: string;
   createdAt: string;
 };
+
+/** What an anonymous visitor receives. Carries no owner identity, by construction. */
+export type PublishedSnapshot = {
+  publicId: string;
+  name: string;
+  publisherName: string;
+  score: Score;
+  createdAt: string;
+};
+
+/** One row of the Community list. No score — the list would be enormous. */
+export type CommunityItem = Omit<PublishedSnapshot, 'score'>;
 
 /** A snapshot without its score — what the picker lists, so it stays cheap. */
 export type SnapshotSummary = Omit<Snapshot, 'score' | 'uiPrefs'>;
@@ -616,6 +637,24 @@ export const snapshotSummarySchema = z.object({
 export const snapshotSchema = snapshotSummarySchema.extend({
   score: scoreSchema,
   uiPrefs: projectUiPrefsSchema.optional(),
+  publicId: z.string().min(1).optional(),
+  publisherName: z.string().min(1).optional(),
+});
+
+/** What an anonymous visitor receives. Carries no owner identity, by construction. */
+export const publishedSnapshotSchema = z.object({
+  publicId: z.string().min(1),
+  name: z.string().min(1),
+  publisherName: z.string().min(1),
+  score: scoreSchema,
+  createdAt: z.string().min(1),
+});
+
+/** One row of the Community list. No score — the list would be enormous. */
+export const communityItemSchema = publishedSnapshotSchema.omit({ score: true });
+
+export const publishRequestSchema = z.object({
+  publisherName: z.string().min(1).max(80),
 });
 
 export const snapshotCreateRequestSchema = z.object({
