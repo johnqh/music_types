@@ -385,6 +385,10 @@ export type RegenerateRegionRequest = {
   followingContext: ScoreFragment;
   constraints: RegenerationConstraints;
   candidateCount: number;
+  /** Same three dials whole-score generation has; the prompt builder emits them identically. */
+  style?: string;
+  mood?: string;
+  complexity?: 'simple' | 'moderate' | 'complex';
 };
 
 export type RegenerationCandidate = { id: string; label: string; fragment: ScoreFragment };
@@ -470,6 +474,9 @@ export const regenerateRegionRequestSchema = z.object({
   followingContext: scoreFragmentSchema,
   constraints: regenerationConstraintsSchema,
   candidateCount: z.number().int().positive(),
+  style: z.string().optional(),
+  mood: z.string().optional(),
+  complexity: z.enum(['simple', 'moderate', 'complex']).optional(),
 });
 
 export const regenerationCandidateSchema = z.object({
@@ -481,6 +488,77 @@ export const regenerationCandidateSchema = z.object({
 export const regenerateRegionResultSchema = z.object({
   candidates: z.array(regenerationCandidateSchema),
   warnings: z.array(z.string()),
+});
+
+/** Whether a project can be edited right now. Two states, because that is the only question the editor asks. */
+export type ProjectStatus = 'ready' | 'generating';
+
+export const projectStatusSchema = z.enum(['ready', 'generating']);
+
+/** Which of the five generation entry points produced a job. */
+export type GenerationJobKind =
+  | 'generate-score'
+  | 'generate-track'
+  | 'replace-notes'
+  | 'replace-measures'
+  | 'replace-track';
+
+export const generationJobKindSchema = z.enum([
+  'generate-score',
+  'generate-track',
+  'replace-notes',
+  'replace-measures',
+  'replace-track',
+]);
+
+/**
+ * A job's own lifecycle, which is richer than its project's: `cancelled`
+ * records that a result was produced and thrown away, which `ready` on the
+ * project cannot express.
+ */
+export type GenerationJobStatus = 'running' | 'done' | 'failed' | 'cancelled';
+
+export const generationJobStatusSchema = z.enum(['running', 'done', 'failed', 'cancelled']);
+
+/**
+ * A job as reported to the client. The stored `request`/`result` payloads are
+ * deliberately absent — they are large and the client never needs them.
+ */
+export type GenerationJob = {
+  id: UUID;
+  projectId: UUID;
+  kind: GenerationJobKind;
+  status: GenerationJobStatus;
+  createdAt: string;
+  finishedAt: string | null;
+  error: string | null;
+};
+
+export const generationJobSchema = z.object({
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  kind: generationJobKindSchema,
+  status: generationJobStatusSchema,
+  createdAt: z.string(),
+  finishedAt: z.string().nullable(),
+  error: z.string().nullable(),
+});
+
+/**
+ * `request` is the whole provider request, stored verbatim so the job never
+ * re-reads the project. Its shape varies by `kind`, so it is unknown here and
+ * narrowed by the runner.
+ */
+export type CreateGenerationJobRequest = {
+  projectId: UUID;
+  kind: GenerationJobKind;
+  request: unknown;
+};
+
+export const createGenerationJobRequestSchema = z.object({
+  projectId: z.string().min(1),
+  kind: generationJobKindSchema,
+  request: z.unknown(),
 });
 
 /** Parses and validates untrusted JSON as a `GenerateScoreRequest`. Throws `ZodError` on invalid input. */
@@ -534,6 +612,8 @@ export type ProjectSummary = {
   createdAt: string;
   updatedAt: string;
   schemaVersion: number;
+  /** Required, not optional: a project always has a status, and a missing one would read as editable. */
+  status: ProjectStatus;
 };
 
 export type ProjectRecord = ProjectSummary & {

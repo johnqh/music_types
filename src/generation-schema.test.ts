@@ -8,6 +8,8 @@ import {
   parseRegenerateRegionRequest,
   regenerateRegionRequestSchema,
   regenerateRegionResultSchema,
+  createGenerationJobRequestSchema,
+  generationJobSchema,
   scoreFragmentSchema,
   scoreRangeSchema,
 } from './index';
@@ -159,5 +161,90 @@ describe('regenerateRegionResultSchema', () => {
       warnings: [],
     };
     expect(regenerateRegionResultSchema.safeParse(result).success).toBe(true);
+  });
+});
+
+describe('createGenerationJobRequestSchema', () => {
+  const valid = () => ({
+    projectId: '11111111-1111-1111-1111-111111111111',
+    kind: 'replace-notes' as const,
+    request: { anything: true },
+  });
+
+  it('accepts each of the five kinds', () => {
+    for (const kind of [
+      'generate-score',
+      'generate-track',
+      'replace-notes',
+      'replace-measures',
+      'replace-track',
+    ] as const) {
+      expect(createGenerationJobRequestSchema.safeParse({ ...valid(), kind }).success).toBe(true);
+    }
+  });
+
+  it('rejects an unknown kind', () => {
+    expect(
+      createGenerationJobRequestSchema.safeParse({ ...valid(), kind: 'transcribe' }).success
+    ).toBe(false);
+  });
+
+  it('requires a projectId, since every job now owns one', () => {
+    const rest: Record<string, unknown> = { ...valid() };
+    delete rest.projectId;
+    expect(createGenerationJobRequestSchema.safeParse(rest).success).toBe(false);
+  });
+});
+
+describe('generationJobSchema', () => {
+  const valid = () => ({
+    id: '22222222-2222-2222-2222-222222222222',
+    projectId: '11111111-1111-1111-1111-111111111111',
+    kind: 'generate-track' as const,
+    status: 'running' as const,
+    createdAt: '2026-08-07T00:00:00.000Z',
+    finishedAt: null,
+    error: null,
+  });
+
+  it('accepts a running job with no finish time or error', () => {
+    expect(generationJobSchema.safeParse(valid()).success).toBe(true);
+  });
+
+  it('accepts every terminal status', () => {
+    for (const status of ['done', 'failed', 'cancelled'] as const) {
+      expect(
+        generationJobSchema.safeParse({
+          ...valid(),
+          status,
+          finishedAt: '2026-08-07T00:01:00.000Z',
+        }).success
+      ).toBe(true);
+    }
+  });
+
+  it('rejects a status outside the four', () => {
+    expect(generationJobSchema.safeParse({ ...valid(), status: 'queued' }).success).toBe(false);
+  });
+});
+
+describe('regenerateRegionRequestSchema style/mood/complexity', () => {
+  it('accepts the three new optional fields', () => {
+    const req = {
+      ...validRegenerateRequest(),
+      style: 'baroque',
+      mood: 'melancholy',
+      complexity: 'complex' as const,
+    };
+    expect(regenerateRegionRequestSchema.safeParse(req).success).toBe(true);
+  });
+
+  it('still accepts a request without them, so existing callers are unaffected', () => {
+    expect(regenerateRegionRequestSchema.safeParse(validRegenerateRequest()).success).toBe(true);
+  });
+
+  it('rejects a complexity outside the enum', () => {
+    const req = { ...validRegenerateRequest(), complexity: 'extreme' };
+    expect(regenerateRegionRequestSchema.safeParse(req).success).toBe(false);
   });
 });
