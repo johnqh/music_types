@@ -620,6 +620,8 @@ export type ProjectSummary = {
   schemaVersion: number;
   /** Required, not optional: a project always has a status, and a missing one would read as editable. */
   status: ProjectStatus;
+  /** Why the last generation failed, or null. Survives navigating away, which the job row does not. */
+  lastGenerationError: string | null;
 };
 
 export type ProjectRecord = ProjectSummary & {
