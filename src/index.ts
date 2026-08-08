@@ -774,6 +774,13 @@ export const API_ERROR_CODES = {
   AI_OUTPUT_INVALID: 'AI_OUTPUT_INVALID',
   PROJECT_NOT_FOUND: 'PROJECT_NOT_FOUND',
   UNAUTHORIZED: 'UNAUTHORIZED',
+  /**
+   * The project is owned by a running generation job and cannot be written.
+   * Distinct from a generic failure so a client can tell "busy, try later"
+   * from "something broke" — an autosave should quietly stand down, not
+   * surface an error.
+   */
+  PROJECT_GENERATING: 'PROJECT_GENERATING',
 } as const;
 
 export type ApiErrorCode = (typeof API_ERROR_CODES)[keyof typeof API_ERROR_CODES];
