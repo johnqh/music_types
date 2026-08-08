@@ -365,7 +365,13 @@ export type GenerateScoreRequest = {
 export type GenerateScoreResult = { score: Score; warnings: string[] };
 
 export type RegenerationConstraints = {
-  preserveMeasureCount: true;
+  /**
+   * Absent for a region that does not sit on barlines (Replace Notes), where
+   * "preserve the measure count" says nothing and only muddies the prompt.
+   * Still never `false`: a regeneration that may add or drop measures is not
+   * a thing this system asks for.
+   */
+  preserveMeasureCount?: true;
   preserveTimeSignatures: true;
   preserveTempoEvents: true;
   preserveBoundaryNotes?: boolean;
@@ -454,7 +460,7 @@ export const generateScoreResultSchema = z.object({
 });
 
 export const regenerationConstraintsSchema = z.object({
-  preserveMeasureCount: z.literal(true),
+  preserveMeasureCount: z.literal(true).optional(),
   preserveTimeSignatures: z.literal(true),
   preserveTempoEvents: z.literal(true),
   preserveBoundaryNotes: z.boolean().optional(),

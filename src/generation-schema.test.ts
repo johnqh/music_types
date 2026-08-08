@@ -8,6 +8,7 @@ import {
   parseRegenerateRegionRequest,
   regenerateRegionRequestSchema,
   regenerateRegionResultSchema,
+  regenerationConstraintsSchema,
   createGenerationJobRequestSchema,
   generationJobSchema,
   scoreFragmentSchema,
@@ -246,5 +247,36 @@ describe('regenerateRegionRequestSchema style/mood/complexity', () => {
   it('rejects a complexity outside the enum', () => {
     const req = { ...validRegenerateRequest(), complexity: 'extreme' };
     expect(regenerateRegionRequestSchema.safeParse(req).success).toBe(false);
+  });
+});
+
+describe('regenerationConstraintsSchema preserveMeasureCount', () => {
+  const base = () => ({ preserveTimeSignatures: true, preserveTempoEvents: true } as const);
+
+  it('accepts constraints without preserveMeasureCount, for a sub-measure region', () => {
+    // Replace Notes spans an exact tick range that need not sit on barlines,
+    // where "preserve the measure count" is meaningless.
+    expect(regenerationConstraintsSchema.safeParse(base()).success).toBe(true);
+  });
+
+  it('still accepts it when present', () => {
+    expect(
+      regenerationConstraintsSchema.safeParse({ ...base(), preserveMeasureCount: true }).success
+    ).toBe(true);
+  });
+
+  it('still rejects false, which would claim the count may change', () => {
+    expect(
+      regenerationConstraintsSchema.safeParse({ ...base(), preserveMeasureCount: false }).success
+    ).toBe(false);
+  });
+
+  it('keeps time signatures and tempo events mandatory regardless of alignment', () => {
+    expect(regenerationConstraintsSchema.safeParse({ preserveTempoEvents: true }).success).toBe(
+      false
+    );
+    expect(regenerationConstraintsSchema.safeParse({ preserveTimeSignatures: true }).success).toBe(
+      false
+    );
   });
 });
