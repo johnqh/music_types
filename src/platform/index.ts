@@ -8,3 +8,4 @@ export * from './playback.js';
 export * from './xml.js';
 export * from './file.js';
 export * from './midi.js';
+export * from './mod.js';
