@@ -632,6 +632,36 @@ export type ProjectRecord = ProjectSummary & {
 };
 
 /**
+ * What a *write* to a project returns: everything but the score.
+ *
+ * A create or an autosave sends the score and gets the identical bytes back,
+ * which no caller has ever read — the writer already holds the score it just
+ * sent. On a debounced autosave that echo doubled the cost of every edit, so
+ * reads return the score and writes return metadata about it.
+ */
+export type ProjectSaveResult = Omit<ProjectRecord, 'score'>;
+
+/**
+ * What a status poll returns. Deliberately small: an open editor asks for this
+ * every few seconds for the whole session.
+ *
+ * `parentSnapshotId` rides along because it is the one other field an editor
+ * needs while a project is open, and fetching the whole project to read it was
+ * the alternative.
+ */
+export type ProjectStatusResult = {
+  status: ProjectStatus;
+  /**
+   * A freshness signal, not a timestamp to display. A client compares it with
+   * the one its own last write returned; a difference means the server's copy
+   * moved under it and must be re-read.
+   */
+  updatedAt: string;
+  lastGenerationError: string | null;
+  parentSnapshotId: UUID | null;
+};
+
+/**
  * A project pinned at a moment, which never changes again.
  *
  * Holds its **own full copy** of the score rather than a delta: reconstructing
@@ -685,6 +715,15 @@ export type ProjectUpdateRequest = {
   uiPrefs?: ProjectUiPrefs;
 };
 
+/**
+ * Duplicating is a server-side copy: the score is read and written inside the
+ * database and never crosses the wire in either direction.
+ */
+export type ProjectDuplicateRequest = {
+  /** Defaults to "<original name> (copy)". */
+  name?: string;
+};
+
 export type ProjectListQuery = {
   search?: string;
   sort?: 'updatedAt' | 'name';
@@ -707,11 +746,14 @@ export const projectSummarySchema = z.object({
   schemaVersion: z.number().int().nonnegative(),
 });
 
-export const projectRecordSchema = projectSummarySchema.extend({
-  score: scoreSchema,
+export const projectSaveResultSchema = projectSummarySchema.extend({
   uiPrefs: projectUiPrefsSchema.optional(),
   /** Which snapshot the live work descends from, so a new one attaches there. */
   parentSnapshotId: z.string().min(1).nullable().optional(),
+});
+
+export const projectRecordSchema = projectSaveResultSchema.extend({
+  score: scoreSchema,
 });
 
 export const snapshotSummarySchema = z.object({
@@ -720,13 +762,15 @@ export const snapshotSummarySchema = z.object({
   parentId: z.string().min(1).nullable(),
   name: z.string().min(1),
   createdAt: z.string().min(1),
+  // On the summary, not only the full snapshot: publishing state is what the
+  // picker badges from, and it is also all a publish response needs to return.
+  publicId: z.string().min(1).optional(),
+  publisherName: z.string().min(1).optional(),
 });
 
 export const snapshotSchema = snapshotSummarySchema.extend({
   score: scoreSchema,
   uiPrefs: projectUiPrefsSchema.optional(),
-  publicId: z.string().min(1).optional(),
-  publisherName: z.string().min(1).optional(),
 });
 
 /** What an anonymous visitor receives. Carries no owner identity, by construction. */
@@ -759,6 +803,14 @@ export const projectUpdateRequestSchema = z.object({
   name: z.string().min(1).optional(),
   score: scoreSchema.optional(),
   uiPrefs: projectUiPrefsSchema.optional(),
+});
+
+/**
+ * Duplicating is a server-side copy. The score never leaves the database, so
+ * the request carries only the new name (absent = "<name> (copy)").
+ */
+export const projectDuplicateRequestSchema = z.object({
+  name: z.string().min(1).max(200).optional(),
 });
 
 export const projectListQuerySchema = z.object({

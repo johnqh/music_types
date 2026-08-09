@@ -7,8 +7,10 @@ import {
   API_ERROR_CODES,
   errorResponse,
   projectCreateRequestSchema,
+  projectDuplicateRequestSchema,
   projectListQuerySchema,
   projectRecordSchema,
+  projectSaveResultSchema,
   projectSummarySchema,
   projectUpdateRequestSchema,
   communityItemSchema,
@@ -191,6 +193,30 @@ describe('project schemas', () => {
     expect(projectRecordSchema.parse({ ...summary, score }).score.ppq).toBe(480);
   });
 
+  it('parses a save result, which carries everything about a project but the score', () => {
+    // What a write returns. The caller already holds the score it just sent,
+    // so echoing it back doubled the cost of every autosave.
+    const saved = {
+      id: 'p1',
+      name: 'A',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:01.000Z',
+      schemaVersion: 1,
+      uiPrefs: { zoom: 1, visibleTrackIds: ['t1'] },
+      parentSnapshotId: null,
+    };
+    expect(projectSaveResultSchema.parse(saved).updatedAt).toBe('2026-01-01T00:00:01.000Z');
+    expect('score' in projectSaveResultSchema.parse(saved)).toBe(false);
+    // The score-carrying read is the strictly stronger shape, so it still rejects one.
+    expect(() => projectRecordSchema.parse(saved)).toThrow();
+  });
+
+  it('accepts a duplicate request with no name, which means "<name> (copy)"', () => {
+    expect(projectDuplicateRequestSchema.parse({}).name).toBeUndefined();
+    expect(projectDuplicateRequestSchema.parse({ name: 'Take 2' }).name).toBe('Take 2');
+    expect(() => projectDuplicateRequestSchema.parse({ name: '' })).toThrow();
+  });
+
   it('parses list query with defaults absent and rejects unknown sort', () => {
     expect(projectListQuerySchema.parse({})).toEqual({});
     expect(projectListQuerySchema.parse({ sort: 'name', search: 'so' }).sort).toBe('name');
@@ -225,6 +251,17 @@ describe('snapshot schemas', () => {
 
   it('summarises without the score, which the picker never needs', () => {
     const summary = snapshotSummarySchema.parse({ ...base, score: undefined });
+    expect('score' in summary).toBe(false);
+  });
+
+  it('keeps publishing state on the summary, so a publish need not return a score', () => {
+    const summary = snapshotSummarySchema.parse({
+      ...base,
+      score: undefined,
+      publicId: 'pub_x',
+      publisherName: 'Jane',
+    });
+    expect(summary.publicId).toBe('pub_x');
     expect('score' in summary).toBe(false);
   });
 
