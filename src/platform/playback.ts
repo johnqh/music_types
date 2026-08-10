@@ -21,7 +21,30 @@ export type PlaybackObserver = {
   onPositionTick(tick: number): void;
   onActiveNotes(noteIds: string[]): void;
   onStateChange(state: TransportPlaybackState): void;
+  /**
+   * How far along the engine is in becoming able to make a sound.
+   *
+   * Optional because not every engine has anything to load. The soundfont
+   * engine does: tens of megabytes to fetch and several seconds for the synth
+   * to digest, all on the first press of Play. Without this the transport
+   * simply looks broken for that whole time — which is exactly how it read
+   * before there was anywhere to report it.
+   */
+  onLoadStateChange?(state: PlaybackLoadState): void;
 };
+
+/**
+ * The engine's readiness to play, for a progress indicator.
+ *
+ * `fraction` is null while the work has no measurable progress — the synth
+ * digesting a soundfont reports nothing until it is done — so a caller can tell
+ * a real percentage from "busy, no idea how long".
+ */
+export type PlaybackLoadState =
+  | { status: 'idle' }
+  | { status: 'loading'; fraction: number | null }
+  | { status: 'ready' }
+  | { status: 'failed'; message: string };
 
 export interface PlaybackEngine {
   initialize(): Promise<void>;
