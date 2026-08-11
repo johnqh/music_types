@@ -497,9 +497,17 @@ export const regenerateRegionResultSchema = z.object({
 });
 
 /** Whether a project can be edited right now. Two states, because that is the only question the editor asks. */
-export type ProjectStatus = 'ready' | 'generating';
+/**
+ * What currently owns a project.
+ *
+ * `generating` and `transcribing` both mean "a job is producing this project's
+ * music, and writes must be refused until it lands" — they are distinct so the
+ * editor can say which is happening, since one takes seconds of model time and
+ * the other minutes of audio.
+ */
+export type ProjectStatus = 'ready' | 'generating' | 'transcribing';
 
-export const projectStatusSchema = z.enum(['ready', 'generating']);
+export const projectStatusSchema = z.enum(['ready', 'generating', 'transcribing']);
 
 /** Which of the five generation entry points produced a job. */
 export type GenerationJobKind =
@@ -590,63 +598,6 @@ export function parseRegenerateRegionResult(json: unknown): RegenerateRegionResu
 /** Parses and validates untrusted JSON as a `RegenerationCandidate`. Throws `ZodError` on invalid input. */
 export function parseRegenerationCandidate(json: unknown): RegenerationCandidate {
   return regenerationCandidateSchema.parse(json) as RegenerationCandidate;
-}
-
-// ---------------------------------------------------------------------------
-// 6b. Stem separation (music_api → a hosted separation provider)
-// ---------------------------------------------------------------------------
-
-/**
- * The stems a separation model produces.
- *
- * Fixed by the model, not chosen: the Demucs family emits vocals/drums/bass/
- * other, or six with guitar and piano split out of "other". There is no
- * "horns" or "strings" because no stem carries only those — they arrive
- * together in `other`, and nothing downstream can take them apart again.
- */
-export type StemKind = 'vocals' | 'drums' | 'bass' | 'guitar' | 'piano' | 'other';
-
-export const stemKindSchema = z.enum(['vocals', 'drums', 'bass', 'guitar', 'piano', 'other']);
-
-/**
- * `running` while the provider works, then one of the two terminal states.
- *
- * The same three-state shape as a generation job, for the same reason:
- * separation takes tens of seconds to minutes, so the client cannot hold a
- * connection open for it and polls instead.
- */
-export type SeparationStatus = 'running' | 'ready' | 'failed';
-
-export const separationStatusSchema = z.enum(['running', 'ready', 'failed']);
-
-/**
- * A separation as reported to the client.
- *
- * `stems` names what is ready to fetch rather than carrying any audio: six
- * stems of a song are tens of megabytes, and the client wants them one at a
- * time as it transcribes each.
- */
-export type Separation = {
-  id: UUID;
-  status: SeparationStatus;
-  stems: StemKind[];
-  error: string | null;
-  createdAt: string;
-  finishedAt: string | null;
-};
-
-export const separationSchema = z.object({
-  id: z.string().min(1),
-  status: separationStatusSchema,
-  stems: z.array(stemKindSchema),
-  error: z.string().nullable(),
-  createdAt: z.string(),
-  finishedAt: z.string().nullable(),
-});
-
-/** Parses and validates untrusted JSON as a `Separation`. Throws `ZodError` on invalid input. */
-export function parseSeparation(json: unknown): Separation {
-  return separationSchema.parse(json) as Separation;
 }
 
 // ---------------------------------------------------------------------------
@@ -892,15 +843,13 @@ export const API_ERROR_CODES = {
    * surface an error.
    */
   PROJECT_GENERATING: 'PROJECT_GENERATING',
-  SEPARATION_NOT_FOUND: 'SEPARATION_NOT_FOUND',
   /**
-   * Separation is configured off — no provider credentials.
+   * No transcription service is configured on this deployment.
    *
-   * Distinct from a failure so the client can say "this deployment cannot
-   * separate audio" and fall back to transcribing the mix whole, rather than
-   * telling the user something broke.
+   * Distinct from a failure so the client can say "this server cannot
+   * transcribe audio" and hide the option, rather than reporting a breakage.
    */
-  SEPARATION_UNAVAILABLE: 'SEPARATION_UNAVAILABLE',
+  TRANSCRIPTION_UNAVAILABLE: 'TRANSCRIPTION_UNAVAILABLE',
 } as const;
 
 export type ApiErrorCode = (typeof API_ERROR_CODES)[keyof typeof API_ERROR_CODES];
