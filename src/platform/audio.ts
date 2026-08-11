@@ -80,3 +80,41 @@ export type RenderPlan = {
 export interface AudioRenderer {
   render(plan: RenderPlan): Promise<DecodedAudio>;
 }
+
+/**
+ * One note heard in a recording, in **seconds** — the raw output of an
+ * analyser, before anything musical has been decided about it.
+ *
+ * Seconds rather than ticks on purpose: which tick a note lands on depends on
+ * a tempo, and choosing a tempo is a musical judgement that belongs in
+ * music_lib with the rest of them, not in the platform layer that owns the
+ * model.
+ */
+export type HeardNote = {
+  midi: number;
+  startSec: number;
+  durationSec: number;
+  /** 0..1 — how loud the analyser thought it was, used for velocity. */
+  amplitude: number;
+};
+
+export type TranscribeAudioOptions = {
+  /** Reports analysis progress, 0..1. */
+  onProgress?: (fraction: number) => void;
+};
+
+/**
+ * Turning a recording into notes.
+ *
+ * Platform-bound because the only implementations worth having are machine
+ * learning models, and those come with a platform's tensor runtime attached —
+ * TensorFlow.js on the web, something else entirely on React Native. music_lib
+ * stays free of all of it and keeps the part that is actually music: what
+ * tempo those notes imply and which ticks they land on.
+ *
+ * **Polyphonic.** The pure fallback in music_lib (YIN) hears one line at a
+ * time, which is why a chord used to import as a single note.
+ */
+export interface AudioTranscriber {
+  transcribe(audio: DecodedAudio, options?: TranscribeAudioOptions): Promise<HeardNote[]>;
+}

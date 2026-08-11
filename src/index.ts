@@ -593,6 +593,63 @@ export function parseRegenerationCandidate(json: unknown): RegenerationCandidate
 }
 
 // ---------------------------------------------------------------------------
+// 6b. Stem separation (music_api → a hosted separation provider)
+// ---------------------------------------------------------------------------
+
+/**
+ * The stems a separation model produces.
+ *
+ * Fixed by the model, not chosen: the Demucs family emits vocals/drums/bass/
+ * other, or six with guitar and piano split out of "other". There is no
+ * "horns" or "strings" because no stem carries only those — they arrive
+ * together in `other`, and nothing downstream can take them apart again.
+ */
+export type StemKind = 'vocals' | 'drums' | 'bass' | 'guitar' | 'piano' | 'other';
+
+export const stemKindSchema = z.enum(['vocals', 'drums', 'bass', 'guitar', 'piano', 'other']);
+
+/**
+ * `running` while the provider works, then one of the two terminal states.
+ *
+ * The same three-state shape as a generation job, for the same reason:
+ * separation takes tens of seconds to minutes, so the client cannot hold a
+ * connection open for it and polls instead.
+ */
+export type SeparationStatus = 'running' | 'ready' | 'failed';
+
+export const separationStatusSchema = z.enum(['running', 'ready', 'failed']);
+
+/**
+ * A separation as reported to the client.
+ *
+ * `stems` names what is ready to fetch rather than carrying any audio: six
+ * stems of a song are tens of megabytes, and the client wants them one at a
+ * time as it transcribes each.
+ */
+export type Separation = {
+  id: UUID;
+  status: SeparationStatus;
+  stems: StemKind[];
+  error: string | null;
+  createdAt: string;
+  finishedAt: string | null;
+};
+
+export const separationSchema = z.object({
+  id: z.string().min(1),
+  status: separationStatusSchema,
+  stems: z.array(stemKindSchema),
+  error: z.string().nullable(),
+  createdAt: z.string(),
+  finishedAt: z.string().nullable(),
+});
+
+/** Parses and validates untrusted JSON as a `Separation`. Throws `ZodError` on invalid input. */
+export function parseSeparation(json: unknown): Separation {
+  return separationSchema.parse(json) as Separation;
+}
+
+// ---------------------------------------------------------------------------
 // 7. Project API types (music_api payloads)
 // ---------------------------------------------------------------------------
 
@@ -835,6 +892,15 @@ export const API_ERROR_CODES = {
    * surface an error.
    */
   PROJECT_GENERATING: 'PROJECT_GENERATING',
+  SEPARATION_NOT_FOUND: 'SEPARATION_NOT_FOUND',
+  /**
+   * Separation is configured off — no provider credentials.
+   *
+   * Distinct from a failure so the client can say "this deployment cannot
+   * separate audio" and fall back to transcribing the mix whole, rather than
+   * telling the user something broke.
+   */
+  SEPARATION_UNAVAILABLE: 'SEPARATION_UNAVAILABLE',
 } as const;
 
 export type ApiErrorCode = (typeof API_ERROR_CODES)[keyof typeof API_ERROR_CODES];
