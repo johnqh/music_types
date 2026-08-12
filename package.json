@@ -1,14 +1,15 @@
 {
 	"name": "@sudobility/music_types",
-	"version": "0.11.12",
+	"version": "0.11.13",
 	"description": "TypeScript types and Zod schemas for the ScoreSmith music API - scores, generation contracts, project payloads",
 	"type": "module",
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"exports": {
 		".": {
+			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js",
-			"types": "./dist/index.d.ts"
+			"default": "./dist/index.js"
 		}
 	},
 	"scripts": {
