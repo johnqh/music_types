@@ -530,9 +530,21 @@ export const generationJobKindSchema = z.enum([
  * records that a result was produced and thrown away, which `ready` on the
  * project cannot express.
  */
-export type GenerationJobStatus = 'running' | 'done' | 'failed' | 'cancelled';
+/**
+ * `queued` is a job waiting its turn: a user's generations run one at a time, so
+ * a job accepted while another is running waits rather than being refused. Its
+ * project is already `generating` — the request is built against the stored
+ * score, so that score must not move underneath it while it waits.
+ */
+export type GenerationJobStatus = 'queued' | 'running' | 'done' | 'failed' | 'cancelled';
 
-export const generationJobStatusSchema = z.enum(['running', 'done', 'failed', 'cancelled']);
+export const generationJobStatusSchema = z.enum([
+  'queued',
+  'running',
+  'done',
+  'failed',
+  'cancelled',
+]);
 
 /**
  * A job as reported to the client. The stored `request`/`result` payloads are
@@ -546,7 +558,32 @@ export type GenerationJob = {
   createdAt: string;
   finishedAt: string | null;
   error: string | null;
+  /** Absent when the job never reached the model, or the stream reported no usage. */
+  usage?: TokenUsage;
 };
+
+/**
+ * What one generation job cost the provider.
+ *
+ * Lives here rather than in music_api because the client sees it: `GET /jobs/:id`
+ * carries it, and the app has no other way to report what a generation used.
+ *
+ * There is deliberately no `totalTokens` — it is the sum of the other two, and a
+ * stored derivable value is a chance for them to disagree. `model` is present
+ * because tokens only become money per-model and the model is env-configurable,
+ * so a total without it cannot be priced afterwards.
+ */
+export type TokenUsage = {
+  promptTokens: number;
+  completionTokens: number;
+  model: string;
+};
+
+export const tokenUsageSchema = z.object({
+  promptTokens: z.number().int().nonnegative(),
+  completionTokens: z.number().int().nonnegative(),
+  model: z.string().min(1),
+});
 
 export const generationJobSchema = z.object({
   id: z.string().min(1),
@@ -556,6 +593,7 @@ export const generationJobSchema = z.object({
   createdAt: z.string(),
   finishedAt: z.string().nullable(),
   error: z.string().nullable(),
+  usage: tokenUsageSchema.optional(),
 });
 
 /**
@@ -850,6 +888,12 @@ export const API_ERROR_CODES = {
    * transcribe audio" and hide the option, rather than reporting a breakage.
    */
   TRANSCRIPTION_UNAVAILABLE: 'TRANSCRIPTION_UNAVAILABLE',
+  /**
+   * The user has no credits left. Distinct from a quota refusal: a quota is a
+   * rate limit that lifts on its own, and this does not — it lifts when the
+   * user buys more, which is a different thing to tell them.
+   */
+  INSUFFICIENT_CREDITS: 'INSUFFICIENT_CREDITS',
 } as const;
 
 export type ApiErrorCode = (typeof API_ERROR_CODES)[keyof typeof API_ERROR_CODES];

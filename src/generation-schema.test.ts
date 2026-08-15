@@ -224,8 +224,43 @@ describe('generationJobSchema', () => {
     }
   });
 
-  it('rejects a status outside the four', () => {
-    expect(generationJobSchema.safeParse({ ...valid(), status: 'queued' }).success).toBe(false);
+  it('accepts queued, which is a job waiting its turn', () => {
+    expect(generationJobSchema.safeParse({ ...valid(), status: 'queued' }).success).toBe(true);
+  });
+
+  it('rejects a status outside the five', () => {
+    expect(generationJobSchema.safeParse({ ...valid(), status: 'paused' }).success).toBe(false);
+  });
+
+  it('accepts a job with no usage, which is one that never reached the model', () => {
+    expect(generationJobSchema.safeParse(valid()).success).toBe(true);
+  });
+
+  it('accepts a job carrying what it cost', () => {
+    expect(
+      generationJobSchema.safeParse({
+        ...valid(),
+        usage: { promptTokens: 1760, completionTokens: 2130, model: 'gpt-5.1' },
+      }).success
+    ).toBe(true);
+  });
+
+  it('rejects usage with no model, which cannot be priced afterwards', () => {
+    expect(
+      generationJobSchema.safeParse({
+        ...valid(),
+        usage: { promptTokens: 1760, completionTokens: 2130 },
+      }).success
+    ).toBe(false);
+  });
+
+  it('rejects negative token counts', () => {
+    expect(
+      generationJobSchema.safeParse({
+        ...valid(),
+        usage: { promptTokens: -1, completionTokens: 0, model: 'gpt-5.1' },
+      }).success
+    ).toBe(false);
   });
 });
 
