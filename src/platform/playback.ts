@@ -57,6 +57,21 @@ export interface PlaybackEngine {
   setLoop(range: ScoreRange | null): void;
   setTrackMute(trackId: string, muted: boolean): void;
   setTrackSolo(trackId: string, solo: boolean): void;
+  /**
+   * Re-reads every track's volume, pan, mute and solo from `score` and pushes
+   * them, touching nothing that is scheduled.
+   *
+   * The mixing counterpart to `loadScore`. Mute and solo had setters; volume
+   * and pan did not, and a track's volume was only ever read at load time — so
+   * once a mix change stopped reloading the score (the playback edit lock, see
+   * `music_lib`'s `score-slice`), moving a fader during playback moved the
+   * fader and not the sound.
+   *
+   * Idempotent, and takes the whole score rather than one property: the caller
+   * says "the mix changed, here it is" and does not work out which property it
+   * was.
+   */
+  applyMix(score: Score): void;
   /** Toggles the metronome click. */
   setMetronome(enabled: boolean): void;
   /** Sets overall output level, 0-1 linear gain. */
