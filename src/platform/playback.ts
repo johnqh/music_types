@@ -17,9 +17,26 @@ export type TransportPlaybackState = 'stopped' | 'playing' | 'paused';
  * currently-sounding note ids changes; `onStateChange` fires on every
  * play/pause/stop transition, including ones the engine itself initiates.
  */
+export type SoundingNote = {
+  /** The `NoteEvent.id` this voice came from, for notation highlighting. */
+  noteId: string;
+  /** Which track it is on, so a consumer can filter without searching the score. */
+  trackId: string;
+  /** Its sounding MIDI pitch, so a keyboard can light a key without resolving the event. */
+  midi: number;
+};
+
 export type PlaybackObserver = {
   onPositionTick(tick: number): void;
-  onActiveNotes(noteIds: string[]): void;
+  /**
+   * The notes currently sounding, whenever that set changes.
+   *
+   * Resolved rather than bare ids. The scheduler already knows each note's
+   * track and pitch — it scheduled them — and emitting only the id forced every
+   * consumer to search the whole score to get it back: `playingPitchesForTrack`
+   * was an O(score) scan per sounding note, twenty times a second.
+   */
+  onActiveNotes(notes: SoundingNote[]): void;
   onStateChange(state: TransportPlaybackState): void;
   /**
    * How far along the engine is in becoming able to make a sound.
