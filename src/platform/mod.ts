@@ -66,4 +66,13 @@ export type TrackerModule = {
 export interface TrackerCodec {
   /** Sniffs the format from the bytes and decodes it. Throws on anything that is not one, rather than returning a garbage module that looks imported. */
   decode(bytes: ArrayBuffer): TrackerModule;
+  /**
+   * Writes a module out, in the format `module.format` names.
+   *
+   * No sample data is written: a module is a notes format, so the slots are
+   * named and empty and the file is silent until somebody fills them. Throws
+   * for a format export does not write (`dsm`, `mptm`) rather than guessing a
+   * near neighbour.
+   */
+  encode(module: TrackerModule): ArrayBuffer;
 }
