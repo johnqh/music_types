@@ -8,6 +8,7 @@
  * depends on this file instead, so the engine stays swappable and mockable.
  */
 import type { Score, ScoreRange } from '../index.js';
+import type { RenderTrack } from './audio.js';
 
 export type TransportPlaybackState = 'stopped' | 'playing' | 'paused';
 
@@ -57,6 +58,67 @@ export type PlaybackObserver = {
  * digesting a soundfont reports nothing until it is done — so a caller can tell
  * a real percentage from "busy, no idea how long".
  */
+/**
+ * Tick <-> second conversion, as playback needs it.
+ *
+ * An interface rather than a class so music_io can convert without importing
+ * music_lib's `TempoMap` — which satisfies this structurally, so music_lib
+ * passes the instance it already builds and no conversion code moves or is
+ * duplicated.
+ */
+export interface TempoConversion {
+  ticksToSeconds(tick: number): number;
+  secondsToTicks(seconds: number): number;
+}
+
+/**
+ * A track as playback needs it: the offline render's track plus the two mix
+ * flags a live mix can change without reloading, plus the resolved GM voice.
+ *
+ * `voiceProgram`/`voiceName` are resolved in music_lib because **a percussion
+ * track's `midiProgram` names a drum kit, not an instrument** — Brush is 40 and
+ * program 40 is Violin — and only the GM tables know which is which. Carrying
+ * the answer is what lets the platform layer keep no catalogue of its own.
+ */
+export type PlaybackTrack = RenderTrack & {
+  muted: boolean;
+  solo: boolean;
+  /** The kit's program on a percussion track, the track's own otherwise. */
+  voiceProgram: number;
+  /** The GM catalogue name for `voiceProgram`. */
+  voiceName: string;
+};
+
+/** One playback-ready note, in score ticks, carrying the ids playback reports back. */
+export type PlaybackNote = {
+  tick: number;
+  durTicks: number;
+  midi: number;
+  velocity: number;
+  trackId: string;
+  noteId: string;
+};
+
+/** One metronome click. `accent` marks beat 1 of its measure. */
+export type MetronomeClick = { tick: number; accent: boolean };
+
+/**
+ * Everything live playback needs, and nothing about a `Score`.
+ *
+ * The live counterpart of `RenderPlan`: music_lib decides every musical
+ * question — ties joined, pitches resolved, mute and solo, the measure grid's
+ * beat positions, the tempo — and the engine only schedules and sounds what it
+ * is handed. This is the seam that keeps music_io free of the domain.
+ */
+export type PlaybackPlan = {
+  tracks: readonly PlaybackTrack[];
+  notes: readonly PlaybackNote[];
+  clicks: readonly MetronomeClick[];
+  tempo: TempoConversion;
+  /** The last tick any note ends on. */
+  durationTicks: number;
+};
+
 export type PlaybackLoadState =
   | { status: 'idle' }
   | { status: 'loading'; fraction: number | null }
@@ -65,7 +127,8 @@ export type PlaybackLoadState =
 
 export interface PlaybackEngine {
   initialize(): Promise<void>;
-  loadScore(score: Score): Promise<void>;
+  /** Adopts a plan. The engine is handed music, never a score. */
+  load(plan: PlaybackPlan): Promise<void>;
   play(fromTick?: number): Promise<void>;
   pause(): void;
   stop(): void;
@@ -75,20 +138,21 @@ export interface PlaybackEngine {
   setTrackMute(trackId: string, muted: boolean): void;
   setTrackSolo(trackId: string, solo: boolean): void;
   /**
-   * Re-reads every track's volume, pan, mute and solo from `score` and pushes
-   * them, touching nothing that is scheduled.
+   * Re-reads every track's volume, pan, mute and solo and pushes them,
+   * touching nothing that is scheduled.
    *
-   * The mixing counterpart to `loadScore`. Mute and solo had setters; volume
-   * and pan did not, and a track's volume was only ever read at load time — so
-   * once a mix change stopped reloading the score (the playback edit lock, see
+   * The mixing counterpart to `load`. Mute and solo had setters; volume and pan
+   * did not, and a track's volume was only ever read at load time — so once a
+   * mix change stopped reloading the score (the playback edit lock, see
    * `music_lib`'s `score-slice`), moving a fader during playback moved the
    * fader and not the sound.
    *
-   * Idempotent, and takes the whole score rather than one property: the caller
-   * says "the mix changed, here it is" and does not work out which property it
-   * was.
+   * Takes only the tracks, so changing a gain does not rebuild every note —
+   * which is the whole reason this is separate from `load`. Idempotent, and
+   * takes them all rather than one property: the caller says "the mix changed,
+   * here it is" and does not work out which property it was.
    */
-  applyMix(score: Score): void;
+  applyMix(tracks: readonly PlaybackTrack[]): void;
   /** Toggles the metronome click. */
   setMetronome(enabled: boolean): void;
   /** Sets overall output level, 0-1 linear gain. */
