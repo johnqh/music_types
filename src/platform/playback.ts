@@ -7,7 +7,7 @@
  * things that import an audio library; everything that depends on playback
  * depends on this file instead, so the engine stays swappable and mockable.
  */
-import type { Score, ScoreRange } from '../index.js';
+import type { ScoreRange } from '../index.js';
 import type { RenderTrack } from './audio.js';
 
 export type TransportPlaybackState = 'stopped' | 'playing' | 'paused';
