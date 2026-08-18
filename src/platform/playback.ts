@@ -75,18 +75,27 @@ export interface TempoConversion {
  * A track as playback needs it: the offline render's track plus the two mix
  * flags a live mix can change without reloading, plus the resolved GM voice.
  *
- * `voiceProgram`/`voiceName` are resolved in music_lib because **a percussion
- * track's `midiProgram` names a drum kit, not an instrument** — Brush is 40 and
- * program 40 is Violin — and only the GM tables know which is which. Carrying
- * the answer is what lets the platform layer keep no catalogue of its own.
+ * The resolved GM voice lives on `RenderTrack` itself, since the offline
+ * renderer needs it for exactly the same reason.
  */
 export type PlaybackTrack = RenderTrack & {
   muted: boolean;
   solo: boolean;
-  /** The kit's program on a percussion track, the track's own otherwise. */
-  voiceProgram: number;
-  /** The GM catalogue name for `voiceProgram`. */
-  voiceName: string;
+};
+
+/**
+ * A voice to audition, resolved from the GM tables **by the caller**.
+ *
+ * The engine cannot resolve it: a percussion voice's program addresses a drum
+ * kit, and only the GM tables know which kit an arbitrary address falls in.
+ * Resolving here is what lets the platform layer keep no catalogue of its own.
+ */
+export type AuditionVoice = {
+  /** The kit's program on a percussion voice, the instrument's own otherwise. */
+  program: number;
+  /** The GM catalogue name for `program`. */
+  name: string;
+  isPercussion: boolean;
 };
 
 /** One playback-ready note, in score ticks, carrying the ids playback reports back. */
@@ -161,16 +170,16 @@ export interface PlaybackEngine {
    * Sounds `midi` immediately on `program`'s voice and holds it, independent of
    * the transport — for auditioning a key while editing.
    *
-   * `isPercussion` mirrors what playback does with a percussion-clef track:
-   * without it, tapping a note on a drum track auditioned a pitched instrument
-   * while the same note played back as a drum.
+   * `voice.isPercussion` mirrors what playback does with a percussion-clef
+   * track: without it, tapping a note on a drum track auditioned a pitched
+   * instrument while the same note played back as a drum.
    *
    * Separate from `play` because the two answer different questions: `play`
    * renders the written score along a timeline, this makes a sound *now*, for
    * as long as the caller holds it, whether or not a score is even loaded.
    * Implementations must not disturb transport state.
    */
-  noteOn(midi: number, program: number, isPercussion?: boolean): void;
+  noteOn(midi: number, voice: AuditionVoice): void;
   /** Releases a pitch started by `noteOn`. Silent no-op if it is not sounding. */
   noteOff(midi: number): void;
   /** Registers (or, with `null`, clears) the single observer receiving position/active-note/state updates. */

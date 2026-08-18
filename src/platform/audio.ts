@@ -38,6 +38,18 @@ export type RenderTrack = {
   instrumentName: string;
   /** From the track's clef, matching how live playback decides. */
   isPercussion: boolean;
+  /**
+   * The GM program to voice this track from, resolved by music_lib: the kit's
+   * program on a percussion track, the track's own otherwise.
+   *
+   * Resolved there because **a percussion track's `midiProgram` names a drum
+   * kit, not an instrument** — Brush is 40 and program 40 is Violin — and only
+   * the GM tables know which kit an arbitrary address falls in. Carrying the
+   * answer is what lets the platform layer keep no catalogue of its own.
+   */
+  voiceProgram: number;
+  /** The GM catalogue name for `voiceProgram` — the kit's name on a percussion track. */
+  voiceName: string;
   /** 0..1 channel gain. */
   volume: number;
   /** -1..1. */
