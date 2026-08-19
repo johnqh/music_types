@@ -1,5 +1,10 @@
 # @sudobility/music_types
 
+> **Git policy — never auto-commit or auto-push.** Leave your work in the working tree.
+> Run `git commit`, `git push`, `gh pr create`, or `scripts/push_all.sh` **only when the user
+> explicitly asks in that turn**. Approval for an earlier change does not carry forward, and
+> finishing a task is not permission to commit it.
+
 TypeScript types and Zod schemas for the ScoreSmith music family (music_api, music_client, music_lib, music_app).
 
 ## Tech Stack
@@ -45,3 +50,7 @@ Everything exports from a single sectioned `src/index.ts`:
 - `music_client` — typed network client + React Query hooks
 - `music_lib` — domain logic, adapters, store
 - `music_app` — web app (UI/routing only)
+
+## Git Workflow
+
+- Do not use feature branches for code changes. Always stay on the current branch.
