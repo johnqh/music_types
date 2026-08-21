@@ -1,6 +1,6 @@
 {
   "name": "@sudobility/music_types",
-  "version": "0.11.22",
+  "version": "0.11.23",
   "description": "TypeScript types and Zod schemas for the ScoreSmith music API - scores, generation contracts, project payloads",
   "type": "module",
   "main": "./dist/index.js",
@@ -40,11 +40,11 @@
     "zod": "^4.0.0"
   },
   "peerDependencies": {
-    "@sudobility/types": "^1.9.65"
+    "@sudobility/types": "^1.9.66"
   },
   "devDependencies": {
     "@eslint/js": "^9.38.0",
-    "@sudobility/types": "^1.9.65",
+    "@sudobility/types": "^1.9.66",
     "@typescript-eslint/eslint-plugin": "^8.46.2",
     "@typescript-eslint/parser": "^8.46.2",
     "eslint": "^9.38.0",

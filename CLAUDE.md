@@ -5,7 +5,7 @@
 > explicitly asks in that turn**. Approval for an earlier change does not carry forward, and
 > finishing a task is not permission to commit it.
 
-TypeScript types and Zod schemas for the ScoreSmith music family (music_api, music_client, music_lib, music_app).
+TypeScript types and Zod schemas for the Moosiac music family (music_api, music_client, music_lib, music_app).
 
 ## Tech Stack
 

@@ -1,6 +1,6 @@
 # @sudobility/music_types
 
-Shared TypeScript types and Zod schemas for the ScoreSmith music platform: the score data model, AI generation contracts, project API payloads, and the standard API response envelope.
+Shared TypeScript types and Zod schemas for the Moosiac music platform: the score data model, AI generation contracts, project API payloads, and the standard API response envelope.
 
 ## Installation
 

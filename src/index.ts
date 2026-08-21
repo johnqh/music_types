@@ -1,8 +1,8 @@
 /**
- * @sudobility/music_types — types and Zod schemas for the ScoreSmith music family.
+ * @sudobility/music_types — types and Zod schemas for the Moosiac music family.
  *
  * Single sectioned entry point (sudojo_types convention):
- *   1. Score model types (spec §4 of the ScoreSmith spec)
+ *   1. Score model types (spec §4 of the Moosiac spec)
  *   2. Type guards
  *   3. Selection / fragment types
  *   4. Zod schemas for the score tree
@@ -71,6 +71,62 @@ export type DurationName =
 
 export type Articulation = 'staccato' | 'accent' | 'tenuto' | 'marcato';
 
+/**
+ * A dynamic marking, from softest to loudest.
+ *
+ * Attached to the note it applies *from*, and in force until the next one on
+ * that track — which is how a dynamic is read on paper and how it is played.
+ * Stored as the marking rather than as a velocity, because "mf" is what the
+ * score says; the velocity a player gives it is derived (`velocityForDynamic`
+ * in music_lib) and stays adjustable per note on top.
+ */
+export type Dynamic = 'ppp' | 'pp' | 'p' | 'mp' | 'mf' | 'f' | 'ff' | 'fff';
+
+/**
+ * How a sung syllable joins its neighbours.
+ *
+ * MusicXML's own vocabulary, kept rather than invented: it is what decides
+ * whether a hyphen is drawn to the next note. "beau-ti-ful" over three notes
+ * is `begin`, `middle`, `end`; a one-syllable word is `single`.
+ */
+export type Syllabic = 'single' | 'begin' | 'middle' | 'end';
+
+/**
+ * A small ornamental note played just before the note it decorates.
+ *
+ * Attached to that note rather than sitting in the voice as an event of its
+ * own, because a grace note **takes no time from the bar** — it borrows from
+ * its principal. As an event it would have to be excluded from every sum that
+ * checks a measure adds up: validation, rest filling, quantization, the
+ * VexFlow voice. Hanging it off the note it ornaments means none of those
+ * change at all, and it moves, copies and deletes with its principal, which is
+ * what a player expects of an ornament.
+ *
+ * `durationTicks` is the *written* value — what decides the glyph and how many
+ * flags it gets — not time taken from the measure.
+ */
+export type GraceNote = {
+  pitch: Pitch;
+  durationTicks: number;
+  /**
+   * A slash through the stem: an acciaccatura, crushed against the principal.
+   * Without it the note is an appoggiatura, which takes noticeably longer.
+   */
+  slashed?: boolean;
+};
+
+/** One syllable sung on one note. */
+export type Lyric = {
+  text: string;
+  /** Absent means `single` — a whole word on one note, which is the common case. */
+  syllabic?: Syllabic;
+};
+
+/** Softest first, which is the order a picker should offer them in. */
+export const DYNAMICS: readonly Dynamic[] = [
+  'ppp', 'pp', 'p', 'mp', 'mf', 'f', 'ff', 'fff',
+] as const;
+
 export type Clef = 'treble' | 'bass' | 'alto' | 'tenor' | 'percussion';
 
 export type NoteEvent = {
@@ -84,6 +140,30 @@ export type NoteEvent = {
   tieStart?: boolean;
   tieStop?: boolean;
   articulation?: Articulation;
+  /** Dynamic marking starting at this note; in force until the next one. */
+  dynamic?: Dynamic;
+  /**
+   * Phrase mark endpoints.
+   *
+   * Deliberately separate from `tieStart`/`tieStop`, which look the same on
+   * paper and mean something else entirely: a tie joins two notes *of the same
+   * pitch* into one sounding note, and playback joins their durations. A slur
+   * groups a run of *different* pitches as one phrase and joins nothing — so
+   * `joinTiedNotes` must never see these, and it does not.
+   */
+  slurStart?: boolean;
+  slurStop?: boolean;
+  /**
+   * The syllable sung on this note.
+   *
+   * On the note rather than in a parallel list because that is what a lyric
+   * is: text belonging to a notehead, which moves, copies and deletes with it.
+   * A separate track of syllables would have to be re-aligned after every edit
+   * that changed the note count.
+   */
+  lyric?: Lyric;
+  /** Ornaments played immediately before this note, in the order written. */
+  graceNotes?: GraceNote[];
 };
 
 export type RestEvent = {
@@ -253,6 +333,7 @@ export const tempoEventSchema = z.object({
 });
 
 export const articulationSchema = z.enum(['staccato', 'accent', 'tenuto', 'marcato']);
+export const dynamicSchema = z.enum(['ppp', 'pp', 'p', 'mp', 'mf', 'f', 'ff', 'fff']);
 
 export const clefSchema = z.enum(['treble', 'bass', 'alto', 'tenor', 'percussion']);
 
@@ -268,6 +349,24 @@ export const noteEventSchema = z
     tieStart: z.boolean().optional(),
     tieStop: z.boolean().optional(),
     articulation: articulationSchema.optional(),
+    dynamic: dynamicSchema.optional(),
+    slurStart: z.boolean().optional(),
+    slurStop: z.boolean().optional(),
+    graceNotes: z
+      .array(
+        z.object({
+          pitch: pitchSchema,
+          durationTicks: z.number(),
+          slashed: z.boolean().optional(),
+        })
+      )
+      .optional(),
+    lyric: z
+      .object({
+        text: z.string(),
+        syllabic: z.enum(['single', 'begin', 'middle', 'end']).optional(),
+      })
+      .optional(),
   })
   .strict();
 
@@ -702,6 +801,20 @@ export type ProjectSaveResult = Omit<ProjectRecord, 'score'>;
  * needs while a project is open, and fetching the whole project to read it was
  * the alternative.
  */
+/**
+ * Who the caller is, from `GET /me`.
+ *
+ * Exists for `siteAdmin`. The server grants administrators free generation —
+ * no quota, no balance check, no charge — and the client has to know, because
+ * it does its own courtesy gating on the balance. Without it an administrator
+ * is refused by their own UI on a request the server would have accepted.
+ */
+export type CurrentUser = {
+  userId: string;
+  email: string | null;
+  siteAdmin: boolean;
+};
+
 export type ProjectStatusResult = {
   status: ProjectStatus;
   /**
