@@ -96,7 +96,13 @@ function relocateNotes(
     detied.tracks.map(track => removeNotesFromTrack(track, ids))
   );
 
-  const target = working.tracks.find(t => t.id === params.targetTrackId)!;
+  // Written as a check rather than a `!`, though the guard above has already
+  // established the track exists and `removeNotesFromTrack` preserves ids: an
+  // assertion states a guarantee the compiler cannot verify, and this states
+  // the same one at no cost. Unreachable in practice, and returning the score
+  // unchanged is the same answer the guard above gives.
+  const target = working.tracks.find(t => t.id === params.targetTrackId);
+  if (!target) return score;
   const placed = moving.map(({ note, voiceIndex }) => ({
     note,
     voiceIndex,

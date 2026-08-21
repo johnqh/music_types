@@ -72,6 +72,21 @@ export type DurationName =
 export type Articulation = 'staccato' | 'accent' | 'tenuto' | 'marcato';
 
 /**
+ * An ornament sign written over a note.
+ *
+ * The *sign*, not the notes it stands for: a trill is stored as "trill" rather
+ * than expanded into the alternation a player would produce, because the
+ * realisation depends on period, tempo and taste, and expanding it would make
+ * the ornament impossible to remove or re-read. Written-out ornaments are a
+ * different thing entirely and already have one — `NoteEvent.graceNotes`.
+ *
+ * Named the way a musician names them: `mordent` is the one *with* the
+ * vertical stroke and `inverted-mordent` the one without. (VexFlow's own codes
+ * use these two words the other way round — see `convert.ts`.)
+ */
+export type Ornament = 'trill' | 'mordent' | 'inverted-mordent' | 'turn';
+
+/**
  * A dynamic marking, from softest to loudest.
  *
  * Attached to the note it applies *from*, and in force until the next one on
@@ -140,6 +155,29 @@ export type NoteEvent = {
   tieStart?: boolean;
   tieStop?: boolean;
   articulation?: Articulation;
+  /**
+   * A pause held on this note, at the performer's discretion.
+   *
+   * Separate from `articulation` although it draws like one, because it is not
+   * one: an articulation says how a note of a written length is played, while a
+   * fermata says the written length is *suspended*. Putting it in the
+   * `Articulation` enum would have made it mutually exclusive with staccato and
+   * accent, and a fermata over an accented final chord is ordinary notation.
+   *
+   * Boolean rather than a duration: how long a fermata is held is the
+   * performer's judgement, not the score's, which is the whole point of the
+   * marking.
+   */
+  fermata?: boolean;
+  /**
+   * An ornament sign over this note — a trill, mordent or turn.
+   *
+   * Beside `graceNotes` rather than replacing it: an ornament *sign* leaves
+   * its realisation to the player, while grace notes spell out exactly what is
+   * played. A note can carry both, which is how an ornament with a written-out
+   * termination is notated.
+   */
+  ornament?: Ornament;
   /** Dynamic marking starting at this note; in force until the next one. */
   dynamic?: Dynamic;
   /**
@@ -375,6 +413,12 @@ export const tempoEventSchema = z.object({
 });
 
 export const articulationSchema = z.enum(['staccato', 'accent', 'tenuto', 'marcato']);
+export const ornamentSchema = z.enum([
+  'trill',
+  'mordent',
+  'inverted-mordent',
+  'turn',
+]);
 export const dynamicSchema = z.enum(['ppp', 'pp', 'p', 'mp', 'mf', 'f', 'ff', 'fff']);
 
 export const clefSchema = z.enum(['treble', 'bass', 'alto', 'tenor', 'percussion']);
@@ -391,6 +435,8 @@ export const noteEventSchema = z
     tieStart: z.boolean().optional(),
     tieStop: z.boolean().optional(),
     articulation: articulationSchema.optional(),
+    fermata: z.boolean().optional(),
+    ornament: ornamentSchema.optional(),
     dynamic: dynamicSchema.optional(),
     slurStart: z.boolean().optional(),
     slurStop: z.boolean().optional(),
