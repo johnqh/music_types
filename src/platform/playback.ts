@@ -119,12 +119,38 @@ export type MetronomeClick = { tick: number; accent: boolean };
  * beat positions, the tempo — and the engine only schedules and sounds what it
  * is handed. This is the seam that keeps music_io free of the domain.
  */
+/** A stretch of written music, placed at a point in performance time. */
+export type TimelineSegment = {
+  performanceTick: number;
+  sourceTick: number;
+  durationTicks: number;
+};
+
+/**
+ * How performance time maps back onto the written score.
+ *
+ * A repeat makes the two differ: bar 3 played twice has two performance
+ * positions and one written position. Everything that *draws* a position —
+ * the caret, the following-scroll, the bar/beat readout — translates through
+ * this, so the score stays the canonical written thing and only the plan
+ * knows about expansion.
+ *
+ * A score with no repeats yields one identity segment, which is what keeps
+ * every existing behaviour unchanged.
+ */
+export type PerformanceTimeline = {
+  segments: readonly TimelineSegment[];
+  durationTicks: number;
+};
+
 export type PlaybackPlan = {
   tracks: readonly PlaybackTrack[];
   notes: readonly PlaybackNote[];
   clicks: readonly MetronomeClick[];
   tempo: TempoConversion;
-  /** The last tick any note ends on. */
+  /** Written-to-performed mapping; identity when nothing repeats. */
+  timeline: PerformanceTimeline;
+  /** The last tick any note ends on, in performance time. */
   durationTicks: number;
 };
 

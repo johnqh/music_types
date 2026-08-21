@@ -234,6 +234,33 @@ export type Measure = {
    * move would be a control that looks editable and is not.
    */
   rehearsalMark?: string;
+  /**
+   * The `|:` and `:|` barlines of a repeated section.
+   *
+   * Two independent flags rather than a span, because that is how they are
+   * written and how they behave: a `:|` with no matching `|:` repeats from the
+   * start of the piece, which is a real and common marking rather than an
+   * error to be prevented.
+   *
+   * **Notation and export only, for now.** Playback plays straight through a
+   * repeat. Expanding it would break the identity that a playback tick *is* a
+   * score tick, which the caret, the following-scroll, "play from here" and
+   * the position scrubber all rest on — that needs a tick mapping threaded
+   * through all four, and it is deliberately a separate change.
+   */
+  repeatStart?: boolean;
+  repeatEnd?: boolean;
+  /**
+   * Which passes through a repeat this bar is played on — a volta.
+   *
+   * Carried on **every** bar of the ending, not just its first, so the bracket
+   * can be derived from runs of equal numbers rather than stored as a span.
+   * Deleting a bar out of a first ending then shortens the bracket instead of
+   * leaving one that points at nothing, the same reason a tuplet is derived.
+   *
+   * `[1]` is a first ending; `[1, 2]` is a bar played on both passes.
+   */
+  endingNumbers?: number[];
   /** Cue notes printed in this measure. Print-only. */
   cue?: MeasureCue;
 };
@@ -415,6 +442,10 @@ export const measureSchema = z.object({
   // Minimum 2, not 1: a count of one is not a multi-measure rest, and
   // rejecting it here stops a meaningless value reaching the renderer.
   multiMeasureRestCount: z.number().int().min(2).optional(),
+  repeatStart: z.boolean().optional(),
+  repeatEnd: z.boolean().optional(),
+  // Positive whole numbers: an ending is "1." or "1, 2.", never a zeroth pass.
+  endingNumbers: z.array(z.number().int().positive()).min(1).optional(),
   rehearsalMark: z.string().min(1).optional(),
   cue: z
     .object({ label: z.string().min(1), events: z.array(musicalEventSchema) })
