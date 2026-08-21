@@ -164,6 +164,21 @@ export type NoteEvent = {
   lyric?: Lyric;
   /** Ornaments played immediately before this note, in the order written. */
   graceNotes?: GraceNote[];
+  /**
+   * A chord symbol printed above the stave from this note, e.g. `Cmaj7`.
+   *
+   * Stored as the text a player reads rather than as a parsed root and
+   * quality. A lead sheet's vocabulary is wide and inconsistent — `C-7`,
+   * `Cmin7` and `Cm7` are one chord written three ways, and `F/A`, `Bb7#11`
+   * and `Cmaj7(add13)` all have to survive being typed — so keeping the string
+   * means nothing a player writes is refused or silently rewritten. Export
+   * parses the root out of it for MusicXML and carries the rest verbatim.
+   *
+   * Attached to a note, like a lyric, because that is where it is read from:
+   * the chord changes *at* a note. A change during a held note has to wait for
+   * the next onset, which is the one thing this shape cannot express.
+   */
+  chordSymbol?: string;
 };
 
 export type RestEvent = {
@@ -352,6 +367,7 @@ export const noteEventSchema = z
     dynamic: dynamicSchema.optional(),
     slurStart: z.boolean().optional(),
     slurStop: z.boolean().optional(),
+    chordSymbol: z.string().optional(),
     graceNotes: z
       .array(
         z.object({
