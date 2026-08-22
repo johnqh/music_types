@@ -526,6 +526,8 @@ export const measureSchema = z.object({
   cue: z
     .object({ label: z.string().min(1), events: z.array(musicalEventSchema) })
     .optional(),
+  clef: clefSchema.optional(),
+  pickup: z.boolean().optional(),
 });
 
 export const trackSchema = z.object({
