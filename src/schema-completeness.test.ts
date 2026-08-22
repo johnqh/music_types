@@ -34,6 +34,12 @@ const FULL_MEASURE: Measure = {
   endingNumbers: [1, 2],
   clef: 'bass',
   pickup: true,
+  barline: 'final',
+  segno: true,
+  coda: true,
+  toCoda: true,
+  fine: true,
+  jump: 'dal-segno-al-coda',
 };
 
 /** A note carrying every field a `NoteEvent` can have. */
@@ -56,6 +62,11 @@ const FULL_NOTE: NoteEvent = {
   hairpinStart: 'crescendo',
   hairpinStop: true,
   arpeggiate: true,
+  ottavaStart: '8va',
+  ottavaStop: true,
+  glissandoStart: true,
+  glissandoStop: true,
+  fingering: '3',
   lyric: { text: 'la', syllabic: 'begin' },
   graceNotes: [
     { pitch: { step: 'D', accidental: 0, octave: 4 }, durationTicks: 120, slashed: true },

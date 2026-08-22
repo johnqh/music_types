@@ -97,6 +97,47 @@ export type Ornament = 'trill' | 'mordent' | 'inverted-mordent' | 'turn';
 export type Hairpin = 'crescendo' | 'diminuendo';
 
 /**
+ * An octave-displacement bracket: play the written notes an octave (or two)
+ * away from where they sit.
+ *
+ * `8va`/`15ma` are above, `8vb`/`15mb` below. The model stores **sounding**
+ * pitch as it always has, so the bracket is purely a display instruction — it
+ * says "these were written an octave lower to keep them on the stave", and the
+ * display lens moves them there. That is the only way it can work here: a
+ * model that stored written pitch would make an ottava change what a note
+ * *sounds* like, which is the opposite of what the mark means.
+ */
+export type Ottava = '8va' | '8vb' | '15ma' | '15mb';
+
+/**
+ * The line drawn at the end of a bar, where it is not an ordinary single one.
+ *
+ * Only the two that carry meaning a reader acts on: `double` marks a section
+ * break, and `final` ends the piece. The repeat barlines are deliberately not
+ * in here — they live on `repeatStart`/`repeatEnd` because they are two
+ * independent flags rather than one choice, and a bar can both end a repeat
+ * and end the piece.
+ */
+export type BarlineStyle = 'double' | 'final';
+
+/**
+ * A jump instruction written at the end of a bar.
+ *
+ * The six a player actually meets. Each says two things — where to go back to
+ * (the start for a *capo*, the sign for a *segno*) and where to stop or leave
+ * (the end, `fine`, or the coda) — which is why they are one enum rather than
+ * a direction and a target composed separately: only these combinations are
+ * written, and the pairs that are not written should not be expressible.
+ */
+export type RepeatJump =
+  | 'da-capo'
+  | 'da-capo-al-fine'
+  | 'da-capo-al-coda'
+  | 'dal-segno'
+  | 'dal-segno-al-fine'
+  | 'dal-segno-al-coda';
+
+/**
  * A dynamic marking, from softest to loudest.
  *
  * Attached to the note it applies *from*, and in force until the next one on
@@ -229,6 +270,31 @@ export type NoteEvent = {
    */
   arpeggiate?: boolean;
   /**
+   * The ends of an octave bracket, shaped like the hairpin and the slur.
+   *
+   * The start carries the displacement; the stop only says where it closes.
+   */
+  ottavaStart?: Ottava;
+  ottavaStop?: boolean;
+  /**
+   * The ends of a slide between two notes.
+   *
+   * A span like a slur rather than a flag meaning "slide to the next note",
+   * so that an exported `<glissando type="start"/>`/`stop` pair round-trips as
+   * what it is, and so a slide across a rest cannot be expressed by accident.
+   */
+  glissandoStart?: boolean;
+  glissandoStop?: boolean;
+  /**
+   * The finger to play this note with.
+   *
+   * A string, not a number: piano writing uses `1`-`5`, guitar adds `T` for
+   * the thumb, and editions write `1-2` for a substitution. Storing what the
+   * engraver typed keeps all three, and nothing here needs to do arithmetic
+   * on it.
+   */
+  fingering?: string;
+  /**
    * The syllable sung on this note.
    *
    * On the note rather than in a parallel list because that is what a lyric
@@ -338,6 +404,30 @@ export type Measure = {
   endingNumbers?: number[];
   /** Cue notes printed in this measure. Print-only. */
   cue?: MeasureCue;
+  /**
+   * A heavier line at the end of this bar: a section break, or the end.
+   *
+   * Absent means the ordinary single barline, which is almost every bar — so
+   * the field is the exception rather than a value repeated on every measure.
+   */
+  barline?: BarlineStyle;
+  /**
+   * The navigation marks a player follows, each on the bar that carries it.
+   *
+   * `segno` and `coda` are *places* — the sign to come back to, and where the
+   * closing section begins. `toCoda` is the place you **leave** from on the
+   * way to the coda, which is a different bar from the coda itself and is why
+   * the two cannot be one flag. `fine` is where the piece ends on a later
+   * pass, which is usually not the last bar.
+   *
+   * `jump` is the *instruction*, and it sits on the bar at whose end it is
+   * obeyed. Everything else here is a target it may name.
+   */
+  segno?: boolean;
+  coda?: boolean;
+  toCoda?: boolean;
+  fine?: boolean;
+  jump?: RepeatJump;
   /**
    * Whether this bar is a pickup — an anacrusis, not counted in the numbering.
    *
@@ -481,6 +571,16 @@ export const tempoEventSchema = z.object({
 
 export const articulationSchema = z.enum(['staccato', 'accent', 'tenuto', 'marcato']);
 export const hairpinSchema = z.enum(['crescendo', 'diminuendo']);
+export const ottavaSchema = z.enum(['8va', '8vb', '15ma', '15mb']);
+export const barlineStyleSchema = z.enum(['double', 'final']);
+export const repeatJumpSchema = z.enum([
+  'da-capo',
+  'da-capo-al-fine',
+  'da-capo-al-coda',
+  'dal-segno',
+  'dal-segno-al-fine',
+  'dal-segno-al-coda',
+]);
 export const ornamentSchema = z.enum([
   'trill',
   'mordent',
@@ -511,6 +611,11 @@ export const noteEventSchema = z
     hairpinStart: hairpinSchema.optional(),
     hairpinStop: z.boolean().optional(),
     arpeggiate: z.boolean().optional(),
+    ottavaStart: ottavaSchema.optional(),
+    ottavaStop: z.boolean().optional(),
+    glissandoStart: z.boolean().optional(),
+    glissandoStop: z.boolean().optional(),
+    fingering: z.string().min(1).optional(),
     chordSymbol: z.string().optional(),
     graceNotes: z
       .array(
@@ -569,6 +674,12 @@ export const measureSchema = z.object({
     .optional(),
   clef: clefSchema.optional(),
   pickup: z.boolean().optional(),
+  barline: barlineStyleSchema.optional(),
+  segno: z.boolean().optional(),
+  coda: z.boolean().optional(),
+  toCoda: z.boolean().optional(),
+  fine: z.boolean().optional(),
+  jump: repeatJumpSchema.optional(),
 });
 
 export const trackSchema = z.object({
