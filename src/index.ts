@@ -301,6 +301,36 @@ export type Measure = {
   endingNumbers?: number[];
   /** Cue notes printed in this measure. Print-only. */
   cue?: MeasureCue;
+  /**
+   * Whether this bar is a pickup — an anacrusis, not counted in the numbering.
+   *
+   * A flag rather than "measure 0 is short", because those are different
+   * things: a short bar can also be a deliberate irregular bar mid-score, and
+   * a pickup is defined by *not being counted*. The bar after a pickup is
+   * bar 1, which is the whole visible consequence.
+   *
+   * Its shortness lives where it already did, in `durationTicks` — a `Measure`
+   * has always carried its own length independently of its time signature, so
+   * validation (which sums voices against `durationTicks`) needed no change.
+   *
+   * This is MusicXML's `implicit="yes"`, which is the same idea.
+   */
+  pickup?: boolean;
+  /**
+   * A clef change taking effect at this measure.
+   *
+   * Absent means "carry on with whatever is in force" — the previous measure's
+   * change, or `Track.clef` if none has happened yet. Storing only the
+   * *changes* rather than a clef on every bar is what makes the common case
+   * (a part that never changes clef) identical to what it was before this
+   * existed, and it means inserting or deleting a bar cannot silently strand a
+   * clef that was only ever inherited.
+   *
+   * Keyboard, cello and bassoon parts are unreadable without this: a piano
+   * left hand crosses into treble constantly, and before this the whole track
+   * had one clef and an imported change was dropped.
+   */
+  clef?: Clef;
 };
 
 export type Track = {
