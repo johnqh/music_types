@@ -34,6 +34,8 @@ export * from "./model/score.js";
 export * from "./model/schemas.js";
 export * from "./model/generation.js";
 export * from "./model/api.js";
+export * from "./model/position.js";
+export * from "./model/selection-source.js";
 
 // ---------------------------------------------------------------------------
 // 10. Platform interfaces (implementations live in @sudobility/music_io)
