@@ -5,21 +5,21 @@
  * selection to full measures), and turns an accepted candidate back into a
  * single undoable `ScoreCommand`.
  */
-import { findTrack } from '../../domain/score/queries.js';
-import type { Score } from '../../index.js';
-import { selectionToRange } from '../../domain/selection/selection.js';
+import { findTrack } from "../../domain/score/queries.js";
+import type { Score } from "../../index.js";
+import { selectionToRange } from "../../domain/selection/selection.js";
 import type {
   ScoreRange,
   ScoreSelection,
-} from '../../domain/selection/types.js';
-import { extractFragment } from '../../domain/score/fragment.js';
-import { replaceRegionCommand } from '../../domain/commands/region-commands.js';
-import type { ScoreCommand } from '../../domain/commands/types.js';
+} from "../../domain/selection/types.js";
+import { extractFragment } from "../../domain/score/fragment.js";
+import { replaceRegionCommand } from "../../domain/commands/region-commands.js";
+import type { ScoreCommand } from "../../domain/commands/types.js";
 import type {
   RegenerateRegionRequest,
   RegenerationCandidate,
   RegenerationConstraints,
-} from '../../index.js';
+} from "../../index.js";
 
 /**
  * One, always. Generation is a background job now: nobody is present to pick
@@ -33,13 +33,13 @@ export type PrepareRegenerationOptions = {
   constraints?: Partial<
     Omit<
       RegenerationConstraints,
-      'preserveMeasureCount' | 'preserveTimeSignatures' | 'preserveTempoEvents'
+      "preserveMeasureCount" | "preserveTimeSignatures" | "preserveTempoEvents"
     >
   >;
   /** Same three dials whole-score generation has; the prompt builder emits them identically. */
   style?: string;
   mood?: string;
-  complexity?: 'simple' | 'moderate' | 'complex';
+  complexity?: "simple" | "moderate" | "complex";
   /**
    * Whether `range` sits on measure boundaries. Drives `preserveMeasureCount`,
    * which says nothing about a sub-measure span and only muddies the prompt.
@@ -68,7 +68,7 @@ export type PreparedRegenerationRequest = RegenerateRegionRequest & {
  */
 function rawTickExtent(
   score: Score,
-  sel: ScoreSelection
+  sel: ScoreSelection,
 ): { start: number; end: number } | null {
   let min = Infinity;
   let max = -Infinity;
@@ -96,12 +96,12 @@ function rawTickExtent(
 
 function findEventTicks(
   score: Score,
-  eventId: string
+  eventId: string,
 ): { start: number; end: number } | null {
   for (const track of score.tracks) {
     for (const measure of track.measures) {
       for (const voice of measure.voices) {
-        const event = voice.events.find(e => e.id === eventId);
+        const event = voice.events.find((e) => e.id === eventId);
         if (event)
           return {
             start: event.startTick,
@@ -115,10 +115,10 @@ function findEventTicks(
 
 function findMeasureTicks(
   score: Score,
-  measureId: string
+  measureId: string,
 ): { start: number; end: number } | null {
   for (const track of score.tracks) {
-    const measure = track.measures.find(m => m.id === measureId);
+    const measure = track.measures.find((m) => m.id === measureId);
     if (measure)
       return {
         start: measure.startTick,
@@ -132,17 +132,17 @@ function findMeasureTicks(
 function precedingContextRange(
   score: Score,
   range: ScoreRange,
-  maxMeasures: number
+  maxMeasures: number,
 ): ScoreRange {
   const trackIds =
-    range.trackIds.length > 0 ? range.trackIds : score.tracks.map(t => t.id);
+    range.trackIds.length > 0 ? range.trackIds : score.tracks.map((t) => t.id);
   let earliestStart = range.startTick;
 
   for (const trackId of trackIds) {
     const track = findTrack(score, trackId);
     if (!track) continue;
     const priorMeasures = track.measures
-      .filter(m => m.startTick < range.startTick)
+      .filter((m) => m.startTick < range.startTick)
       .slice(-maxMeasures);
     if (priorMeasures.length > 0) {
       earliestStart = Math.min(earliestStart, priorMeasures[0].startTick);
@@ -160,17 +160,17 @@ function precedingContextRange(
 function followingContextRange(
   score: Score,
   range: ScoreRange,
-  maxMeasures: number
+  maxMeasures: number,
 ): ScoreRange {
   const trackIds =
-    range.trackIds.length > 0 ? range.trackIds : score.tracks.map(t => t.id);
+    range.trackIds.length > 0 ? range.trackIds : score.tracks.map((t) => t.id);
   let latestEnd = range.endTick;
 
   for (const trackId of trackIds) {
     const track = findTrack(score, trackId);
     if (!track) continue;
     const nextMeasures = track.measures
-      .filter(m => m.startTick >= range.endTick)
+      .filter((m) => m.startTick >= range.endTick)
       .slice(0, maxMeasures);
     if (nextMeasures.length > 0) {
       const last = nextMeasures[nextMeasures.length - 1];
@@ -198,12 +198,12 @@ export function prepareRegenerationRequest(
   score: Score,
   selection: ScoreSelection,
   instruction: string,
-  options: PrepareRegenerationOptions = {}
+  options: PrepareRegenerationOptions = {},
 ): PreparedRegenerationRequest {
   const alignedRange = selectionToRange(score, selection);
   if (!alignedRange) {
     throw new Error(
-      'prepareRegenerationRequest: selection has no resolvable tick range.'
+      "prepareRegenerationRequest: selection has no resolvable tick range.",
     );
   }
 
@@ -238,16 +238,16 @@ export function prepareRegenerationRequestForRange(
   score: Score,
   range: ScoreRange,
   instruction: string,
-  options: PrepareRegenerationOptions = {}
+  options: PrepareRegenerationOptions = {},
 ): PreparedRegenerationRequest {
   const selectedFragment = extractFragment(score, range);
   const precedingContext = extractFragment(
     score,
-    precedingContextRange(score, range, CONTEXT_MEASURE_LIMIT)
+    precedingContextRange(score, range, CONTEXT_MEASURE_LIMIT),
   );
   const followingContext = extractFragment(
     score,
-    followingContextRange(score, range, CONTEXT_MEASURE_LIMIT)
+    followingContextRange(score, range, CONTEXT_MEASURE_LIMIT),
   );
 
   const constraints: RegenerationConstraints = {
@@ -287,15 +287,15 @@ export function prepareRegenerationRequestForRange(
  */
 export function applyCandidate(
   score: Score,
-  candidate: RegenerationCandidate
+  candidate: RegenerationCandidate,
 ): ScoreCommand {
   const { range } = candidate.fragment;
   const missingTrackId = range.trackIds.find(
-    id => findTrack(score, id) === null
+    (id) => findTrack(score, id) === null,
   );
   if (missingTrackId) {
     throw new Error(
-      `applyCandidate: candidate references track "${missingTrackId}", which is not present in the score.`
+      `applyCandidate: candidate references track "${missingTrackId}", which is not present in the score.`,
     );
   }
   return replaceRegionCommand(range, candidate.fragment);

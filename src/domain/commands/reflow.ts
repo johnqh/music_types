@@ -3,9 +3,9 @@
  * and structure-editing command factories (Task 5 brief). Every function
  * here returns new objects; none mutate their inputs.
  */
-import { createId } from '../score/ids.js';
-import { findEvent } from '../score/queries.js';
-import { tieChainFor } from '../score/ties.js';
+import { createId } from "../score/ids.js";
+import { findEvent } from "../score/queries.js";
+import { tieChainFor } from "../score/ties.js";
 import type {
   Measure,
   MusicalEvent,
@@ -14,9 +14,9 @@ import type {
   ScoreMetadata,
   Track,
   UUID,
-} from '../../index.js';
-import { isNoteEvent } from '../../index.js';
-import { pitchToMidi } from '../pitch/pitch.js';
+} from "../../index.js";
+import { isNoteEvent } from "../../index.js";
+import { pitchToMidi } from "../pitch/pitch.js";
 
 /** Returns `metadata` with `updatedAt` refreshed to now. */
 export function touchMetadata(metadata: ScoreMetadata): ScoreMetadata {
@@ -54,7 +54,7 @@ export function withTracks(score: Score, tracks: Track[]): Score {
  */
 export function clearDanglingTies(
   score: Score,
-  eventIds: ReadonlySet<UUID>
+  eventIds: ReadonlySet<UUID>,
 ): Score {
   const clears = new Map<
     UUID,
@@ -67,7 +67,7 @@ export function clearDanglingTies(
       continue;
 
     const chain = tieChainFor(score, id);
-    const index = chain.findIndex(n => n.id === id);
+    const index = chain.findIndex((n) => n.id === id);
     if (index === -1) continue;
 
     if (note.tieStop && index > 0) {
@@ -92,10 +92,10 @@ export function clearDanglingTies(
 
   if (clears.size === 0) return score;
 
-  const tracks = score.tracks.map(track => {
-    const measures = track.measures.map(measure => {
-      const voices = measure.voices.map(voice => {
-        const events = voice.events.map(event => {
+  const tracks = score.tracks.map((track) => {
+    const measures = track.measures.map((measure) => {
+      const voices = measure.voices.map((voice) => {
+        const events = voice.events.map((event) => {
           const clear = clears.get(event.id);
           if (!clear || !isNoteEvent(event)) return event;
           const updated: NoteEvent = { ...event };
@@ -121,7 +121,7 @@ type Interval = { start: number; end: number };
 /** `target` minus every interval in `claimed` (assumed pairwise disjoint), as the remaining disjoint pieces. */
 function subtractIntervals(
   target: Interval,
-  claimed: readonly Interval[]
+  claimed: readonly Interval[],
 ): Interval[] {
   let pieces: Interval[] = [target];
   for (const c of claimed) {
@@ -136,7 +136,7 @@ function subtractIntervals(
       if (c.end < p.end)
         next.push({ start: Math.max(c.end, p.start), end: p.end });
     }
-    pieces = next.filter(iv => iv.end > iv.start);
+    pieces = next.filter((iv) => iv.end > iv.start);
   }
   return pieces;
 }
@@ -233,7 +233,7 @@ function resolveOverlaps(originalNotes: readonly NoteEvent[]): NoteEvent[] {
   });
 
   const orderedByPriorityDesc = [...clusters.values()].sort(
-    (a, b) => b.priority - a.priority
+    (a, b) => b.priority - a.priority,
   );
   const claimed: Interval[] = [];
   const placed: NoteEvent[] = [];
@@ -278,9 +278,9 @@ function resolveOverlaps(originalNotes: readonly NoteEvent[]): NoteEvent[] {
 export function reflowVoice(
   measure: Measure,
   voiceId: UUID,
-  trackId: UUID
+  trackId: UUID,
 ): Measure {
-  const voiceIndex = measure.voices.findIndex(v => v.id === voiceId);
+  const voiceIndex = measure.voices.findIndex((v) => v.id === voiceId);
   if (voiceIndex === -1) return measure;
   const voice = measure.voices[voiceIndex];
 
@@ -307,7 +307,7 @@ export function reflowVoice(
       });
   }
   const groups = [...groupsByKey.values()].sort(
-    (a, b) => a.startTick - b.startTick
+    (a, b) => a.startTick - b.startTick,
   );
 
   const events: MusicalEvent[] = [];
@@ -350,7 +350,7 @@ export function reflowVoice(
   }
 
   const voices = measure.voices.map((v, i) =>
-    i === voiceIndex ? { ...v, events } : v
+    i === voiceIndex ? { ...v, events } : v,
   );
   return { ...measure, voices };
 }
@@ -366,7 +366,7 @@ export function reflowVoice(
 export function ensureVoiceAtIndex(
   measure: Measure,
   voiceIndex: number,
-  trackId: UUID
+  trackId: UUID,
 ): Measure {
   if (measure.voices[voiceIndex]) return measure;
 
@@ -398,22 +398,22 @@ export function ensureVoiceAtIndex(
  */
 export function removeNotesFromTrack(
   track: Track,
-  eventIds: ReadonlySet<UUID>
+  eventIds: ReadonlySet<UUID>,
 ): Track {
-  const measures = track.measures.map(measure => {
+  const measures = track.measures.map((measure) => {
     let nextMeasure = measure;
     let changed = false;
 
     for (const voice of measure.voices) {
-      if (!voice.events.some(e => eventIds.has(e.id))) continue;
+      if (!voice.events.some((e) => eventIds.has(e.id))) continue;
       changed = true;
       const remainingNotes = voice.events
         .filter(isNoteEvent)
-        .filter(e => !eventIds.has(e.id));
+        .filter((e) => !eventIds.has(e.id));
       const withRemoved = {
         ...nextMeasure,
-        voices: nextMeasure.voices.map(v =>
-          v.id === voice.id ? { ...v, events: remainingNotes } : v
+        voices: nextMeasure.voices.map((v) =>
+          v.id === voice.id ? { ...v, events: remainingNotes } : v,
         ),
       };
       nextMeasure = reflowVoice(withRemoved, voice.id, track.id);
@@ -439,9 +439,9 @@ export function removeNotesFromTrack(
 export function insertNoteIntoTrack(
   track: Track,
   note: NoteEvent,
-  voiceIndex: number
+  voiceIndex: number,
 ): Track {
-  const measures = track.measures.map(measure => {
+  const measures = track.measures.map((measure) => {
     if (
       note.startTick < measure.startTick ||
       note.startTick >= measure.startTick + measure.durationTicks
@@ -463,7 +463,7 @@ export function insertNoteIntoTrack(
                 { ...note, voiceId: v.id, trackId: track.id },
               ],
             }
-          : v
+          : v,
       ),
     };
     return reflowVoice(withInserted, voice.id, track.id);

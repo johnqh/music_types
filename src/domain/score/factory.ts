@@ -1,4 +1,4 @@
-import { createId } from './ids.js';
+import { createId } from "./ids.js";
 import type {
   KeySignature,
   Measure,
@@ -6,15 +6,15 @@ import type {
   ScoreMetadata,
   TimeSignature,
   Track,
-} from '../../index.js';
-import { measureDurationTicks } from '../time/ticks.js';
+} from "../../index.js";
+import { measureDurationTicks } from "../time/ticks.js";
 
 const DEFAULT_PPQ = 480;
 const DEFAULT_TEMPO_BPM = 120;
 const DEFAULT_TIME_SIGNATURE: TimeSignature = { numerator: 4, denominator: 4 };
-const DEFAULT_KEY_SIGNATURE: KeySignature = { fifths: 0, mode: 'major' };
+const DEFAULT_KEY_SIGNATURE: KeySignature = { fifths: 0, mode: "major" };
 const DEFAULT_MEASURE_COUNT = 1;
-const DEFAULT_VOICE_NAME = 'Voice 1';
+const DEFAULT_VOICE_NAME = "Voice 1";
 
 export type CreateTrackOptions = Partial<Track> & { name: string };
 
@@ -23,10 +23,10 @@ export function createTrack(opts: CreateTrackOptions): Track {
   return {
     id: opts.id ?? createId(),
     name: opts.name,
-    instrumentName: opts.instrumentName ?? 'Piano',
+    instrumentName: opts.instrumentName ?? "Piano",
     midiProgram: opts.midiProgram ?? 0,
     midiChannel: opts.midiChannel ?? 0,
-    clef: opts.clef ?? 'treble',
+    clef: opts.clef ?? "treble",
     volume: opts.volume ?? 1,
     pan: opts.pan ?? 0,
     muted: opts.muted ?? false,
@@ -42,7 +42,7 @@ function buildRestMeasure(
   timeSignature: TimeSignature,
   keySignature: KeySignature,
   durationTicks: number,
-  trackId: string
+  trackId: string,
 ): Measure {
   const voiceId = createId();
   return {
@@ -70,7 +70,7 @@ function buildMeasures(
   timeSignature: TimeSignature,
   keySignature: KeySignature,
   ppq: number,
-  trackId: string
+  trackId: string,
 ): Measure[] {
   const durationTicks = measureDurationTicks(timeSignature, ppq);
   const measures: Measure[] = [];
@@ -82,8 +82,8 @@ function buildMeasures(
         timeSignature,
         keySignature,
         durationTicks,
-        trackId
-      )
+        trackId,
+      ),
     );
   }
   return measures;
@@ -110,10 +110,10 @@ export function createEmptyScore(opts: CreateEmptyScoreOptions): Score {
   const keySignature = opts.keySignature ?? DEFAULT_KEY_SIGNATURE;
   const measureCount = opts.measures ?? DEFAULT_MEASURE_COUNT;
   const trackOptions = opts.tracks ?? [
-    { name: 'Piano', instrumentName: 'Piano', clef: 'treble' as const },
+    { name: "Piano", instrumentName: "Piano", clef: "treble" as const },
   ];
 
-  const tracks = trackOptions.map(trackOpts => {
+  const tracks = trackOptions.map((trackOpts) => {
     const track = createTrack(trackOpts);
     return {
       ...track,
@@ -122,7 +122,7 @@ export function createEmptyScore(opts: CreateEmptyScoreOptions): Score {
         timeSignature,
         keySignature,
         ppq,
-        track.id
+        track.id,
       ),
     };
   });
@@ -152,7 +152,7 @@ export function createEmptyScore(opts: CreateEmptyScoreOptions): Score {
  * (falling back to 4/4 C major for a track with no existing measures).
  */
 export function appendMeasure(score: Score): Score {
-  const tracks = score.tracks.map(track => {
+  const tracks = score.tracks.map((track) => {
     const lastMeasure = track.measures[track.measures.length - 1] as
       Measure | undefined;
     const timeSignature = lastMeasure?.timeSignature ?? DEFAULT_TIME_SIGNATURE;
@@ -167,7 +167,7 @@ export function appendMeasure(score: Score): Score {
       timeSignature,
       keySignature,
       durationTicks,
-      track.id
+      track.id,
     );
     return { ...track, measures: [...track.measures, newMeasure] };
   });
@@ -188,7 +188,7 @@ export function appendMeasure(score: Score): Score {
  * (referentially equal) so unaffected structure is preserved.
  */
 export function rebuildMeasureTicks(score: Score): Score {
-  const tracks = score.tracks.map(track => {
+  const tracks = score.tracks.map((track) => {
     let cursor = 0;
     const measures = track.measures.map((measure, index) => {
       const startTick = cursor;
@@ -202,9 +202,9 @@ export function rebuildMeasureTicks(score: Score): Score {
       const voices =
         delta === 0
           ? measure.voices
-          : measure.voices.map(voice => ({
+          : measure.voices.map((voice) => ({
               ...voice,
-              events: voice.events.map(event => ({
+              events: voice.events.map((event) => ({
                 ...event,
                 startTick: event.startTick + delta,
               })),

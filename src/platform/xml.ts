@@ -17,7 +17,7 @@ export interface XmlElement {
 export class XmlParseError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'XmlParseError';
+    this.name = "XmlParseError";
   }
 }
 

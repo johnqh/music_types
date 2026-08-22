@@ -4,19 +4,21 @@
  * import (`importScoreCommand`), both as a single undoable command per
  * spec §12 item 13 / §15.
  */
-import { current } from 'immer';
-import { replaceFragment } from '../score/fragment.js';
-import type { ScoreFragment } from '../score/fragment.js';
-import type { ScoreRange } from '../selection/types.js';
-import type { Score } from '../../index.js';
-import type { ScoreCommand } from './types.js';
-import { snapshotCommand } from './snapshot.js';
+import { current } from "immer";
+import { replaceFragment } from "../score/fragment.js";
+import type { ScoreFragment } from "../score/fragment.js";
+import type { ScoreRange } from "../selection/types.js";
+import type { Score } from "../../index.js";
+import type { ScoreCommand } from "./types.js";
+import { snapshotCommand } from "./snapshot.js";
 
 /** 1-based inclusive [min, max] measure index label span across every track in `fragment`, or `null` if it has no measures. */
 function measureIndexSpan(
-  fragment: ScoreFragment
+  fragment: ScoreFragment,
 ): { first: number; last: number } | null {
-  const indices = fragment.tracks.flatMap(t => t.measures.map(m => m.index));
+  const indices = fragment.tracks.flatMap((t) =>
+    t.measures.map((m) => m.index),
+  );
   if (indices.length === 0) return null;
   return { first: Math.min(...indices) + 1, last: Math.max(...indices) + 1 };
 }
@@ -32,15 +34,15 @@ function measureIndexSpan(
  */
 export function replaceRegionCommand(
   range: ScoreRange,
-  newFragment: ScoreFragment
+  newFragment: ScoreFragment,
 ): ScoreCommand {
   const fragment: ScoreFragment = { ...newFragment, range };
   const span = measureIndexSpan(fragment);
   const label = span
     ? `Regenerate measures ${span.first}–${span.last}`
-    : 'Regenerate measures';
+    : "Regenerate measures";
 
-  return snapshotCommand(label, draft => {
+  return snapshotCommand(label, (draft) => {
     const next = replaceFragment(current(draft) as Score, fragment);
     Object.assign(draft, next);
   });
@@ -53,9 +55,9 @@ export function replaceRegionCommand(
  */
 export function importScoreCommand(
   newScore: Score,
-  label: string
+  label: string,
 ): ScoreCommand {
-  return snapshotCommand(label, draft => {
+  return snapshotCommand(label, (draft) => {
     Object.assign(draft, newScore);
   });
 }

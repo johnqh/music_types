@@ -1,5 +1,5 @@
-import type { KeySignature, Pitch, PitchStep } from '../../index.js';
-import { midiToPitch, pitchToMidi } from './pitch.js';
+import type { KeySignature, Pitch, PitchStep } from "../../index.js";
+import { midiToPitch, pitchToMidi } from "./pitch.js";
 
 /**
  * Transposes a pitch by a number of semitones (may be negative), re-spelling
@@ -8,7 +8,7 @@ import { midiToPitch, pitchToMidi } from './pitch.js';
 export function transposePitch(
   p: Pitch,
   semitones: number,
-  key?: KeySignature
+  key?: KeySignature,
 ): Pitch {
   return midiToPitch(pitchToMidi(p) + semitones, key);
 }
@@ -22,7 +22,7 @@ export function transposeDiatonicOctave(p: Pitch, octaves: number): Pitch {
 }
 
 /** The seven letter names, in order, for diatonic movement. */
-const STEPS: readonly PitchStep[] = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+const STEPS: readonly PitchStep[] = ["C", "D", "E", "F", "G", "A", "B"];
 
 /**
  * Moves `p` by `steps` positions on the staff — one step per line-to-adjacent-
@@ -62,7 +62,7 @@ export function shiftDiatonic(p: Pitch, steps: number): Pitch {
  */
 export function transposeKeySignature(
   key: KeySignature,
-  semitones: number
+  semitones: number,
 ): KeySignature {
   const raw = (((semitones * 7) % 12) + 12) % 12;
   const delta = raw > 6 ? raw - 12 : raw;

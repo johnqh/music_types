@@ -7,13 +7,15 @@ import {
   appendMeasure,
   createTrack,
   rebuildMeasureTicks,
-} from '../score/factory.js';
-import { gmKitAt } from '../instruments/gm-kit.js';
-import { gmInstrument } from '../instruments/gm.js';
-import type { CreateTrackOptions } from '../score/factory.js';
-import { createId } from '../score/ids.js';
-import { measureDurationTicks } from '../time/ticks.js';
+} from "../score/factory.js";
+import { gmKitAt } from "../instruments/gm-kit.js";
+import { gmInstrument } from "../instruments/gm.js";
+import type { CreateTrackOptions } from "../score/factory.js";
+import { createId } from "../score/ids.js";
+import { clefAtMeasure } from "../score/effective-clef.js";
+import { beatDurationTicks, measureDurationTicks } from "../time/ticks.js";
 import type {
+  BarlineStyle,
   Clef,
   KeySignature,
   Measure,
@@ -23,21 +25,21 @@ import type {
   TimeSignature,
   Track,
   UUID,
-} from '../../index.js';
-import type { CommandKind, ScoreCommand } from './types.js';
-import { transformCommand } from './snapshot.js';
-import { reflowVoice, touchMetadata, withTracks } from './reflow.js';
+} from "../../index.js";
+import type { CommandKind, ScoreCommand } from "./types.js";
+import { transformCommand } from "./snapshot.js";
+import { reflowVoice, touchMetadata, withTracks } from "./reflow.js";
 
 // ---- addMeasureCommand / deleteMeasureCommand ----------------------------------
 
 /** Appends one fully-rested measure to every track (reuses Task 3's `appendMeasure`). */
 export function addMeasureCommand(label: string): ScoreCommand {
-  return transformCommand(label, score => appendMeasure(score));
+  return transformCommand(label, (score) => appendMeasure(score));
 }
 
 function deleteMeasure(score: Score, measureIndex: number): Score {
-  const tracks = score.tracks.map(track => {
-    const filtered = track.measures.filter(m => m.index !== measureIndex);
+  const tracks = score.tracks.map((track) => {
+    const filtered = track.measures.filter((m) => m.index !== measureIndex);
     return filtered.length === track.measures.length
       ? track
       : { ...track, measures: filtered };
@@ -48,9 +50,9 @@ function deleteMeasure(score: Score, measureIndex: number): Score {
 /** Removes the measure at `measureIndex` from every track, retracking subsequent measures' ticks. */
 export function deleteMeasureCommand(
   measureIndex: number,
-  label: string
+  label: string,
 ): ScoreCommand {
-  return transformCommand(label, score => deleteMeasure(score, measureIndex));
+  return transformCommand(label, (score) => deleteMeasure(score, measureIndex));
 }
 
 // ---- addTrackCommand / deleteTrackCommand --------------------------------------
@@ -68,7 +70,7 @@ export function restMeasureLike(reference: Measure, trackId: UUID): Measure {
     voices: [
       {
         id: voiceId,
-        name: 'Voice 1',
+        name: "Voice 1",
         events: [
           {
             id: createId(),
@@ -87,7 +89,7 @@ function addTrack(score: Score, options: CreateTrackOptions): Score {
   const track = createTrack(options);
   const referenceTrack = score.tracks[0];
   const measures = referenceTrack
-    ? referenceTrack.measures.map(m => restMeasureLike(m, track.id))
+    ? referenceTrack.measures.map((m) => restMeasureLike(m, track.id))
     : [];
   return {
     ...score,
@@ -99,19 +101,19 @@ function addTrack(score: Score, options: CreateTrackOptions): Score {
 /** Adds a new track, fully-rested with the same measure layout (count/signatures) as the score's first existing track. */
 export function addTrackCommand(
   options: CreateTrackOptions,
-  label: string
+  label: string,
 ): ScoreCommand {
-  return transformCommand(label, score => addTrack(score, options));
+  return transformCommand(label, (score) => addTrack(score, options));
 }
 
 function deleteTrack(score: Score, trackId: UUID): Score {
-  const tracks = score.tracks.filter(t => t.id !== trackId);
+  const tracks = score.tracks.filter((t) => t.id !== trackId);
   return withTracks(score, tracks);
 }
 
 /** Removes the track with id `trackId`. */
 export function deleteTrackCommand(trackId: UUID, label: string): ScoreCommand {
-  return transformCommand(label, score => deleteTrack(score, trackId));
+  return transformCommand(label, (score) => deleteTrack(score, trackId));
 }
 
 // ---- changeTimeSignatureCommand / changeKeySignatureCommand -------------------
@@ -119,10 +121,10 @@ export function deleteTrackCommand(trackId: UUID, label: string): ScoreCommand {
 function changeTimeSignature(
   score: Score,
   measureId: UUID,
-  timeSignature: TimeSignature
+  timeSignature: TimeSignature,
 ): Score {
-  const tracks = score.tracks.map(track => {
-    const index = track.measures.findIndex(m => m.id === measureId);
+  const tracks = score.tracks.map((track) => {
+    const index = track.measures.findIndex((m) => m.id === measureId);
     if (index === -1) return track;
 
     const measure = track.measures[index];
@@ -150,20 +152,88 @@ function changeTimeSignature(
 export function changeTimeSignatureCommand(
   measureId: UUID,
   timeSignature: TimeSignature,
-  label: string
+  label: string,
 ): ScoreCommand {
-  return transformCommand(label, score =>
-    changeTimeSignature(score, measureId, timeSignature)
+  return transformCommand(label, (score) =>
+    changeTimeSignature(score, measureId, timeSignature),
+  );
+}
+
+/**
+ * Sets the repeat barlines and volta numbers on a bar.
+ *
+ * Applied at the same **measure index** across every track, not just the one
+ * whose id was given: a repeat is a property of the piece's structure, and a
+ * `:|` printed on the top stave but not the others would be a score that reads
+ * differently depending on which part you play from.
+ *
+ * A patch rather than three commands, because the Measure tab sets them
+ * together and each one alone would be its own undo entry.
+ */
+export type RepeatPatch = {
+  repeatStart?: boolean;
+  repeatEnd?: boolean;
+  endingNumbers?: number[];
+};
+
+function changeRepeats(
+  score: Score,
+  measureId: UUID,
+  patch: RepeatPatch,
+): Score {
+  const index = score.tracks
+    .map((track) => track.measures.findIndex((m) => m.id === measureId))
+    .find((i) => i !== -1);
+  if (index === undefined || index === -1) return score;
+
+  const tracks = score.tracks.map((track) => {
+    const measure = track.measures[index];
+    if (!measure) return track;
+
+    const updated: Measure = { ...measure };
+    // Absent means "no repeat here", so a false or an empty list removes the
+    // field rather than storing a marking that prints nothing.
+    if (patch.repeatStart === undefined) {
+      // untouched
+    } else if (patch.repeatStart) updated.repeatStart = true;
+    else delete updated.repeatStart;
+
+    if (patch.repeatEnd === undefined) {
+      // untouched
+    } else if (patch.repeatEnd) updated.repeatEnd = true;
+    else delete updated.repeatEnd;
+
+    if (patch.endingNumbers !== undefined) {
+      if (patch.endingNumbers.length > 0)
+        updated.endingNumbers = [...patch.endingNumbers].sort((a, b) => a - b);
+      else delete updated.endingNumbers;
+    }
+
+    const measures = track.measures.slice();
+    measures[index] = updated;
+    return { ...track, measures };
+  });
+
+  return withTracks(score, tracks);
+}
+
+export function changeRepeatsCommand(
+  measureId: UUID,
+  patch: RepeatPatch,
+  label: string,
+): ScoreCommand {
+  return transformCommand(label, (score) =>
+    changeRepeats(score, measureId, patch),
   );
 }
 
 function changeKeySignature(
   score: Score,
   measureId: UUID,
-  keySignature: KeySignature
+  keySignature: KeySignature,
 ): Score {
-  const tracks = score.tracks.map(track => {
-    const index = track.measures.findIndex(m => m.id === measureId);
+  const tracks = score.tracks.map((track) => {
+    const index = track.measures.findIndex((m) => m.id === measureId);
     if (index === -1) return track;
     const measures = track.measures.slice();
     measures[index] = { ...measures[index], keySignature };
@@ -176,18 +246,18 @@ function changeKeySignature(
 export function changeKeySignatureCommand(
   measureId: UUID,
   keySignature: KeySignature,
-  label: string
+  label: string,
 ): ScoreCommand {
-  return transformCommand(label, score =>
-    changeKeySignature(score, measureId, keySignature)
+  return transformCommand(label, (score) =>
+    changeKeySignature(score, measureId, keySignature),
   );
 }
 
 // ---- changeClefCommand -----------------------------------------------------------
 
 function changeClef(score: Score, trackId: UUID, clef: Clef): Score {
-  const tracks = score.tracks.map(t =>
-    t.id === trackId ? { ...t, clef, ...programForClef(t, clef) } : t
+  const tracks = score.tracks.map((t) =>
+    t.id === trackId ? { ...t, clef, ...programForClef(t, clef) } : t,
   );
   return withTracks(score, tracks);
 }
@@ -204,8 +274,8 @@ function changeClef(score: Score, trackId: UUID, clef: Clef): Score {
  * describes the sound and so has to follow it.
  */
 function programForClef(track: Track, clef: Clef): Partial<Track> {
-  const wasPercussion = track.clef === 'percussion';
-  const isPercussion = clef === 'percussion';
+  const wasPercussion = track.clef === "percussion";
+  const isPercussion = clef === "percussion";
   if (wasPercussion === isPercussion) return {};
   if (isPercussion) {
     const kit = gmKitAt(track.midiProgram);
@@ -214,7 +284,7 @@ function programForClef(track: Track, clef: Clef): Partial<Track> {
   const instrument = gmInstrument(0);
   return {
     midiProgram: 0,
-    instrumentName: instrument?.name ?? 'Acoustic Grand Piano',
+    instrumentName: instrument?.name ?? "Acoustic Grand Piano",
   };
 }
 
@@ -222,9 +292,215 @@ function programForClef(track: Track, clef: Clef): Partial<Track> {
 export function changeClefCommand(
   trackId: UUID,
   clef: Clef,
-  label: string
+  label: string,
 ): ScoreCommand {
-  return transformCommand(label, score => changeClef(score, trackId, clef));
+  return transformCommand(label, (score) => changeClef(score, trackId, clef));
+}
+
+/**
+ * Sets or clears a clef change at one measure of one track.
+ *
+ * Per **track**, unlike `changeRepeatsCommand`, which applies at the same index
+ * across every track: a repeat barline that differed between staves would be a
+ * score that reads differently depending on which part you play from, but a
+ * clef change is exactly the opposite — a piano left hand crossing into treble
+ * says nothing about what the right hand is doing.
+ *
+ * `undefined` removes the change, so the bar goes back to inheriting. Setting
+ * the clef already in force at that bar removes it too, rather than storing a
+ * marking that would print nothing: `clefChangesAt` treats a redundant one as
+ * no change, and leaving it behind would make "clear" and "set to the current
+ * clef" produce different scores that look identical.
+ *
+ * Measure 0 is where a clef is *established* rather than changed, so it writes
+ * the **track** clef instead — which is what keeps one clef per track true for
+ * a part that never changes, and stops bar 1 printing a change against nothing.
+ */
+export function changeMeasureClefCommand(
+  trackId: UUID,
+  measureIndex: number,
+  clef: Clef | undefined,
+  label: string,
+): ScoreCommand {
+  return transformCommand(label, (score) => {
+    const track = score.tracks.find((t) => t.id === trackId);
+    if (!track || measureIndex < 0 || measureIndex >= track.measures.length) {
+      return score;
+    }
+
+    // Bar 0 sets the part's clef, and goes through `changeClef` so a crossing
+    // into or out of percussion still reinterprets the program.
+    if (measureIndex === 0) {
+      return clef ? changeClef(score, trackId, clef) : score;
+    }
+
+    const inherited = clefAtMeasure(
+      track.measures,
+      measureIndex - 1,
+      track.clef,
+    );
+    const measures = track.measures.map((measure, i) => {
+      if (i !== measureIndex) return measure;
+      if (!clef || clef === inherited) {
+        if (measure.clef === undefined) return measure;
+        const next = { ...measure };
+        delete next.clef;
+        return next;
+      }
+      return { ...measure, clef };
+    });
+
+    return {
+      ...score,
+      tracks: score.tracks.map((t) =>
+        t.id === trackId ? { ...t, measures } : t,
+      ),
+    };
+  });
+}
+
+/**
+ * Turns the score's first bar into a pickup of `beats` beats, or removes the
+ * pickup and restores a full bar.
+ *
+ * Only the first bar, because that is what an anacrusis is — the run-up to bar
+ * 1. A short bar anywhere else is an irregular bar, which keeps its number and
+ * is a different thing entirely.
+ *
+ * Applies to **every track**, like `changeRepeatsCommand` and unlike the clef:
+ * the measure grid is shared, and a pickup on one stave and not the others is
+ * a score whose parts disagree about where bar 1 starts.
+ *
+ * Notes that no longer fit are dropped rather than the bar refusing to shrink:
+ * a pickup is normally set before anything is written, and silently keeping a
+ * note past the barline would leave the bar failing validation.
+ */
+export function setPickupCommand(
+  beats: number | null,
+  label: string,
+): ScoreCommand {
+  return transformCommand(label, (score) => {
+    const first = score.tracks[0]?.measures[0];
+    if (!first) return score;
+
+    const beatTicks = beatDurationTicks(first.timeSignature, score.ppq);
+    const full = measureDurationTicks(first.timeSignature, score.ppq);
+    const wanted =
+      beats === null
+        ? full
+        : Math.max(1, Math.min(Math.round(beats) * beatTicks, full - 1));
+
+    const tracks = score.tracks.map((track) => {
+      const measure = track.measures[0];
+      if (!measure) return track;
+      const trimmed: Measure = {
+        ...measure,
+        durationTicks: wanted,
+        voices: measure.voices.map((voice) => ({
+          ...voice,
+          events: voice.events
+            .filter((e) => e.startTick - measure.startTick < wanted)
+            .map((e) => ({
+              ...e,
+              durationTicks: Math.min(
+                e.durationTicks,
+                measure.startTick + wanted - e.startTick,
+              ),
+            })),
+        })),
+      };
+      if (beats === null) delete trimmed.pickup;
+      else trimmed.pickup = true;
+      return { ...track, measures: [trimmed, ...track.measures.slice(1)] };
+    });
+
+    // Every following bar shifts, since bar 0 changed length.
+    return rebuildMeasureTicks({ ...score, tracks });
+  });
+}
+
+/**
+ * Sets or clears the heavier barline at the end of one bar.
+ *
+ * Applies at the same measure **index across every track**, like
+ * `changeRepeatsCommand` and for the same reason: a double bar on one stave
+ * and not the others is a score that reads differently depending on which part
+ * you play from.
+ *
+ * `undefined` restores the ordinary single barline.
+ */
+export function changeBarlineCommand(
+  measureIndex: number,
+  barline: BarlineStyle | undefined,
+  label: string,
+): ScoreCommand {
+  return transformCommand(label, (score) => {
+    if (measureIndex < 0) return score;
+    return {
+      ...score,
+      tracks: score.tracks.map((track) => {
+        const measure = track.measures[measureIndex];
+        if (!measure) return track;
+        const next = { ...measure };
+        if (barline) next.barline = barline;
+        else delete next.barline;
+        return {
+          ...track,
+          measures: track.measures.map((m, i) =>
+            i === measureIndex ? next : m,
+          ),
+        };
+      }),
+    };
+  });
+}
+
+/** The navigation marks a bar can carry, as a partial patch. */
+export type NavigationPatch = Partial<
+  Pick<Measure, "segno" | "coda" | "toCoda" | "fine" | "jump">
+>;
+
+/**
+ * Sets or clears the navigation marks on one bar, across every track.
+ *
+ * Across every track like `changeRepeatsCommand`, and for the same reason: a
+ * D.S. on one stave and not the others is a score that navigates differently
+ * depending on which part you read from.
+ *
+ * A partial patch rather than a whole value, because the marks are
+ * independent: a bar can carry the coda sign and a `Fine`, and setting one
+ * must not silently clear another. `false`/`undefined` in the patch clears
+ * that mark; a key absent from the patch is left alone.
+ */
+export function changeNavigationCommand(
+  measureIndex: number,
+  patch: NavigationPatch,
+  label: string,
+): ScoreCommand {
+  return transformCommand(label, (score) => {
+    if (measureIndex < 0) return score;
+    return {
+      ...score,
+      tracks: score.tracks.map((track) => {
+        const measure = track.measures[measureIndex];
+        if (!measure) return track;
+        const next: Measure = { ...measure };
+        for (const [key, value] of Object.entries(patch)) {
+          if (value) {
+            (next as Record<string, unknown>)[key] = value;
+          } else {
+            delete (next as Record<string, unknown>)[key];
+          }
+        }
+        return {
+          ...track,
+          measures: track.measures.map((m, i) =>
+            i === measureIndex ? next : m,
+          ),
+        };
+      }),
+    };
+  });
 }
 
 // ---- changeTempoCommand -----------------------------------------------------------
@@ -237,10 +513,10 @@ export type ChangeTempoParams = {
 
 function changeTempo(score: Score, params: ChangeTempoParams): Score {
   const tempoMap: TempoEvent[] = params.tempoEventId
-    ? score.tempoMap.map(e =>
+    ? score.tempoMap.map((e) =>
         e.id === params.tempoEventId
           ? { ...e, tick: params.tick, bpm: params.bpm }
-          : e
+          : e,
       )
     : [
         ...score.tempoMap,
@@ -258,16 +534,41 @@ function changeTempo(score: Score, params: ChangeTempoParams): Score {
 /** Updates an existing tempo event (`tempoEventId` given) or inserts a new one, keeping `tempoMap` sorted by tick. */
 export function changeTempoCommand(
   params: ChangeTempoParams,
-  label: string
+  label: string,
 ): ScoreCommand {
-  return transformCommand(label, score => changeTempo(score, params));
+  return transformCommand(label, (score) => changeTempo(score, params));
+}
+
+/**
+ * Drops a tempo change.
+ *
+ * The first event is never removed: it is the score's starting tempo, and a
+ * score with an empty `tempoMap` has no tempo at all. Asking to remove it is a
+ * no-op rather than an error, because the only caller is a button that should
+ * simply not be offered there.
+ */
+function removeTempo(score: Score, tempoEventId: UUID): Score {
+  if (score.tempoMap.length <= 1 || score.tempoMap[0]?.id === tempoEventId)
+    return score;
+
+  const tempoMap = score.tempoMap.filter((e) => e.id !== tempoEventId);
+  if (tempoMap.length === score.tempoMap.length) return score;
+
+  return { ...score, tempoMap, metadata: touchMetadata(score.metadata) };
+}
+
+export function removeTempoCommand(
+  tempoEventId: UUID,
+  label: string,
+): ScoreCommand {
+  return transformCommand(label, (score) => removeTempo(score, tempoEventId));
 }
 
 // ---- changeMetadataCommand --------------------------------------------------------
 
 function changeMetadata(
   score: Score,
-  patch: Partial<Omit<ScoreMetadata, 'createdAt'>>
+  patch: Partial<Omit<ScoreMetadata, "createdAt">>,
 ): Score {
   return {
     ...score,
@@ -281,23 +582,23 @@ function changeMetadata(
 
 /** Patches score metadata (title/composer/description); `createdAt` is immutable, `updatedAt` is always refreshed. */
 export function changeMetadataCommand(
-  patch: Partial<Omit<ScoreMetadata, 'createdAt'>>,
-  label: string
+  patch: Partial<Omit<ScoreMetadata, "createdAt">>,
+  label: string,
 ): ScoreCommand {
-  return transformCommand(label, score => changeMetadata(score, patch));
+  return transformCommand(label, (score) => changeMetadata(score, patch));
 }
 
 // ---- changeTrackPropsCommand ------------------------------------------------------
 
-export type TrackPropsPatch = Partial<Omit<Track, 'id' | 'measures'>>;
+export type TrackPropsPatch = Partial<Omit<Track, "id" | "measures">>;
 
 function changeTrackProps(
   score: Score,
   trackId: UUID,
-  patch: TrackPropsPatch
+  patch: TrackPropsPatch,
 ): Score {
-  const tracks = score.tracks.map(t =>
-    t.id === trackId ? { ...t, ...patch } : t
+  const tracks = score.tracks.map((t) =>
+    t.id === trackId ? { ...t, ...patch } : t,
   );
   return withTracks(score, tracks);
 }
@@ -311,24 +612,24 @@ function changeTrackProps(
  * made here, where the patch is, rather than in a switch elsewhere that would
  * have to be kept in step with this list.
  */
-const MIX_PROPS = new Set<string>(['volume', 'pan', 'muted', 'solo']);
+const MIX_PROPS = new Set<string>(["volume", "pan", "muted", "solo"]);
 
 /** A patch is mix only if *every* key in it is. An empty patch changes nothing, so it counts as mix. */
 function trackPatchKind(patch: TrackPropsPatch): CommandKind {
-  return Object.keys(patch).every(key => MIX_PROPS.has(key))
-    ? 'mix'
-    : 'content';
+  return Object.keys(patch).every((key) => MIX_PROPS.has(key))
+    ? "mix"
+    : "content";
 }
 
 /** Patches a track's non-structural properties (name, instrument, MIDI program/channel, clef, volume, pan, mute, solo). */
 export function changeTrackPropsCommand(
   trackId: UUID,
   patch: TrackPropsPatch,
-  label: string
+  label: string,
 ): ScoreCommand {
   return transformCommand(
     label,
-    score => changeTrackProps(score, trackId, patch),
-    trackPatchKind(patch)
+    (score) => changeTrackProps(score, trackId, patch),
+    trackPatchKind(patch),
   );
 }

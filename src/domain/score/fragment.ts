@@ -1,19 +1,19 @@
-import { rebuildMeasureTicks } from './factory.js';
-import { measuresInRange } from './queries.js';
-import type { Measure, Score, ScoreFragment } from '../../index.js';
-import type { ScoreRange } from '../selection/types.js';
+import { rebuildMeasureTicks } from "./factory.js";
+import { measuresInRange } from "./queries.js";
+import type { Measure, Score, ScoreFragment } from "../../index.js";
+import type { ScoreRange } from "../selection/types.js";
 
 /**
  * `ScoreFragment` is canonical in @sudobility/music_types and re-exported
  * here so domain modules keep one import site. A fragment is a snapshot of
  * a tick range of a score (measures shared by reference, not deep-cloned).
  */
-export type { ScoreFragment } from '../../index.js';
+export type { ScoreFragment } from "../../index.js";
 
 /** Captures the measures overlapping `range` (per track named in `range.trackIds`, or all tracks if empty). */
 export function extractFragment(
   score: Score,
-  range: ScoreRange
+  range: ScoreRange,
 ): ScoreFragment {
   return {
     range,
@@ -48,15 +48,15 @@ function overlapsRange(measure: Measure, range: ScoreRange): boolean {
  */
 export function replaceFragment(score: Score, fragment: ScoreFragment): Score {
   const replacementsByTrackId = new Map(
-    fragment.tracks.map(t => [t.trackId, t.measures])
+    fragment.tracks.map((t) => [t.trackId, t.measures]),
   );
 
-  const tracks = score.tracks.map(track => {
+  const tracks = score.tracks.map((track) => {
     const replacementMeasures = replacementsByTrackId.get(track.id);
     if (!replacementMeasures) return track;
 
-    const firstIndex = track.measures.findIndex(m =>
-      overlapsRange(m, fragment.range)
+    const firstIndex = track.measures.findIndex((m) =>
+      overlapsRange(m, fragment.range),
     );
     if (firstIndex === -1) return track;
 
@@ -68,11 +68,11 @@ export function replaceFragment(score: Score, fragment: ScoreFragment): Score {
       lastIndex += 1;
     }
 
-    const normalizedMeasures = replacementMeasures.map(measure => ({
+    const normalizedMeasures = replacementMeasures.map((measure) => ({
       ...measure,
-      voices: measure.voices.map(voice => ({
+      voices: measure.voices.map((voice) => ({
         ...voice,
-        events: voice.events.map(event => ({
+        events: voice.events.map((event) => ({
           ...event,
           trackId: track.id,
           voiceId: voice.id,

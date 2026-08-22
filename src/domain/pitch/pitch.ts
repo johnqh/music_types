@@ -3,7 +3,7 @@ import type {
   KeySignature,
   Pitch,
   PitchStep,
-} from '../../index.js';
+} from "../../index.js";
 
 /** Semitone offset from C for each natural pitch step (no accidental). */
 const NATURAL_STEP_SEMITONES: Record<PitchStep, number> = {
@@ -32,34 +32,34 @@ export function pitchToMidi(p: Pitch): number {
 
 /** step/accidental spelling for each pitch class 0-11, preferring sharps. */
 const SHARP_SPELLING: Array<{ step: PitchStep; accidental: Accidental }> = [
-  { step: 'C', accidental: 0 },
-  { step: 'C', accidental: 1 },
-  { step: 'D', accidental: 0 },
-  { step: 'D', accidental: 1 },
-  { step: 'E', accidental: 0 },
-  { step: 'F', accidental: 0 },
-  { step: 'F', accidental: 1 },
-  { step: 'G', accidental: 0 },
-  { step: 'G', accidental: 1 },
-  { step: 'A', accidental: 0 },
-  { step: 'A', accidental: 1 },
-  { step: 'B', accidental: 0 },
+  { step: "C", accidental: 0 },
+  { step: "C", accidental: 1 },
+  { step: "D", accidental: 0 },
+  { step: "D", accidental: 1 },
+  { step: "E", accidental: 0 },
+  { step: "F", accidental: 0 },
+  { step: "F", accidental: 1 },
+  { step: "G", accidental: 0 },
+  { step: "G", accidental: 1 },
+  { step: "A", accidental: 0 },
+  { step: "A", accidental: 1 },
+  { step: "B", accidental: 0 },
 ];
 
 /** step/accidental spelling for each pitch class 0-11, preferring flats. */
 const FLAT_SPELLING: Array<{ step: PitchStep; accidental: Accidental }> = [
-  { step: 'C', accidental: 0 },
-  { step: 'D', accidental: -1 },
-  { step: 'D', accidental: 0 },
-  { step: 'E', accidental: -1 },
-  { step: 'E', accidental: 0 },
-  { step: 'F', accidental: 0 },
-  { step: 'G', accidental: -1 },
-  { step: 'G', accidental: 0 },
-  { step: 'A', accidental: -1 },
-  { step: 'A', accidental: 0 },
-  { step: 'B', accidental: -1 },
-  { step: 'B', accidental: 0 },
+  { step: "C", accidental: 0 },
+  { step: "D", accidental: -1 },
+  { step: "D", accidental: 0 },
+  { step: "E", accidental: -1 },
+  { step: "E", accidental: 0 },
+  { step: "F", accidental: 0 },
+  { step: "G", accidental: -1 },
+  { step: "G", accidental: 0 },
+  { step: "A", accidental: -1 },
+  { step: "A", accidental: 0 },
+  { step: "B", accidental: -1 },
+  { step: "B", accidental: 0 },
 ];
 
 /**
@@ -80,11 +80,11 @@ export function midiToPitch(midi: number, keySignature?: KeySignature): Pitch {
 }
 
 const ACCIDENTAL_SYMBOLS: Record<Accidental, string> = {
-  [-2]: 'bb',
-  [-1]: 'b',
-  [0]: '',
-  [1]: '#',
-  [2]: '##',
+  [-2]: "bb",
+  [-1]: "b",
+  [0]: "",
+  [1]: "#",
+  [2]: "##",
 };
 
 /** Formats a `Pitch` as a string, e.g. `C4`, `F#3`, `Bb4`, `F##4`. */
@@ -96,7 +96,7 @@ export function pitchToString(p: Pitch): string {
 export function isPitchInRange(
   p: Pitch,
   lowestMidi: number,
-  highestMidi: number
+  highestMidi: number,
 ): boolean {
   const midi = pitchToMidi(p);
   return midi >= lowestMidi && midi <= highestMidi;

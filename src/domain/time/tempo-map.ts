@@ -1,4 +1,4 @@
-import type { TempoEvent } from '../../index.js';
+import type { TempoEvent } from "../../index.js";
 
 const DEFAULT_BPM = 120;
 
@@ -6,7 +6,7 @@ const DEFAULT_BPM = 120;
 function deltaTicksToSeconds(
   deltaTicks: number,
   ppq: number,
-  bpm: number
+  bpm: number,
 ): number {
   return (deltaTicks / ppq) * (60 / bpm);
 }
@@ -31,7 +31,7 @@ export class TempoMap {
 
   private static buildBreakpoints(
     events: TempoEvent[],
-    ppq: number
+    ppq: number,
   ): Breakpoint[] {
     const sorted = [...events].sort((a, b) => a.tick - b.tick);
     const breakpoints: Breakpoint[] = [];
@@ -60,7 +60,7 @@ export class TempoMap {
       currentSeconds += deltaTicksToSeconds(
         event.tick - currentTick,
         ppq,
-        currentBpm
+        currentBpm,
       );
       currentTick = event.tick;
       breakpoints.push({

@@ -10,7 +10,7 @@
  * for the programs that actually transpose. Most do not, so the table below is
  * only the exceptions.
  */
-import { gmInstrument } from './gm.js';
+import { gmInstrument } from "./gm.js";
 
 /** Semitones to ADD to sounding pitch to get written pitch. */
 const PROGRAM_TRANSPOSITION: Record<number, number> = {

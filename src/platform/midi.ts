@@ -3,10 +3,22 @@
  * adapters in music_lib read and write — so that music_lib carries no MIDI
  * library of its own and a different codec can be dropped in behind it.
  */
-export type MidiNote = { midi: number; ticks: number; durationTicks: number; velocity: number };
-export type MidiControlChange = { number: number; ticks: number; value: number };
+export type MidiNote = {
+  midi: number;
+  ticks: number;
+  durationTicks: number;
+  velocity: number;
+};
+export type MidiControlChange = {
+  number: number;
+  ticks: number;
+  value: number;
+};
 export type MidiTempoEvent = { ticks: number; bpm: number };
-export type MidiTimeSignatureEvent = { ticks: number; timeSignature: [number, number] };
+export type MidiTimeSignatureEvent = {
+  ticks: number;
+  timeSignature: [number, number];
+};
 
 export type MidiTrackData = {
   name: string;

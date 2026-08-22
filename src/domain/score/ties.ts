@@ -1,5 +1,5 @@
-import { createId } from './ids.js';
-import { findEvent, findTrack } from './queries.js';
+import { createId } from "./ids.js";
+import { findEvent, findTrack } from "./queries.js";
 import type {
   MusicalEvent,
   NoteEvent,
@@ -7,9 +7,9 @@ import type {
   Score,
   Track,
   UUID,
-} from '../../index.js';
-import { isNoteEvent } from '../../index.js';
-import { splitAtBoundaries } from '../time/durations.js';
+} from "../../index.js";
+import { isNoteEvent } from "../../index.js";
+import { splitAtBoundaries } from "../time/durations.js";
 
 /** Whether two pitches have identical spelling (step, accidental, and octave). */
 function samePitch(a: Pitch, b: Pitch): boolean {
@@ -36,12 +36,12 @@ function samePitch(a: Pitch, b: Pitch): boolean {
  */
 export function splitNoteAcrossMeasures(
   note: NoteEvent,
-  measureBoundaries: number[]
+  measureBoundaries: number[],
 ): NoteEvent[] {
   const segments = splitAtBoundaries(
     note.startTick,
     note.durationTicks,
-    measureBoundaries
+    measureBoundaries,
   );
   if (segments.length <= 1) {
     return [note];
@@ -89,7 +89,7 @@ export function joinTiedNotes(events: MusicalEvent[]): MusicalEvent[] {
           isNoteEvent(candidate) &&
           Boolean(candidate.tieStop) &&
           candidate.startTick === merged.startTick + merged.durationTicks &&
-          samePitch(candidate.pitch, merged.pitch)
+          samePitch(candidate.pitch, merged.pitch),
       );
       if (!next) break;
       consumed.add(next.id);
@@ -116,8 +116,8 @@ export type ChannelCandidate = { event: NoteEvent; measureIndex: number };
  */
 function locateVoiceIndex(track: Track, noteId: UUID): number {
   for (const measure of track.measures) {
-    const voiceIndex = measure.voices.findIndex(voice =>
-      voice.events.some(e => e.id === noteId)
+    const voiceIndex = measure.voices.findIndex((voice) =>
+      voice.events.some((e) => e.id === noteId),
     );
     if (voiceIndex !== -1) return voiceIndex;
   }
@@ -146,7 +146,7 @@ function locateVoiceIndex(track: Track, noteId: UUID): number {
  */
 export function voiceChannel(
   track: Track,
-  voiceIndex: number
+  voiceIndex: number,
 ): ChannelCandidate[] {
   const channel: ChannelCandidate[] = [];
   track.measures.forEach((measure, measureIndex) => {
@@ -158,7 +158,7 @@ export function voiceChannel(
   });
   channel.sort(
     (a, b) =>
-      a.measureIndex - b.measureIndex || a.event.startTick - b.event.startTick
+      a.measureIndex - b.measureIndex || a.event.startTick - b.event.startTick,
   );
   return channel;
 }
@@ -171,30 +171,30 @@ export function voiceChannel(
  */
 function findForwardPartner(
   channel: ChannelCandidate[],
-  note: NoteEvent
+  note: NoteEvent,
 ): NoteEvent | undefined {
   if (!note.tieStart) return undefined;
   return channel.find(
-    c =>
+    (c) =>
       c.event.id !== note.id &&
       c.event.startTick === note.startTick + note.durationTicks &&
       Boolean(c.event.tieStop) &&
-      samePitch(c.event.pitch, note.pitch)
+      samePitch(c.event.pitch, note.pitch),
   )?.event;
 }
 
 /** The note in `channel` that ties into `note` (its `tieStop` partner); see `findForwardPartner`. */
 function findBackwardPartner(
   channel: ChannelCandidate[],
-  note: NoteEvent
+  note: NoteEvent,
 ): NoteEvent | undefined {
   if (!note.tieStop) return undefined;
   return channel.find(
-    c =>
+    (c) =>
       c.event.id !== note.id &&
       c.event.startTick + c.event.durationTicks === note.startTick &&
       Boolean(c.event.tieStart) &&
-      samePitch(c.event.pitch, note.pitch)
+      samePitch(c.event.pitch, note.pitch),
   )?.event;
 }
 

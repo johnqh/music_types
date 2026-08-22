@@ -11,8 +11,8 @@
  * deliberately does NOT describe what a synthesizer patch can do — polyphony
  * there is a setting, not a limit — so every synth family is unlimited.
  */
-import { gmFamilyOf, gmInstrument } from './gm.js';
-import type { GmFamily } from './gm.js';
+import { gmFamilyOf, gmInstrument } from "./gm.js";
+import type { GmFamily } from "./gm.js";
 
 /** No physical limit: keyboards, plucked strings, sections, synths, drums. */
 export const UNLIMITED_POLYPHONY = Number.POSITIVE_INFINITY;
@@ -27,7 +27,7 @@ export const UNLIMITED_POLYPHONY = Number.POSITIVE_INFINITY;
  */
 const FAMILY_POLYPHONY: Record<GmFamily, number> = {
   piano: UNLIMITED_POLYPHONY,
-  'chromatic-percussion': UNLIMITED_POLYPHONY,
+  "chromatic-percussion": UNLIMITED_POLYPHONY,
   organ: UNLIMITED_POLYPHONY,
   guitar: 6,
   bass: 4,
@@ -36,12 +36,12 @@ const FAMILY_POLYPHONY: Record<GmFamily, number> = {
   brass: 1,
   reed: 1,
   pipe: 1,
-  'synth-lead': UNLIMITED_POLYPHONY,
-  'synth-pad': UNLIMITED_POLYPHONY,
-  'synth-effects': UNLIMITED_POLYPHONY,
+  "synth-lead": UNLIMITED_POLYPHONY,
+  "synth-pad": UNLIMITED_POLYPHONY,
+  "synth-effects": UNLIMITED_POLYPHONY,
   ethnic: UNLIMITED_POLYPHONY,
   percussive: UNLIMITED_POLYPHONY,
-  'sound-effects': UNLIMITED_POLYPHONY,
+  "sound-effects": UNLIMITED_POLYPHONY,
 };
 
 /** Programs whose own limit differs from their family's. */

@@ -1,4 +1,4 @@
-import type { Fraction } from '../../index.js';
+import type { Fraction } from "../../index.js";
 
 /** Greatest common divisor (non-negative). */
 function gcd(a: number, b: number): number {
@@ -21,7 +21,7 @@ export function fraction(numerator: number, denominator: number): Fraction {
  */
 export function normalizeFraction(f: Fraction): Fraction {
   if (f.denominator === 0) {
-    throw new Error('normalizeFraction: denominator cannot be zero');
+    throw new Error("normalizeFraction: denominator cannot be zero");
   }
   if (f.numerator === 0) {
     return { numerator: 0, denominator: 1 };

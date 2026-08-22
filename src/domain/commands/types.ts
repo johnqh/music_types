@@ -3,7 +3,7 @@
  * and `undo` each take a `Score` and return a new `Score`, never mutating
  * their input, holding a store reference, or performing I/O.
  */
-import type { Score } from '../../index.js';
+import type { Score } from "../../index.js";
 
 /**
  * Whether a command changes the music or only how it is mixed.
@@ -15,7 +15,7 @@ import type { Score } from '../../index.js';
  * only score change that can reach it is a mix change, which is what lets it
  * push levels to the engine instead of reloading and resuming.
  */
-export type CommandKind = 'content' | 'mix';
+export type CommandKind = "content" | "mix";
 
 export type ScoreCommand = {
   id: string;

@@ -13,97 +13,101 @@
  * So these build one object carrying *every* optional field and assert it
  * comes back whole.
  */
-import { describe, expect, it } from 'vitest';
-import { measureSchema, noteEventSchema, restEventSchema } from './index.js';
-import type { Measure, NoteEvent, RestEvent } from './index.js';
+import { describe, expect, it } from "vitest";
+import { measureSchema, noteEventSchema, restEventSchema } from "./index.js";
+import type { Measure, NoteEvent, RestEvent } from "./index.js";
 
 /** A measure carrying every field a `Measure` can have. */
 const FULL_MEASURE: Measure = {
-  id: 'm0',
+  id: "m0",
   index: 0,
   startTick: 0,
   durationTicks: 1920,
   timeSignature: { numerator: 4, denominator: 4 },
-  keySignature: { fifths: 0, mode: 'major' },
+  keySignature: { fifths: 0, mode: "major" },
   voices: [],
   multiMeasureRestCount: 4,
-  rehearsalMark: 'B',
-  cue: { label: 'Fl.', events: [] },
+  rehearsalMark: "B",
+  cue: { label: "Fl.", events: [] },
   repeatStart: true,
   repeatEnd: true,
   endingNumbers: [1, 2],
-  clef: 'bass',
+  clef: "bass",
   pickup: true,
-  barline: 'final',
+  barline: "final",
   segno: true,
   coda: true,
   toCoda: true,
   fine: true,
-  jump: 'dal-segno-al-coda',
+  jump: "dal-segno-al-coda",
 };
 
 /** A note carrying every field a `NoteEvent` can have. */
 const FULL_NOTE: NoteEvent = {
-  id: 'n0',
-  pitch: { step: 'C', accidental: 1, octave: 4 },
+  id: "n0",
+  pitch: { step: "C", accidental: 1, octave: 4 },
   startTick: 0,
   durationTicks: 480,
   velocity: 80,
-  voiceId: 'v0',
-  trackId: 't0',
+  voiceId: "v0",
+  trackId: "t0",
   tieStart: true,
   tieStop: true,
-  articulation: 'staccato',
+  articulation: "staccato",
   fermata: true,
-  ornament: 'trill',
-  dynamic: 'ff',
+  ornament: "trill",
+  dynamic: "ff",
   slurStart: true,
   slurStop: true,
-  hairpinStart: 'crescendo',
+  hairpinStart: "crescendo",
   hairpinStop: true,
   arpeggiate: true,
-  ottavaStart: '8va',
+  ottavaStart: "8va",
   ottavaStop: true,
   glissandoStart: true,
   glissandoStop: true,
-  fingering: '3',
-  lyric: { text: 'la', syllabic: 'begin' },
+  fingering: "3",
+  lyric: { text: "la", syllabic: "begin" },
   graceNotes: [
-    { pitch: { step: 'D', accidental: 0, octave: 4 }, durationTicks: 120, slashed: true },
+    {
+      pitch: { step: "D", accidental: 0, octave: 4 },
+      durationTicks: 120,
+      slashed: true,
+    },
   ],
-  chordSymbol: 'Cmaj7',
+  chordSymbol: "Cmaj7",
 };
 
 const FULL_REST: RestEvent = {
-  id: 'r0',
+  id: "r0",
   startTick: 0,
   durationTicks: 480,
-  voiceId: 'v0',
-  trackId: 't0',
+  voiceId: "v0",
+  trackId: "t0",
 };
 
-describe('schema completeness', () => {
-  it('keeps every field of a fully-populated measure', () => {
+describe("schema completeness", () => {
+  it("keeps every field of a fully-populated measure", () => {
     expect(measureSchema.parse(FULL_MEASURE)).toEqual(FULL_MEASURE);
   });
 
-  it('keeps every field of a fully-populated note', () => {
+  it("keeps every field of a fully-populated note", () => {
     expect(noteEventSchema.parse(FULL_NOTE)).toEqual(FULL_NOTE);
   });
 
-  it('keeps every field of a rest', () => {
+  it("keeps every field of a rest", () => {
     expect(restEventSchema.parse(FULL_REST)).toEqual(FULL_REST);
   });
 
-  it('names the fields that would be dropped, rather than just failing', () => {
+  it("names the fields that would be dropped, rather than just failing", () => {
     // The failure mode this guards is silent, so when it does fire the message
     // has to say which key went missing.
     const parsed = measureSchema.parse(FULL_MEASURE) as Record<string, unknown>;
-    const dropped = Object.keys(FULL_MEASURE).filter(key => !(key in parsed));
+    const dropped = Object.keys(FULL_MEASURE).filter((key) => !(key in parsed));
     expect(
       dropped,
-      'Measure fields missing from measureSchema — zod strips unknown keys, ' +
-        'so these vanish whenever a score is parsed',
+      "Measure fields missing from measureSchema — zod strips unknown keys, " +
+        "so these vanish whenever a score is parsed",
     ).toEqual([]);
   });
 });

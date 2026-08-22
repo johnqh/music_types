@@ -128,5 +128,8 @@ export type TranscribeAudioOptions = {
  * time, which is why a chord used to import as a single note.
  */
 export interface AudioTranscriber {
-  transcribe(audio: DecodedAudio, options?: TranscribeAudioOptions): Promise<HeardNote[]>;
+  transcribe(
+    audio: DecodedAudio,
+    options?: TranscribeAudioOptions,
+  ): Promise<HeardNote[]>;
 }

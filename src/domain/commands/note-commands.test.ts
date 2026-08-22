@@ -1,9 +1,11 @@
-import { describe, expect, it } from 'vitest';
-import { createEmptyScore } from '../score/factory.js';
-import { validateScore } from '../validation/validator.js';
-import { isNoteEvent } from '../../index.js';
-import type { Pitch } from '../../index.js';
-import { ticksFor } from '../time/ticks.js';
+import { describe, expect, it } from "vitest";
+import { createEmptyScore } from "../score/factory.js";
+import { validateScore } from "../validation/validator.js";
+import { isNoteEvent } from "../../index.js";
+import type { NoteEvent, Pitch, Score } from "../../index.js";
+import { twinkleScore } from "../../test/fixtures.js";
+import { allNotes } from "../score/queries.js";
+import { ticksFor } from "../time/ticks.js";
 import {
   addNoteCommand,
   changeAccidentalCommand,
@@ -15,16 +17,20 @@ import {
   deleteEventsCommand,
   moveNotesCommand,
   resizeNotesCommand,
+  clearGraceNotesCommand,
+  toGraceNoteCommand,
+  toggleFermataCommand,
+  toggleSlurCommand,
   toggleTieCommand,
-} from './note-commands.js';
+} from "./note-commands.js";
 
-const PITCH: Pitch = { step: 'C', accidental: 0, octave: 4 };
+const PITCH: Pitch = { step: "C", accidental: 0, octave: 4 };
 
 function baseScore() {
   return createEmptyScore({
-    title: 'S',
+    title: "S",
     measures: 2,
-    tracks: [{ name: 'Piano' }],
+    tracks: [{ name: "Piano" }],
   });
 }
 
@@ -40,13 +46,13 @@ function withOneNote(score = baseScore()) {
       startTick: 0,
       durationTicks: 480,
     },
-    'Add note'
+    "Add note",
   ).execute(score);
 }
 
 function firstNoteId(score: ReturnType<typeof withOneNote>) {
   const note = score.tracks[0].measures[0].voices[0].events.find(isNoteEvent);
-  if (!note) throw new Error('expected a note in measure 0');
+  if (!note) throw new Error("expected a note in measure 0");
   return note.id;
 }
 
@@ -60,12 +66,12 @@ function withTiedPair() {
       deltaTicks: 1800,
       deltaSemitones: 0,
     },
-    'Move notes'
+    "Move notes",
   ).execute(withNote);
 }
 
-describe('addNoteCommand', () => {
-  it('adds a note and backfills the remaining rest, keeping the measure valid', () => {
+describe("addNoteCommand", () => {
+  it("adds a note and backfills the remaining rest, keeping the measure valid", () => {
     const score = baseScore();
     const next = withOneNote(score);
 
@@ -74,7 +80,7 @@ describe('addNoteCommand', () => {
     expect(validateScore(next)).toEqual([]);
   });
 
-  it('execute then undo returns a deep-equal score', () => {
+  it("execute then undo returns a deep-equal score", () => {
     const score = baseScore();
     const track = score.tracks[0];
     const cmd = addNoteCommand(
@@ -86,30 +92,30 @@ describe('addNoteCommand', () => {
         startTick: 0,
         durationTicks: 480,
       },
-      'Add note'
+      "Add note",
     );
     const next = cmd.execute(score);
     expect(cmd.undo(next)).toEqual(score);
   });
 
-  it('is a no-op when trackId/measureId do not match anything in the score', () => {
+  it("is a no-op when trackId/measureId do not match anything in the score", () => {
     const score = baseScore();
     const cmd = addNoteCommand(
       {
-        trackId: 'missing-track',
-        measureId: 'missing-measure',
+        trackId: "missing-track",
+        measureId: "missing-measure",
         voiceIndex: 0,
         pitch: PITCH,
         startTick: 0,
         durationTicks: 480,
       },
-      'Add note'
+      "Add note",
     );
     const next = cmd.execute(score);
     expect(next.tracks).toEqual(score.tracks);
   });
 
-  it('replaces (trims) an existing note it overlaps, deterministically', () => {
+  it("replaces (trims) an existing note it overlaps, deterministically", () => {
     const withNote = withOneNote(); // C4 [0, 480)
     const track = withNote.tracks[0];
     const cmd = addNoteCommand(
@@ -117,11 +123,11 @@ describe('addNoteCommand', () => {
         trackId: track.id,
         measureId: track.measures[0].id,
         voiceIndex: 0,
-        pitch: { step: 'G', accidental: 0, octave: 4 },
+        pitch: { step: "G", accidental: 0, octave: 4 },
         startTick: 240,
         durationTicks: 480, // overlaps the existing note's tail half [240, 480) and extends to 720
       },
-      'Add note'
+      "Add note",
     );
 
     const next = cmd.execute(withNote);
@@ -138,13 +144,13 @@ describe('addNoteCommand', () => {
     expect(notes[1]).toMatchObject({
       startTick: 240,
       durationTicks: 480,
-      pitch: { step: 'G', accidental: 0, octave: 4 },
+      pitch: { step: "G", accidental: 0, octave: 4 },
     });
     expect(validateScore(next)).toEqual([]);
     expect(cmd.undo(next)).toEqual(withNote);
   });
 
-  it('replaces (not duplicates) an existing note of the same pitch at the identical span', () => {
+  it("replaces (not duplicates) an existing note of the same pitch at the identical span", () => {
     const withNote = withOneNote(); // C4 [0, 480), velocity 80 (the withOneNote default)
     const track = withNote.tracks[0];
     const cmd = addNoteCommand(
@@ -157,7 +163,7 @@ describe('addNoteCommand', () => {
         durationTicks: 480, // identical span
         velocity: 42, // distinguishes the new note from the original (velocity 80) once we assert only one survives
       },
-      'Add note'
+      "Add note",
     );
 
     const next = cmd.execute(withNote);
@@ -175,7 +181,7 @@ describe('addNoteCommand', () => {
     expect(cmd.undo(next)).toEqual(withNote);
   });
 
-  it('truncates (does not split into tied segments) a note that would cross a measure boundary', () => {
+  it("truncates (does not split into tied segments) a note that would cross a measure boundary", () => {
     const score = baseScore();
     const track = score.tracks[0];
     const measureTicks = track.measures[0].durationTicks;
@@ -188,7 +194,7 @@ describe('addNoteCommand', () => {
         startTick: measureTicks - 100,
         durationTicks: 400, // would extend 300 ticks into measure 1
       },
-      'Add note'
+      "Add note",
     );
 
     const next = cmd.execute(score);
@@ -208,27 +214,27 @@ describe('addNoteCommand', () => {
   });
 });
 
-describe('deleteEventsCommand', () => {
-  it('deletes a note and backfills a rest', () => {
+describe("deleteEventsCommand", () => {
+  it("deletes a note and backfills a rest", () => {
     const withNote = withOneNote();
     const noteId = firstNoteId(withNote);
-    const cmd = deleteEventsCommand([noteId], 'Delete notes');
+    const cmd = deleteEventsCommand([noteId], "Delete notes");
 
     const next = cmd.execute(withNote);
     expect(
-      next.tracks[0].measures[0].voices[0].events.filter(isNoteEvent)
+      next.tracks[0].measures[0].voices[0].events.filter(isNoteEvent),
     ).toHaveLength(0);
     expect(validateScore(next)).toEqual([]);
     expect(cmd.undo(next)).toEqual(withNote);
   });
 
-  it('is a no-op for unknown event ids', () => {
+  it("is a no-op for unknown event ids", () => {
     const withNote = withOneNote();
-    const cmd = deleteEventsCommand(['missing'], 'Delete notes');
+    const cmd = deleteEventsCommand(["missing"], "Delete notes");
     expect(cmd.execute(withNote)).toEqual(withNote);
   });
 
-  it('clears a dangling tie on the surviving partner when only one half of a tied pair is deleted', () => {
+  it("clears a dangling tie on the surviving partner when only one half of a tied pair is deleted", () => {
     const tied = withTiedPair();
     const m0Note =
       tied.tracks[0].measures[0].voices[0].events.find(isNoteEvent);
@@ -237,7 +243,7 @@ describe('deleteEventsCommand', () => {
     expect(m0Note?.tieStart).toBe(true);
     expect(m1Note?.tieStop).toBe(true);
 
-    const cmd = deleteEventsCommand([m0Note!.id], 'Delete notes');
+    const cmd = deleteEventsCommand([m0Note!.id], "Delete notes");
     const next = cmd.execute(tied);
     const survivingPartner =
       next.tracks[0].measures[1].voices[0].events.find(isNoteEvent);
@@ -249,8 +255,8 @@ describe('deleteEventsCommand', () => {
   });
 });
 
-describe('moveNotesCommand', () => {
-  it('moves a note within the same measure by deltaTicks and transposes by deltaSemitones', () => {
+describe("moveNotesCommand", () => {
+  it("moves a note within the same measure by deltaTicks and transposes by deltaSemitones", () => {
     const withNote = withOneNote();
     const noteId = firstNoteId(withNote);
     const cmd = moveNotesCommand(
@@ -259,20 +265,20 @@ describe('moveNotesCommand', () => {
         deltaTicks: 240,
         deltaSemitones: 2,
       },
-      'Move notes'
+      "Move notes",
     );
 
     const next = cmd.execute(withNote);
     const moved = next.tracks[0].measures[0].voices[0].events.find(isNoteEvent);
     expect(moved).toMatchObject({
       startTick: 240,
-      pitch: { step: 'D', accidental: 0, octave: 4 },
+      pitch: { step: "D", accidental: 0, octave: 4 },
     });
     expect(validateScore(next)).toEqual([]);
     expect(cmd.undo(next)).toEqual(withNote);
   });
 
-  it('splits a note into tied segments when the move crosses a measure boundary', () => {
+  it("splits a note into tied segments when the move crosses a measure boundary", () => {
     const withNote = withOneNote();
     const noteId = firstNoteId(withNote);
     const cmd = moveNotesCommand(
@@ -281,7 +287,7 @@ describe('moveNotesCommand', () => {
         deltaTicks: 1800,
         deltaSemitones: 0,
       },
-      'Move notes'
+      "Move notes",
     );
 
     const next = cmd.execute(withNote);
@@ -298,7 +304,7 @@ describe('moveNotesCommand', () => {
     expect(cmd.undo(next)).toEqual(withNote);
   });
 
-  it('clamps movement so a note never moves past the end of the track', () => {
+  it("clamps movement so a note never moves past the end of the track", () => {
     const withNote = withOneNote();
     const noteId = firstNoteId(withNote);
     const cmd = moveNotesCommand(
@@ -307,7 +313,7 @@ describe('moveNotesCommand', () => {
         deltaTicks: 1_000_000,
         deltaSemitones: 0,
       },
-      'Move notes'
+      "Move notes",
     );
 
     const next = cmd.execute(withNote);
@@ -315,32 +321,32 @@ describe('moveNotesCommand', () => {
     const trackEnd =
       track.measures[track.measures.length - 1].startTick +
       track.measures[0].durationTicks;
-    const notes = track.measures.flatMap(m =>
-      m.voices.flatMap(v => v.events.filter(isNoteEvent))
+    const notes = track.measures.flatMap((m) =>
+      m.voices.flatMap((v) => v.events.filter(isNoteEvent)),
     );
 
     expect(notes).toHaveLength(1);
     expect(notes[0].startTick + notes[0].durationTicks).toBeLessThanOrEqual(
-      trackEnd
+      trackEnd,
     );
     expect(validateScore(next)).toEqual([]);
     expect(cmd.undo(next)).toEqual(withNote);
   });
 
-  it('is a no-op for unknown event ids', () => {
+  it("is a no-op for unknown event ids", () => {
     const withNote = withOneNote();
     const cmd = moveNotesCommand(
-      ['missing'],
+      ["missing"],
       {
         deltaTicks: 100,
         deltaSemitones: 1,
       },
-      'Move notes'
+      "Move notes",
     );
     expect(cmd.execute(withNote)).toEqual(withNote);
   });
 
-  it('clears a dangling tie on the surviving partner when only one half of a tied pair is moved away', () => {
+  it("clears a dangling tie on the surviving partner when only one half of a tied pair is moved away", () => {
     const tied = withTiedPair();
     const m0Note =
       tied.tracks[0].measures[0].voices[0].events.find(isNoteEvent);
@@ -353,7 +359,7 @@ describe('moveNotesCommand', () => {
         deltaTicks: -240,
         deltaSemitones: 0,
       },
-      'Move notes'
+      "Move notes",
     );
     const next = cmd.execute(tied);
     const survivingPartner =
@@ -365,7 +371,7 @@ describe('moveNotesCommand', () => {
     expect(cmd.undo(next)).toEqual(tied);
   });
 
-  it('replaces (trims) an existing note it lands on top of, deterministically', () => {
+  it("replaces (trims) an existing note it lands on top of, deterministically", () => {
     const score = baseScore();
     const track = score.tracks[0];
     const withTwoNotes = addNoteCommand(
@@ -373,14 +379,14 @@ describe('moveNotesCommand', () => {
         trackId: track.id,
         measureId: track.measures[0].id,
         voiceIndex: 0,
-        pitch: { step: 'G', accidental: 0, octave: 4 },
+        pitch: { step: "G", accidental: 0, octave: 4 },
         startTick: 480,
         durationTicks: 480,
       },
-      'Add note'
+      "Add note",
     ).execute(withOneNote(score)); // C4 [0,480), G4 [480,960)
     const gNoteId = withTwoNotes.tracks[0].measures[0].voices[0].events.find(
-      e => isNoteEvent(e) && e.pitch.step === 'G'
+      (e) => isNoteEvent(e) && e.pitch.step === "G",
     )!.id;
 
     // Move the G4 note left by 240 ticks so it lands overlapping the C4 note's tail.
@@ -390,7 +396,7 @@ describe('moveNotesCommand', () => {
         deltaTicks: -240,
         deltaSemitones: 0,
       },
-      'Move notes'
+      "Move notes",
     );
     const next = cmd.execute(withTwoNotes);
     const notes = next.tracks[0].measures[0].voices[0].events
@@ -406,18 +412,18 @@ describe('moveNotesCommand', () => {
     expect(notes[1]).toMatchObject({
       startTick: 240,
       durationTicks: 480,
-      pitch: { step: 'G', accidental: 0, octave: 4 },
+      pitch: { step: "G", accidental: 0, octave: 4 },
     });
     expect(validateScore(next)).toEqual([]);
     expect(cmd.undo(next)).toEqual(withTwoNotes);
   });
 });
 
-describe('resizeNotesCommand', () => {
-  it('resizes a note and reflows the rest of the measure', () => {
+describe("resizeNotesCommand", () => {
+  it("resizes a note and reflows the rest of the measure", () => {
     const withNote = withOneNote();
     const noteId = firstNoteId(withNote);
-    const cmd = resizeNotesCommand([noteId], 960, 'Resize notes');
+    const cmd = resizeNotesCommand([noteId], 960, "Resize notes");
 
     const next = cmd.execute(withNote);
     const resized =
@@ -427,116 +433,116 @@ describe('resizeNotesCommand', () => {
     expect(cmd.undo(next)).toEqual(withNote);
   });
 
-  it('clamps a resize that would exceed the measure boundary', () => {
+  it("clamps a resize that would exceed the measure boundary", () => {
     const withNote = withOneNote();
     const noteId = firstNoteId(withNote);
-    const cmd = resizeNotesCommand([noteId], 10_000, 'Resize notes');
+    const cmd = resizeNotesCommand([noteId], 10_000, "Resize notes");
 
     const next = cmd.execute(withNote);
     const resized =
       next.tracks[0].measures[0].voices[0].events.find(isNoteEvent);
     expect(resized?.durationTicks).toBe(
-      next.tracks[0].measures[0].durationTicks
+      next.tracks[0].measures[0].durationTicks,
     );
     expect(validateScore(next)).toEqual([]);
   });
 });
 
-describe('changeDurationCommand', () => {
-  it('converts a named duration to ticks using the score ppq', () => {
+describe("changeDurationCommand", () => {
+  it("converts a named duration to ticks using the score ppq", () => {
     const withNote = withOneNote();
     const noteId = firstNoteId(withNote);
-    const cmd = changeDurationCommand([noteId], 'half', 'Change duration');
+    const cmd = changeDurationCommand([noteId], "half", "Change duration");
 
     const next = cmd.execute(withNote);
     const resized =
       next.tracks[0].measures[0].voices[0].events.find(isNoteEvent);
-    expect(resized?.durationTicks).toBe(ticksFor('half', withNote.ppq));
+    expect(resized?.durationTicks).toBe(ticksFor("half", withNote.ppq));
     expect(cmd.undo(next)).toEqual(withNote);
   });
 });
 
-describe('changePitchCommand', () => {
-  it('sets the note pitch and round-trips through undo', () => {
+describe("changePitchCommand", () => {
+  it("sets the note pitch and round-trips through undo", () => {
     const withNote = withOneNote();
     const noteId = firstNoteId(withNote);
-    const newPitch: Pitch = { step: 'G', accidental: 1, octave: 5 };
-    const cmd = changePitchCommand([noteId], newPitch, 'Change pitch');
+    const newPitch: Pitch = { step: "G", accidental: 1, octave: 5 };
+    const cmd = changePitchCommand([noteId], newPitch, "Change pitch");
 
     const next = cmd.execute(withNote);
     expect(
-      next.tracks[0].measures[0].voices[0].events.find(isNoteEvent)?.pitch
+      next.tracks[0].measures[0].voices[0].events.find(isNoteEvent)?.pitch,
     ).toEqual(newPitch);
     expect(cmd.undo(next)).toEqual(withNote);
   });
 });
 
-describe('changeVelocityCommand', () => {
-  it('sets note velocity and round-trips through undo', () => {
+describe("changeVelocityCommand", () => {
+  it("sets note velocity and round-trips through undo", () => {
     const withNote = withOneNote();
     const noteId = firstNoteId(withNote);
-    const cmd = changeVelocityCommand([noteId], 42, 'Change velocity');
+    const cmd = changeVelocityCommand([noteId], 42, "Change velocity");
 
     const next = cmd.execute(withNote);
     expect(
-      next.tracks[0].measures[0].voices[0].events.find(isNoteEvent)?.velocity
+      next.tracks[0].measures[0].voices[0].events.find(isNoteEvent)?.velocity,
     ).toBe(42);
     expect(cmd.undo(next)).toEqual(withNote);
   });
 });
 
-describe('changeArticulationCommand', () => {
-  it('sets an articulation and round-trips through undo', () => {
+describe("changeArticulationCommand", () => {
+  it("sets an articulation and round-trips through undo", () => {
     const withNote = withOneNote();
     const noteId = firstNoteId(withNote);
     const cmd = changeArticulationCommand(
       [noteId],
-      'staccato',
-      'Change articulation'
+      "staccato",
+      "Change articulation",
     );
 
     const next = cmd.execute(withNote);
     expect(
       next.tracks[0].measures[0].voices[0].events.find(isNoteEvent)
-        ?.articulation
-    ).toBe('staccato');
+        ?.articulation,
+    ).toBe("staccato");
     expect(cmd.undo(next)).toEqual(withNote);
   });
 
-  it('clears an articulation when given undefined', () => {
+  it("clears an articulation when given undefined", () => {
     const withNote = withOneNote();
     const noteId = firstNoteId(withNote);
     const withArticulation = changeArticulationCommand(
       [noteId],
-      'accent',
-      'Change articulation'
+      "accent",
+      "Change articulation",
     ).execute(withNote);
 
     const cmd = changeArticulationCommand(
       [noteId],
       undefined,
-      'Change articulation'
+      "Change articulation",
     );
     const next = cmd.execute(withArticulation);
     expect(
       next.tracks[0].measures[0].voices[0].events.find(isNoteEvent)
-        ?.articulation
+        ?.articulation,
     ).toBeUndefined();
     expect(cmd.undo(next)).toEqual(withArticulation);
   });
 });
 
-describe('changeAccidentalCommand', () => {
-  it('sets pitch accidental, keeping step/octave, and round-trips through undo', () => {
+describe("changeAccidentalCommand", () => {
+  it("sets pitch accidental, keeping step/octave, and round-trips through undo", () => {
     const withNote = withOneNote();
     const noteId = firstNoteId(withNote);
-    const cmd = changeAccidentalCommand([noteId], 1, 'Change accidental');
+    const cmd = changeAccidentalCommand([noteId], 1, "Change accidental");
 
     const next = cmd.execute(withNote);
     expect(
-      next.tracks[0].measures[0].voices[0].events.find(isNoteEvent)?.pitch
+      next.tracks[0].measures[0].voices[0].events.find(isNoteEvent)?.pitch,
     ).toEqual({
-      step: 'C',
+      step: "C",
       accidental: 1,
       octave: 4,
     });
@@ -544,25 +550,25 @@ describe('changeAccidentalCommand', () => {
   });
 });
 
-describe('toggleTieCommand', () => {
-  it('toggles tieStart on and back off, round-tripping through undo each time', () => {
+describe("toggleTieCommand", () => {
+  it("toggles tieStart on and back off, round-tripping through undo each time", () => {
     const withNote = withOneNote();
     const noteId = firstNoteId(withNote);
-    const cmd = toggleTieCommand([noteId], 'tieStart', 'Toggle tie');
+    const cmd = toggleTieCommand([noteId], "tieStart", "Toggle tie");
 
     const next = cmd.execute(withNote);
     expect(
-      next.tracks[0].measures[0].voices[0].events.find(isNoteEvent)?.tieStart
+      next.tracks[0].measures[0].voices[0].events.find(isNoteEvent)?.tieStart,
     ).toBe(true);
     expect(cmd.undo(next)).toEqual(withNote);
   });
 });
 
-describe('changeVoiceCommand', () => {
-  it('moves a note into a new voice, backfilling both voices, and round-trips through undo', () => {
+describe("changeVoiceCommand", () => {
+  it("moves a note into a new voice, backfilling both voices, and round-trips through undo", () => {
     const withNote = withOneNote();
     const noteId = firstNoteId(withNote);
-    const cmd = changeVoiceCommand([noteId], 1, 'Change voice');
+    const cmd = changeVoiceCommand([noteId], 1, "Change voice");
 
     const next = cmd.execute(withNote);
     const measure = next.tracks[0].measures[0];
@@ -571,5 +577,254 @@ describe('changeVoiceCommand', () => {
     expect(measure.voices[1].events.filter(isNoteEvent)).toHaveLength(1);
     expect(validateScore(next)).toEqual([]);
     expect(cmd.undo(next)).toEqual(withNote);
+  });
+});
+
+describe("toggleSlurCommand", () => {
+  /** Twinkle's first n notes, in tick order. */
+  function firstNotes(score: Score, n: number): NoteEvent[] {
+    return allNotes(score).filter(isNoteEvent).slice(0, n);
+  }
+
+  it("marks the first and last of a selection, and nothing between", () => {
+    // A slur is one mark over a run of notes, not a flag on each of them.
+    const score = twinkleScore();
+    const notes = firstNotes(score, 4);
+    const result = toggleSlurCommand(
+      notes.map((n) => n.id),
+      "Slur",
+    ).execute(score);
+    const after = allNotes(result).filter(isNoteEvent);
+
+    expect(after.find((n) => n.id === notes[0].id)?.slurStart).toBe(true);
+    expect(after.find((n) => n.id === notes[3].id)?.slurStop).toBe(true);
+    expect(after.find((n) => n.id === notes[1].id)?.slurStart).toBeUndefined();
+    expect(after.find((n) => n.id === notes[2].id)?.slurStop).toBeUndefined();
+  });
+
+  it("picks the endpoints by tick, not by the order they were selected", () => {
+    // Shift-clicking around a phrase still selects that phrase.
+    const score = twinkleScore();
+    const notes = firstNotes(score, 3);
+    const shuffled = [notes[2].id, notes[0].id, notes[1].id];
+    const after = allNotes(
+      toggleSlurCommand(shuffled, "Slur").execute(score),
+    ).filter(isNoteEvent);
+
+    expect(after.find((n) => n.id === notes[0].id)?.slurStart).toBe(true);
+    expect(after.find((n) => n.id === notes[2].id)?.slurStop).toBe(true);
+  });
+
+  it("removes a slur it already made, so one control does both", () => {
+    const score = twinkleScore();
+    const ids = firstNotes(score, 3).map((n) => n.id);
+    const slurred = toggleSlurCommand(ids, "Slur").execute(score);
+    const cleared = toggleSlurCommand(ids, "Slur").execute(slurred);
+
+    expect(
+      allNotes(cleared)
+        .filter(isNoteEvent)
+        .some((n) => n.slurStart || n.slurStop),
+    ).toBe(false);
+  });
+
+  it("refuses a single note, which cannot carry a phrase mark", () => {
+    const score = twinkleScore();
+    const one = firstNotes(score, 1)[0];
+    const after = toggleSlurCommand([one.id], "Slur").execute(score);
+
+    expect(
+      allNotes(after)
+        .filter(isNoteEvent)
+        .some((n) => n.slurStart),
+    ).toBe(false);
+  });
+
+  it("does not join durations the way a tie does", () => {
+    // The distinction the two fields exist for: a slur groups different
+    // pitches as a phrase and sounds them separately.
+    const score = twinkleScore();
+    const notes = firstNotes(score, 3);
+    const after = toggleSlurCommand(
+      notes.map((n) => n.id),
+      "Slur",
+    ).execute(score);
+    const durations = allNotes(after)
+      .filter(isNoteEvent)
+      .slice(0, 3)
+      .map((n) => n.durationTicks);
+
+    expect(durations).toEqual(notes.map((n) => n.durationTicks));
+    expect(
+      allNotes(after)
+        .filter(isNoteEvent)
+        .some((n) => n.tieStart),
+    ).toBe(false);
+  });
+});
+
+describe("toGraceNoteCommand", () => {
+  it("hangs the note off its neighbour and leaves a rest behind", () => {
+    // The bar must still add up: an ornament borrows from its principal, it
+    // does not shorten the measure.
+    const score = twinkleScore();
+    const voice = score.tracks[0].measures[0].voices[0];
+    const [first, second] = voice.events.filter(isNoteEvent);
+    const before = voice.events.reduce((sum, e) => sum + e.durationTicks, 0);
+
+    const after = toGraceNoteCommand(first.id, "Grace").execute(score);
+    const afterVoice = after.tracks[0].measures[0].voices[0];
+
+    expect(afterVoice.events.reduce((sum, e) => sum + e.durationTicks, 0)).toBe(
+      before,
+    );
+    expect(isNoteEvent(afterVoice.events[0])).toBe(false); // now a rest
+    const principal = afterVoice.events.find(
+      (e) => e.id === second.id,
+    ) as NoteEvent;
+    expect(principal.graceNotes?.[0].pitch).toEqual(first.pitch);
+  });
+
+  it("refuses a note with nothing after it to ornament", () => {
+    const score = twinkleScore();
+    const notes = allNotes(score).filter(isNoteEvent);
+    const last = notes[notes.length - 1];
+    const after = toGraceNoteCommand(last.id, "Grace").execute(score);
+
+    expect(allNotes(after).filter(isNoteEvent)).toHaveLength(notes.length);
+  });
+
+  it("stacks a second ornament rather than replacing the first", () => {
+    const score = twinkleScore();
+    const voice = score.tracks[0].measures[0].voices[0];
+    const [first, second, third] = voice.events.filter(isNoteEvent);
+
+    let result = toGraceNoteCommand(first.id, "Grace").execute(score);
+    result = toGraceNoteCommand(second.id, "Grace").execute(result);
+
+    const principal = allNotes(result).find(
+      (n) => n.id === third.id,
+    ) as NoteEvent;
+    expect(principal.graceNotes).toHaveLength(2);
+  });
+
+  it("leaves the measure valid", () => {
+    const score = twinkleScore();
+    const first = allNotes(score).filter(isNoteEvent)[0];
+    const after = toGraceNoteCommand(first.id, "Grace").execute(score);
+
+    expect(validateScore(after).filter((i) => i.severity === "error")).toEqual(
+      [],
+    );
+  });
+});
+
+describe("clearGraceNotesCommand", () => {
+  it("removes every ornament from a note", () => {
+    const score = twinkleScore();
+    const voice = score.tracks[0].measures[0].voices[0];
+    const [first, second] = voice.events.filter(isNoteEvent);
+    const withGrace = toGraceNoteCommand(first.id, "Grace").execute(score);
+
+    const cleared = clearGraceNotesCommand([second.id], "Clear").execute(
+      withGrace,
+    );
+    const principal = allNotes(cleared).find(
+      (n) => n.id === second.id,
+    ) as NoteEvent;
+
+    expect(principal.graceNotes).toBeUndefined();
+  });
+});
+
+describe("toggleFermataCommand", () => {
+  function firstNotes(score: Score, n: number): NoteEvent[] {
+    return allNotes(score).filter(isNoteEvent).slice(0, n);
+  }
+
+  it("marks every selected note", () => {
+    const score = twinkleScore();
+    const notes = firstNotes(score, 3);
+    const after = allNotes(
+      toggleFermataCommand(
+        notes.map((n) => n.id),
+        "Fermata",
+      ).execute(score),
+    ).filter(isNoteEvent);
+
+    for (const note of notes) {
+      expect(after.find((n) => n.id === note.id)?.fermata).toBe(true);
+    }
+  });
+
+  it("removes them when every selected note already has one", () => {
+    const score = twinkleScore();
+    const ids = firstNotes(score, 2).map((n) => n.id);
+    const marked = toggleFermataCommand(ids, "Fermata").execute(score);
+    const after = allNotes(
+      toggleFermataCommand(ids, "Fermata").execute(marked),
+    ).filter(isNoteEvent);
+
+    for (const id of ids) {
+      expect(after.find((n) => n.id === id)?.fermata).toBeUndefined();
+    }
+  });
+
+  it("completes a partly-marked selection rather than inverting it", () => {
+    // Toggling each note independently would leave a mixed selection still
+    // mixed — half on, half off — which reads as a broken control.
+    const score = twinkleScore();
+    const notes = firstNotes(score, 3);
+    const ids = notes.map((n) => n.id);
+    const partly = toggleFermataCommand([ids[0]], "Fermata").execute(score);
+
+    const after = allNotes(
+      toggleFermataCommand(ids, "Fermata").execute(partly),
+    ).filter(isNoteEvent);
+
+    for (const id of ids) {
+      expect(after.find((n) => n.id === id)?.fermata).toBe(true);
+    }
+  });
+
+  it("leaves unselected notes alone", () => {
+    const score = twinkleScore();
+    const notes = firstNotes(score, 4);
+    const after = allNotes(
+      toggleFermataCommand([notes[0].id], "Fermata").execute(score),
+    ).filter(isNoteEvent);
+
+    expect(after.find((n) => n.id === notes[1].id)?.fermata).toBeUndefined();
+  });
+
+  it("is independent of articulation", () => {
+    // The reason it is not a member of the Articulation enum: a fermata over
+    // an accented final chord is ordinary notation.
+    const score = twinkleScore();
+    const id = firstNotes(score, 1)[0].id;
+    const accented = changeArticulationCommand(
+      [id],
+      "accent",
+      "Accent",
+    ).execute(score);
+    const after = allNotes(
+      toggleFermataCommand([id], "Fermata").execute(accented),
+    ).filter(isNoteEvent);
+
+    const note = after.find((n) => n.id === id);
+    expect(note?.fermata).toBe(true);
+    expect(note?.articulation).toBe("accent");
+  });
+
+  it("produces a valid score", () => {
+    const score = twinkleScore();
+    const ids = firstNotes(score, 2).map((n) => n.id);
+    const after = toggleFermataCommand(ids, "Fermata").execute(score);
+    expect(validateScore(after).length).toBe(0);
+  });
+
+  it("does nothing when the selection holds no notes", () => {
+    const score = twinkleScore();
+    expect(toggleFermataCommand([], "Fermata").execute(score)).toBe(score);
   });
 });

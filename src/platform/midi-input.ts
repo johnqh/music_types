@@ -25,8 +25,8 @@ export type MidiInputDevice = {
  * implementation reports it as `type: 'off'` so callers never have to know.
  */
 export type MidiInputEvent =
-  | { type: 'on'; note: number; velocity: number }
-  | { type: 'off'; note: number };
+  | { type: "on"; note: number; velocity: number }
+  | { type: "off"; note: number };
 
 export type MidiInputHandler = (event: MidiInputEvent) => void;
 

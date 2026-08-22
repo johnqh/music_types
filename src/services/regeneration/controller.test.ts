@@ -1,31 +1,31 @@
-import { describe, expect, it } from 'vitest';
-import { createEmptyScore } from '../../domain/score/factory.js';
-import { emptySelection } from '../../domain/selection/types.js';
-import type { ScoreSelection } from '../../domain/selection/types.js';
+import { describe, expect, it } from "vitest";
+import { createEmptyScore } from "../../domain/score/factory.js";
+import { emptySelection } from "../../domain/selection/types.js";
+import type { ScoreSelection } from "../../domain/selection/types.js";
 import {
   applyCandidate,
   prepareRegenerationRequest,
   prepareRegenerationRequestForRange,
-} from './controller.js';
-import type { RegenerationCandidate } from '../../index.js';
+} from "./controller.js";
+import type { RegenerationCandidate } from "../../index.js";
 
 function scoreWithMeasures(measureCount = 6) {
   return createEmptyScore({
-    title: 'S',
+    title: "S",
     measures: measureCount,
-    tracks: [{ name: 'Piano' }],
+    tracks: [{ name: "Piano" }],
   });
 }
 
-describe('prepareRegenerationRequest', () => {
-  it('throws when the selection has no resolvable tick range', () => {
+describe("prepareRegenerationRequest", () => {
+  it("throws when the selection has no resolvable tick range", () => {
     const score = scoreWithMeasures();
     expect(() =>
-      prepareRegenerationRequest(score, emptySelection(), 'x')
+      prepareRegenerationRequest(score, emptySelection(), "x"),
     ).toThrow();
   });
 
-  it('does not report expansion for an already full-measure selection', () => {
+  it("does not report expansion for an already full-measure selection", () => {
     const score = scoreWithMeasures();
     const track = score.tracks[0];
     const selection: ScoreSelection = {
@@ -37,7 +37,7 @@ describe('prepareRegenerationRequest', () => {
     const request = prepareRegenerationRequest(
       score,
       selection,
-      'Make this more dramatic'
+      "Make this more dramatic",
     );
 
     expect(request.expandedToFullMeasures).toBe(false);
@@ -48,7 +48,7 @@ describe('prepareRegenerationRequest', () => {
     });
   });
 
-  it('reports expansion for a partial-measure range selection and aligns range to full measures', () => {
+  it("reports expansion for a partial-measure range selection and aligns range to full measures", () => {
     const score = scoreWithMeasures();
     const track = score.tracks[0];
     const measure = track.measures[2];
@@ -64,7 +64,7 @@ describe('prepareRegenerationRequest', () => {
       range: partialRange,
     };
 
-    const request = prepareRegenerationRequest(score, selection, 'x');
+    const request = prepareRegenerationRequest(score, selection, "x");
 
     expect(request.expandedToFullMeasures).toBe(true);
     expect(request.range).toEqual({
@@ -74,7 +74,7 @@ describe('prepareRegenerationRequest', () => {
     });
   });
 
-  it('extracts up to 2 measures of preceding and following context', () => {
+  it("extracts up to 2 measures of preceding and following context", () => {
     const score = scoreWithMeasures(6);
     const track = score.tracks[0];
     const selection: ScoreSelection = {
@@ -83,20 +83,20 @@ describe('prepareRegenerationRequest', () => {
       trackIds: [],
     };
 
-    const request = prepareRegenerationRequest(score, selection, 'x');
+    const request = prepareRegenerationRequest(score, selection, "x");
 
     expect(
-      request.precedingContext.tracks[0].measures.map(m => m.index)
+      request.precedingContext.tracks[0].measures.map((m) => m.index),
     ).toEqual([1, 2]);
     expect(
-      request.followingContext.tracks[0].measures.map(m => m.index)
+      request.followingContext.tracks[0].measures.map((m) => m.index),
     ).toEqual([4, 5]);
     expect(
-      request.selectedFragment.tracks[0].measures.map(m => m.index)
+      request.selectedFragment.tracks[0].measures.map((m) => m.index),
     ).toEqual([3]);
   });
 
-  it('preceding context is empty (not an error) when the selection starts at measure 0', () => {
+  it("preceding context is empty (not an error) when the selection starts at measure 0", () => {
     const score = scoreWithMeasures(4);
     const track = score.tracks[0];
     const selection: ScoreSelection = {
@@ -105,15 +105,15 @@ describe('prepareRegenerationRequest', () => {
       trackIds: [],
     };
 
-    const request = prepareRegenerationRequest(score, selection, 'x');
+    const request = prepareRegenerationRequest(score, selection, "x");
 
     expect(request.precedingContext.tracks[0].measures).toEqual([]);
     expect(
-      request.followingContext.tracks[0].measures.map(m => m.index)
+      request.followingContext.tracks[0].measures.map((m) => m.index),
     ).toEqual([1, 2]);
   });
 
-  it('following context is empty (not an error) when the selection ends at the last measure', () => {
+  it("following context is empty (not an error) when the selection ends at the last measure", () => {
     const score = scoreWithMeasures(4);
     const track = score.tracks[0];
     const selection: ScoreSelection = {
@@ -122,12 +122,12 @@ describe('prepareRegenerationRequest', () => {
       trackIds: [],
     };
 
-    const request = prepareRegenerationRequest(score, selection, 'x');
+    const request = prepareRegenerationRequest(score, selection, "x");
 
     expect(request.followingContext.tracks[0].measures).toEqual([]);
   });
 
-  it('always sets preserveMeasureCount/preserveTimeSignatures/preserveTempoEvents to true', () => {
+  it("always sets preserveMeasureCount/preserveTimeSignatures/preserveTempoEvents to true", () => {
     const score = scoreWithMeasures();
     const track = score.tracks[0];
     const selection: ScoreSelection = {
@@ -135,14 +135,14 @@ describe('prepareRegenerationRequest', () => {
       measureIds: [track.measures[0].id],
       trackIds: [],
     };
-    const request = prepareRegenerationRequest(score, selection, 'x');
+    const request = prepareRegenerationRequest(score, selection, "x");
 
     expect(request.constraints.preserveMeasureCount).toBe(true);
     expect(request.constraints.preserveTimeSignatures).toBe(true);
     expect(request.constraints.preserveTempoEvents).toBe(true);
   });
 
-  it('pins candidateCount to 1 and allows overriding other constraints', () => {
+  it("pins candidateCount to 1 and allows overriding other constraints", () => {
     const score = scoreWithMeasures();
     const track = score.tracks[0];
     const selection: ScoreSelection = {
@@ -154,10 +154,10 @@ describe('prepareRegenerationRequest', () => {
     // Was 3 with a `candidateCount` option. Generation is a background job
     // now, so there is nobody present to choose between alternatives when it
     // lands; one result is produced and applied.
-    const withDefaults = prepareRegenerationRequest(score, selection, 'x');
+    const withDefaults = prepareRegenerationRequest(score, selection, "x");
     expect(withDefaults.candidateCount).toBe(1);
 
-    const withOverrides = prepareRegenerationRequest(score, selection, 'x', {
+    const withOverrides = prepareRegenerationRequest(score, selection, "x", {
       constraints: { preserveMelody: true, maximumPolyphony: 1 },
     });
     expect(withOverrides.candidateCount).toBe(1);
@@ -173,12 +173,12 @@ describe('prepareRegenerationRequest', () => {
       measureIds: [track.measures[0].id],
       trackIds: [],
     };
-    const request = prepareRegenerationRequest(score, selection, 'x');
+    const request = prepareRegenerationRequest(score, selection, "x");
     expect(request.scoreId).toBe(score.id);
   });
 });
 
-describe('applyCandidate', () => {
+describe("applyCandidate", () => {
   it("returns a ScoreCommand that replaces the candidate's range with its fragment", () => {
     const score = scoreWithMeasures(3);
     const track = score.tracks[0];
@@ -190,17 +190,17 @@ describe('applyCandidate', () => {
     };
 
     const replacementNote = {
-      id: 'replacement-note',
-      pitch: { step: 'G' as const, accidental: 0 as const, octave: 4 },
+      id: "replacement-note",
+      pitch: { step: "G" as const, accidental: 0 as const, octave: 4 },
       startTick: measure.startTick,
       durationTicks: measure.durationTicks,
       velocity: 90,
-      voiceId: 'placeholder-voice',
-      trackId: 'placeholder-track',
+      voiceId: "placeholder-voice",
+      trackId: "placeholder-track",
     };
     const candidate: RegenerationCandidate = {
-      id: 'candidate-1',
-      label: 'Variation 1',
+      id: "candidate-1",
+      label: "Variation 1",
       fragment: {
         range,
         ppq: score.ppq,
@@ -210,11 +210,11 @@ describe('applyCandidate', () => {
             measures: [
               {
                 ...measure,
-                id: 'new-measure',
+                id: "new-measure",
                 voices: [
                   {
-                    id: 'new-voice',
-                    name: 'Voice 1',
+                    id: "new-voice",
+                    name: "Voice 1",
                     events: [replacementNote],
                   },
                 ],
@@ -227,7 +227,7 @@ describe('applyCandidate', () => {
 
     const command = applyCandidate(score, candidate);
     const result = command.execute(score);
-    const resultTrack = result.tracks.find(t => t.id === track.id)!;
+    const resultTrack = result.tracks.find((t) => t.id === track.id)!;
 
     expect(resultTrack.measures).toHaveLength(3);
     const replacedMeasure = resultTrack.measures[1];
@@ -240,23 +240,23 @@ describe('applyCandidate', () => {
     expect(undone).toEqual(score);
   });
 
-  it('throws when the candidate references a track absent from the score', () => {
+  it("throws when the candidate references a track absent from the score", () => {
     const score = scoreWithMeasures(1);
     const candidate: RegenerationCandidate = {
-      id: 'candidate-1',
-      label: 'Variation 1',
+      id: "candidate-1",
+      label: "Variation 1",
       fragment: {
-        range: { startTick: 0, endTick: 1, trackIds: ['no-such-track'] },
+        range: { startTick: 0, endTick: 1, trackIds: ["no-such-track"] },
         ppq: score.ppq,
-        tracks: [{ trackId: 'no-such-track', measures: [] }],
+        tracks: [{ trackId: "no-such-track", measures: [] }],
       },
     };
     expect(() => applyCandidate(score, candidate)).toThrow();
   });
 });
 
-describe('prepareRegenerationRequestForRange', () => {
-  it('uses the range verbatim, without expanding to measures', () => {
+describe("prepareRegenerationRequestForRange", () => {
+  it("uses the range verbatim, without expanding to measures", () => {
     const score = scoreWithMeasures();
     const ppq = score.ppq;
     const range = {
@@ -265,7 +265,7 @@ describe('prepareRegenerationRequestForRange', () => {
       trackIds: [score.tracks[0].id],
     };
 
-    const req = prepareRegenerationRequestForRange(score, range, 'brighter', {
+    const req = prepareRegenerationRequestForRange(score, range, "brighter", {
       measureAligned: false,
     });
 
@@ -274,7 +274,7 @@ describe('prepareRegenerationRequestForRange', () => {
     expect(req.expandedToFullMeasures).toBe(false);
   });
 
-  it('drops preserveMeasureCount for a region that is not measure-aligned', () => {
+  it("drops preserveMeasureCount for a region that is not measure-aligned", () => {
     const score = scoreWithMeasures();
     const ppq = score.ppq;
     const range = {
@@ -283,7 +283,7 @@ describe('prepareRegenerationRequestForRange', () => {
       trackIds: [score.tracks[0].id],
     };
 
-    const req = prepareRegenerationRequestForRange(score, range, 'x', {
+    const req = prepareRegenerationRequestForRange(score, range, "x", {
       measureAligned: false,
     });
 
@@ -293,7 +293,7 @@ describe('prepareRegenerationRequestForRange', () => {
     expect(req.constraints.preserveTempoEvents).toBe(true);
   });
 
-  it('keeps preserveMeasureCount for a measure-aligned region', () => {
+  it("keeps preserveMeasureCount for a measure-aligned region", () => {
     const score = scoreWithMeasures();
     const m = score.tracks[0].measures;
     const range = {
@@ -302,14 +302,14 @@ describe('prepareRegenerationRequestForRange', () => {
       trackIds: [score.tracks[0].id],
     };
 
-    const req = prepareRegenerationRequestForRange(score, range, 'x', {
+    const req = prepareRegenerationRequestForRange(score, range, "x", {
       measureAligned: true,
     });
 
     expect(req.constraints.preserveMeasureCount).toBe(true);
   });
 
-  it('defaults to measure-aligned, since every caller but Replace Notes is', () => {
+  it("defaults to measure-aligned, since every caller but Replace Notes is", () => {
     const score = scoreWithMeasures();
     const m = score.tracks[0].measures;
     const range = {
@@ -319,12 +319,12 @@ describe('prepareRegenerationRequestForRange', () => {
     };
 
     expect(
-      prepareRegenerationRequestForRange(score, range, 'x').constraints
-        .preserveMeasureCount
+      prepareRegenerationRequestForRange(score, range, "x").constraints
+        .preserveMeasureCount,
     ).toBe(true);
   });
 
-  it('carries style, mood and complexity onto the request', () => {
+  it("carries style, mood and complexity onto the request", () => {
     const score = scoreWithMeasures();
     const m = score.tracks[0].measures;
     const range = {
@@ -333,18 +333,18 @@ describe('prepareRegenerationRequestForRange', () => {
       trackIds: [score.tracks[0].id],
     };
 
-    const req = prepareRegenerationRequestForRange(score, range, 'x', {
-      style: 'baroque',
-      mood: 'melancholy',
-      complexity: 'complex',
+    const req = prepareRegenerationRequestForRange(score, range, "x", {
+      style: "baroque",
+      mood: "melancholy",
+      complexity: "complex",
     });
 
-    expect(req.style).toBe('baroque');
-    expect(req.mood).toBe('melancholy');
-    expect(req.complexity).toBe('complex');
+    expect(req.style).toBe("baroque");
+    expect(req.mood).toBe("melancholy");
+    expect(req.complexity).toBe("complex");
   });
 
-  it('always asks for exactly one candidate', () => {
+  it("always asks for exactly one candidate", () => {
     const score = scoreWithMeasures();
     const m = score.tracks[0].measures;
     const range = {
@@ -354,11 +354,11 @@ describe('prepareRegenerationRequestForRange', () => {
     };
 
     expect(
-      prepareRegenerationRequestForRange(score, range, 'x').candidateCount
+      prepareRegenerationRequestForRange(score, range, "x").candidateCount,
     ).toBe(1);
   });
 
-  it('still extracts preceding and following context around the range', () => {
+  it("still extracts preceding and following context around the range", () => {
     const score = scoreWithMeasures();
     const m = score.tracks[0].measures;
     const range = {
@@ -367,15 +367,15 @@ describe('prepareRegenerationRequestForRange', () => {
       trackIds: [score.tracks[0].id],
     };
 
-    const req = prepareRegenerationRequestForRange(score, range, 'x');
+    const req = prepareRegenerationRequestForRange(score, range, "x");
 
     expect(req.precedingContext.range.endTick).toBe(range.startTick);
     expect(req.followingContext.range.startTick).toBe(range.endTick);
   });
 });
 
-describe('prepareRegenerationRequest still snaps', () => {
-  it('asks for one candidate too, now that candidates are gone', () => {
+describe("prepareRegenerationRequest still snaps", () => {
+  it("asks for one candidate too, now that candidates are gone", () => {
     const score = scoreWithMeasures();
     const selection: ScoreSelection = {
       eventIds: [],
@@ -384,7 +384,7 @@ describe('prepareRegenerationRequest still snaps', () => {
     };
 
     expect(
-      prepareRegenerationRequest(score, selection, 'x').candidateCount
+      prepareRegenerationRequest(score, selection, "x").candidateCount,
     ).toBe(1);
   });
 });

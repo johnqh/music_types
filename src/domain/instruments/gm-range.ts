@@ -14,8 +14,8 @@
  * Nothing here restricts what can be written; it only decides which keys are
  * worth showing.
  */
-import { gmFamilyOf, gmInstrument } from './gm.js';
-import type { GmFamily } from './gm.js';
+import { gmFamilyOf, gmInstrument } from "./gm.js";
+import type { GmFamily } from "./gm.js";
 
 /** Inclusive MIDI note numbers. */
 export type MidiRange = { min: number; max: number };
@@ -30,7 +30,7 @@ export const FULL_KEYBOARD: MidiRange = { min: 21, max: 108 };
  */
 const FAMILY_RANGE: Record<GmFamily, MidiRange> = {
   piano: { min: 21, max: 108 },
-  'chromatic-percussion': { min: 48, max: 96 },
+  "chromatic-percussion": { min: 48, max: 96 },
   organ: { min: 36, max: 96 },
   guitar: { min: 40, max: 88 },
   bass: { min: 28, max: 67 },
@@ -39,12 +39,12 @@ const FAMILY_RANGE: Record<GmFamily, MidiRange> = {
   brass: { min: 34, max: 82 },
   reed: { min: 44, max: 88 },
   pipe: { min: 60, max: 98 },
-  'synth-lead': { min: 24, max: 96 },
-  'synth-pad': { min: 24, max: 96 },
-  'synth-effects': { min: 24, max: 96 },
+  "synth-lead": { min: 24, max: 96 },
+  "synth-pad": { min: 24, max: 96 },
+  "synth-effects": { min: 24, max: 96 },
   ethnic: { min: 40, max: 84 },
   percussive: { min: 48, max: 84 },
-  'sound-effects': { min: 21, max: 108 },
+  "sound-effects": { min: 21, max: 108 },
 };
 
 /** Instruments whose own compass differs enough from their family to matter. */

@@ -7,8 +7,8 @@
  * must be readable; a caller may reassign manually afterward. Pure
  * function: never mutates `notes`.
  */
-import { pitchToMidi } from '../pitch/pitch.js';
-import type { NoteEvent } from '../../index.js';
+import { pitchToMidi } from "../pitch/pitch.js";
+import type { NoteEvent } from "../../index.js";
 
 const DEFAULT_SPLIT_POINT = 60; // middle C
 
@@ -16,7 +16,7 @@ export type AllocateVoicesOptions = { maxVoices: number; splitPoint?: number };
 
 export type VoiceGroup = {
   voiceIndex: number;
-  staff: 'upper' | 'lower';
+  staff: "upper" | "lower";
   notes: NoteEvent[];
 };
 
@@ -44,7 +44,7 @@ function groupChordClusters(notes: NoteEvent[]): NoteEvent[][] {
     cluster.push(note);
   }
 
-  return order.map(key => byKey.get(key) as NoteEvent[]);
+  return order.map((key) => byKey.get(key) as NoteEvent[]);
 }
 
 /** Mutable voice-assignment tracking used only within `allocateVoices`. */
@@ -62,7 +62,7 @@ type VoiceSlot = { lastEnd: number; notes: NoteEvent[] };
 function chooseVoiceIndex(
   voices: VoiceSlot[],
   startTick: number,
-  maxVoices: number
+  maxVoices: number,
 ): number {
   let bestFreeIndex = -1;
   for (let i = 0; i < voices.length; i += 1) {
@@ -98,7 +98,7 @@ function chooseVoiceIndex(
  */
 export function allocateVoices(
   notes: NoteEvent[],
-  opts: AllocateVoicesOptions
+  opts: AllocateVoicesOptions,
 ): VoiceGroup[] {
   if (notes.length === 0) return [];
 
@@ -119,12 +119,12 @@ export function allocateVoices(
 
   const result: VoiceGroup[] = [];
   voices.forEach((voice, voiceIndex) => {
-    const upper = voice.notes.filter(n => pitchToMidi(n.pitch) >= splitPoint);
-    const lower = voice.notes.filter(n => pitchToMidi(n.pitch) < splitPoint);
+    const upper = voice.notes.filter((n) => pitchToMidi(n.pitch) >= splitPoint);
+    const lower = voice.notes.filter((n) => pitchToMidi(n.pitch) < splitPoint);
     if (upper.length > 0)
-      result.push({ voiceIndex, staff: 'upper', notes: upper });
+      result.push({ voiceIndex, staff: "upper", notes: upper });
     if (lower.length > 0)
-      result.push({ voiceIndex, staff: 'lower', notes: lower });
+      result.push({ voiceIndex, staff: "lower", notes: lower });
   });
 
   return result;

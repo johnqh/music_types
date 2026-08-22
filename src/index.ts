@@ -22,7 +22,7 @@
  * `@sudobility/music_codecs`; `music_lib` keeps what is frontend-only (store,
  * commands, rendering, playback).
  */
-import { z } from 'zod';
+import { z } from "zod";
 
 // ---------------------------------------------------------------------------
 // 1. Score model types
@@ -32,7 +32,7 @@ export type UUID = string;
 
 export type Fraction = { numerator: number; denominator: number };
 
-export type PitchStep = 'C' | 'D' | 'E' | 'F' | 'G' | 'A' | 'B';
+export type PitchStep = "C" | "D" | "E" | "F" | "G" | "A" | "B";
 
 /** -2 = double flat, -1 = flat, 0 = natural, 1 = sharp, 2 = double sharp. */
 export type Accidental = -2 | -1 | 0 | 1 | 2;
@@ -41,7 +41,7 @@ export type Pitch = { step: PitchStep; accidental: Accidental; octave: number };
 
 export type TimeSignature = { numerator: number; denominator: number };
 
-export type KeySignature = { fifths: number; mode: 'major' | 'minor' };
+export type KeySignature = { fifths: number; mode: "major" | "minor" };
 
 export type TempoEvent = { id: UUID; tick: number; bpm: number };
 
@@ -50,26 +50,26 @@ export type TempoEvent = { id: UUID; tick: number; bpm: number };
  * their dotted (1.5x) variants, and their triplet (2/3x) variants.
  */
 export type DurationName =
-  | 'whole'
-  | 'half'
-  | 'quarter'
-  | 'eighth'
-  | 'sixteenth'
-  | 'thirtysecond'
-  | 'dotted-whole'
-  | 'dotted-half'
-  | 'dotted-quarter'
-  | 'dotted-eighth'
-  | 'dotted-sixteenth'
-  | 'dotted-thirtysecond'
-  | 'triplet-whole'
-  | 'triplet-half'
-  | 'triplet-quarter'
-  | 'triplet-eighth'
-  | 'triplet-sixteenth'
-  | 'triplet-thirtysecond';
+  | "whole"
+  | "half"
+  | "quarter"
+  | "eighth"
+  | "sixteenth"
+  | "thirtysecond"
+  | "dotted-whole"
+  | "dotted-half"
+  | "dotted-quarter"
+  | "dotted-eighth"
+  | "dotted-sixteenth"
+  | "dotted-thirtysecond"
+  | "triplet-whole"
+  | "triplet-half"
+  | "triplet-quarter"
+  | "triplet-eighth"
+  | "triplet-sixteenth"
+  | "triplet-thirtysecond";
 
-export type Articulation = 'staccato' | 'accent' | 'tenuto' | 'marcato';
+export type Articulation = "staccato" | "accent" | "tenuto" | "marcato";
 
 /**
  * An ornament sign written over a note.
@@ -84,7 +84,7 @@ export type Articulation = 'staccato' | 'accent' | 'tenuto' | 'marcato';
  * vertical stroke and `inverted-mordent` the one without. (VexFlow's own codes
  * use these two words the other way round — see `convert.ts`.)
  */
-export type Ornament = 'trill' | 'mordent' | 'inverted-mordent' | 'turn';
+export type Ornament = "trill" | "mordent" | "inverted-mordent" | "turn";
 
 /**
  * A gradual change of loudness, written as a wedge under the stave.
@@ -94,7 +94,7 @@ export type Ornament = 'trill' | 'mordent' | 'inverted-mordent' | 'turn';
  * writing is hairpins, so a score that had only levels could say "loud here"
  * but never "get louder".
  */
-export type Hairpin = 'crescendo' | 'diminuendo';
+export type Hairpin = "crescendo" | "diminuendo";
 
 /**
  * An octave-displacement bracket: play the written notes an octave (or two)
@@ -107,7 +107,7 @@ export type Hairpin = 'crescendo' | 'diminuendo';
  * model that stored written pitch would make an ottava change what a note
  * *sounds* like, which is the opposite of what the mark means.
  */
-export type Ottava = '8va' | '8vb' | '15ma' | '15mb';
+export type Ottava = "8va" | "8vb" | "15ma" | "15mb";
 
 /**
  * The line drawn at the end of a bar, where it is not an ordinary single one.
@@ -118,7 +118,7 @@ export type Ottava = '8va' | '8vb' | '15ma' | '15mb';
  * independent flags rather than one choice, and a bar can both end a repeat
  * and end the piece.
  */
-export type BarlineStyle = 'double' | 'final';
+export type BarlineStyle = "double" | "final";
 
 /**
  * A jump instruction written at the end of a bar.
@@ -130,12 +130,12 @@ export type BarlineStyle = 'double' | 'final';
  * written, and the pairs that are not written should not be expressible.
  */
 export type RepeatJump =
-  | 'da-capo'
-  | 'da-capo-al-fine'
-  | 'da-capo-al-coda'
-  | 'dal-segno'
-  | 'dal-segno-al-fine'
-  | 'dal-segno-al-coda';
+  | "da-capo"
+  | "da-capo-al-fine"
+  | "da-capo-al-coda"
+  | "dal-segno"
+  | "dal-segno-al-fine"
+  | "dal-segno-al-coda";
 
 /**
  * A dynamic marking, from softest to loudest.
@@ -146,7 +146,7 @@ export type RepeatJump =
  * score says; the velocity a player gives it is derived (`velocityForDynamic`
  * in music_lib) and stays adjustable per note on top.
  */
-export type Dynamic = 'ppp' | 'pp' | 'p' | 'mp' | 'mf' | 'f' | 'ff' | 'fff';
+export type Dynamic = "ppp" | "pp" | "p" | "mp" | "mf" | "f" | "ff" | "fff";
 
 /**
  * How a sung syllable joins its neighbours.
@@ -155,7 +155,7 @@ export type Dynamic = 'ppp' | 'pp' | 'p' | 'mp' | 'mf' | 'f' | 'ff' | 'fff';
  * whether a hyphen is drawn to the next note. "beau-ti-ful" over three notes
  * is `begin`, `middle`, `end`; a one-syllable word is `single`.
  */
-export type Syllabic = 'single' | 'begin' | 'middle' | 'end';
+export type Syllabic = "single" | "begin" | "middle" | "end";
 
 /**
  * A small ornamental note played just before the note it decorates.
@@ -190,10 +190,17 @@ export type Lyric = {
 
 /** Softest first, which is the order a picker should offer them in. */
 export const DYNAMICS: readonly Dynamic[] = [
-  'ppp', 'pp', 'p', 'mp', 'mf', 'f', 'ff', 'fff',
+  "ppp",
+  "pp",
+  "p",
+  "mp",
+  "mf",
+  "f",
+  "ff",
+  "fff",
 ] as const;
 
-export type Clef = 'treble' | 'bass' | 'alto' | 'tenor' | 'percussion';
+export type Clef = "treble" | "bass" | "alto" | "tenor" | "percussion";
 
 export type NoteEvent = {
   id: UUID;
@@ -497,12 +504,12 @@ export type Score = {
 
 /** True for `NoteEvent`s (distinguished from `RestEvent` by the `pitch` property). */
 export function isNoteEvent(event: MusicalEvent): event is NoteEvent {
-  return 'pitch' in event;
+  return "pitch" in event;
 }
 
 /** True for `RestEvent`s (distinguished from `NoteEvent` by lacking a `pitch` property). */
 export function isRestEvent(event: MusicalEvent): event is RestEvent {
-  return !('pitch' in event);
+  return !("pitch" in event);
 }
 
 // ---------------------------------------------------------------------------
@@ -510,7 +517,11 @@ export function isRestEvent(event: MusicalEvent): event is RestEvent {
 // ---------------------------------------------------------------------------
 
 /** A tick range scoped to a set of tracks (e.g. a loop region or regeneration target). */
-export type ScoreRange = { startTick: number; endTick: number; trackIds: string[] };
+export type ScoreRange = {
+  startTick: number;
+  endTick: number;
+  trackIds: string[];
+};
 
 export type ScoreSelection = {
   eventIds: string[];
@@ -537,7 +548,7 @@ export type ScoreFragment = {
 
 export const uuidSchema = z.string().min(1);
 
-export const pitchStepSchema = z.enum(['C', 'D', 'E', 'F', 'G', 'A', 'B']);
+export const pitchStepSchema = z.enum(["C", "D", "E", "F", "G", "A", "B"]);
 
 export const accidentalSchema = z.union([
   z.literal(-2),
@@ -560,7 +571,7 @@ export const timeSignatureSchema = z.object({
 
 export const keySignatureSchema = z.object({
   fifths: z.number().int(),
-  mode: z.enum(['major', 'minor']),
+  mode: z.enum(["major", "minor"]),
 });
 
 export const tempoEventSchema = z.object({
@@ -569,27 +580,47 @@ export const tempoEventSchema = z.object({
   bpm: z.number().positive(),
 });
 
-export const articulationSchema = z.enum(['staccato', 'accent', 'tenuto', 'marcato']);
-export const hairpinSchema = z.enum(['crescendo', 'diminuendo']);
-export const ottavaSchema = z.enum(['8va', '8vb', '15ma', '15mb']);
-export const barlineStyleSchema = z.enum(['double', 'final']);
+export const articulationSchema = z.enum([
+  "staccato",
+  "accent",
+  "tenuto",
+  "marcato",
+]);
+export const hairpinSchema = z.enum(["crescendo", "diminuendo"]);
+export const ottavaSchema = z.enum(["8va", "8vb", "15ma", "15mb"]);
+export const barlineStyleSchema = z.enum(["double", "final"]);
 export const repeatJumpSchema = z.enum([
-  'da-capo',
-  'da-capo-al-fine',
-  'da-capo-al-coda',
-  'dal-segno',
-  'dal-segno-al-fine',
-  'dal-segno-al-coda',
+  "da-capo",
+  "da-capo-al-fine",
+  "da-capo-al-coda",
+  "dal-segno",
+  "dal-segno-al-fine",
+  "dal-segno-al-coda",
 ]);
 export const ornamentSchema = z.enum([
-  'trill',
-  'mordent',
-  'inverted-mordent',
-  'turn',
+  "trill",
+  "mordent",
+  "inverted-mordent",
+  "turn",
 ]);
-export const dynamicSchema = z.enum(['ppp', 'pp', 'p', 'mp', 'mf', 'f', 'ff', 'fff']);
+export const dynamicSchema = z.enum([
+  "ppp",
+  "pp",
+  "p",
+  "mp",
+  "mf",
+  "f",
+  "ff",
+  "fff",
+]);
 
-export const clefSchema = z.enum(['treble', 'bass', 'alto', 'tenor', 'percussion']);
+export const clefSchema = z.enum([
+  "treble",
+  "bass",
+  "alto",
+  "tenor",
+  "percussion",
+]);
 
 export const noteEventSchema = z
   .object({
@@ -623,13 +654,13 @@ export const noteEventSchema = z
           pitch: pitchSchema,
           durationTicks: z.number(),
           slashed: z.boolean().optional(),
-        })
+        }),
       )
       .optional(),
     lyric: z
       .object({
         text: z.string(),
-        syllabic: z.enum(['single', 'begin', 'middle', 'end']).optional(),
+        syllabic: z.enum(["single", "begin", "middle", "end"]).optional(),
       })
       .optional(),
   })
@@ -726,7 +757,7 @@ export type GenerateScoreRequestTrack = {
   name: string;
   instrumentName: string;
   midiProgram: number;
-  clef: Track['clef'];
+  clef: Track["clef"];
   range?: { lowestMidi: number; highestMidi: number };
   maximumPolyphony?: number;
 };
@@ -741,7 +772,7 @@ export type GenerateScoreRequest = {
   timeSignature?: TimeSignature;
   keySignature?: KeySignature;
   tracks: GenerateScoreRequestTrack[];
-  complexity?: 'simple' | 'moderate' | 'complex';
+  complexity?: "simple" | "moderate" | "complex";
 };
 
 /** Never a rendered/notation payload and never raw MIDI: always a structured `Score`. */
@@ -762,7 +793,10 @@ export type RegenerationConstraints = {
   preserveRhythm?: boolean;
   preserveMelody?: boolean;
   maximumPolyphony?: number;
-  allowedPitchRangeByTrack?: Record<string, { lowestMidi: number; highestMidi: number }>;
+  allowedPitchRangeByTrack?: Record<
+    string,
+    { lowestMidi: number; highestMidi: number }
+  >;
 };
 
 export type RegenerateRegionRequest = {
@@ -777,20 +811,30 @@ export type RegenerateRegionRequest = {
   /** Same three dials whole-score generation has; the prompt builder emits them identically. */
   style?: string;
   mood?: string;
-  complexity?: 'simple' | 'moderate' | 'complex';
+  complexity?: "simple" | "moderate" | "complex";
 };
 
-export type RegenerationCandidate = { id: string; label: string; fragment: ScoreFragment };
+export type RegenerationCandidate = {
+  id: string;
+  label: string;
+  fragment: ScoreFragment;
+};
 
-export type RegenerateRegionResult = { candidates: RegenerationCandidate[]; warnings: string[] };
+export type RegenerateRegionResult = {
+  candidates: RegenerationCandidate[];
+  warnings: string[];
+};
 
 export interface MusicGenerationProvider {
   id: string;
   name: string;
-  generateScore(request: GenerateScoreRequest, signal?: AbortSignal): Promise<GenerateScoreResult>;
+  generateScore(
+    request: GenerateScoreRequest,
+    signal?: AbortSignal,
+  ): Promise<GenerateScoreResult>;
   regenerateRegion(
     request: RegenerateRegionRequest,
-    signal?: AbortSignal
+    signal?: AbortSignal,
   ): Promise<RegenerateRegionResult>;
 }
 
@@ -812,7 +856,9 @@ export const scoreRangeSchema = z.object({
 export const scoreFragmentSchema = z.object({
   range: scoreRangeSchema,
   ppq: z.number().int().positive(),
-  tracks: z.array(z.object({ trackId: z.string().min(1), measures: z.array(measureSchema) })),
+  tracks: z.array(
+    z.object({ trackId: z.string().min(1), measures: z.array(measureSchema) }),
+  ),
 });
 
 export const generateScoreRequestTrackSchema = z.object({
@@ -834,7 +880,7 @@ export const generateScoreRequestSchema = z.object({
   timeSignature: timeSignatureSchema.optional(),
   keySignature: keySignatureSchema.optional(),
   tracks: z.array(generateScoreRequestTrackSchema),
-  complexity: z.enum(['simple', 'moderate', 'complex']).optional(),
+  complexity: z.enum(["simple", "moderate", "complex"]).optional(),
 });
 
 export const generateScoreResultSchema = z.object({
@@ -865,7 +911,7 @@ export const regenerateRegionRequestSchema = z.object({
   candidateCount: z.number().int().positive(),
   style: z.string().optional(),
   mood: z.string().optional(),
-  complexity: z.enum(['simple', 'moderate', 'complex']).optional(),
+  complexity: z.enum(["simple", "moderate", "complex"]).optional(),
 });
 
 export const regenerationCandidateSchema = z.object({
@@ -888,24 +934,28 @@ export const regenerateRegionResultSchema = z.object({
  * editor can say which is happening, since one takes seconds of model time and
  * the other minutes of audio.
  */
-export type ProjectStatus = 'ready' | 'generating' | 'transcribing';
+export type ProjectStatus = "ready" | "generating" | "transcribing";
 
-export const projectStatusSchema = z.enum(['ready', 'generating', 'transcribing']);
+export const projectStatusSchema = z.enum([
+  "ready",
+  "generating",
+  "transcribing",
+]);
 
 /** Which of the five generation entry points produced a job. */
 export type GenerationJobKind =
-  | 'generate-score'
-  | 'generate-track'
-  | 'replace-notes'
-  | 'replace-measures'
-  | 'replace-track';
+  | "generate-score"
+  | "generate-track"
+  | "replace-notes"
+  | "replace-measures"
+  | "replace-track";
 
 export const generationJobKindSchema = z.enum([
-  'generate-score',
-  'generate-track',
-  'replace-notes',
-  'replace-measures',
-  'replace-track',
+  "generate-score",
+  "generate-track",
+  "replace-notes",
+  "replace-measures",
+  "replace-track",
 ]);
 
 /**
@@ -919,14 +969,15 @@ export const generationJobKindSchema = z.enum([
  * project is already `generating` — the request is built against the stored
  * score, so that score must not move underneath it while it waits.
  */
-export type GenerationJobStatus = 'queued' | 'running' | 'done' | 'failed' | 'cancelled';
+export type GenerationJobStatus =
+  "queued" | "running" | "done" | "failed" | "cancelled";
 
 export const generationJobStatusSchema = z.enum([
-  'queued',
-  'running',
-  'done',
-  'failed',
-  'cancelled',
+  "queued",
+  "running",
+  "done",
+  "failed",
+  "cancelled",
 ]);
 
 /**
@@ -1007,17 +1058,23 @@ export function parseGenerateScoreResult(json: unknown): GenerateScoreResult {
 }
 
 /** Parses and validates untrusted JSON as a `RegenerateRegionRequest`. Throws `ZodError` on invalid input. */
-export function parseRegenerateRegionRequest(json: unknown): RegenerateRegionRequest {
+export function parseRegenerateRegionRequest(
+  json: unknown,
+): RegenerateRegionRequest {
   return regenerateRegionRequestSchema.parse(json) as RegenerateRegionRequest;
 }
 
 /** Parses and validates untrusted JSON as a `RegenerateRegionResult`. Throws `ZodError` on invalid input. */
-export function parseRegenerateRegionResult(json: unknown): RegenerateRegionResult {
+export function parseRegenerateRegionResult(
+  json: unknown,
+): RegenerateRegionResult {
   return regenerateRegionResultSchema.parse(json) as RegenerateRegionResult;
 }
 
 /** Parses and validates untrusted JSON as a `RegenerationCandidate`. Throws `ZodError` on invalid input. */
-export function parseRegenerationCandidate(json: unknown): RegenerationCandidate {
+export function parseRegenerationCandidate(
+  json: unknown,
+): RegenerationCandidate {
   return regenerationCandidateSchema.parse(json) as RegenerationCandidate;
 }
 
@@ -1068,7 +1125,7 @@ export type ProjectRecord = ProjectSummary & {
  * sent. On a debounced autosave that echo doubled the cost of every edit, so
  * reads return the score and writes return metadata about it.
  */
-export type ProjectSaveResult = Omit<ProjectRecord, 'score'>;
+export type ProjectSaveResult = Omit<ProjectRecord, "score">;
 
 /**
  * What a status poll returns. Deliberately small: an open editor asks for this
@@ -1141,10 +1198,10 @@ export type PublishedSnapshot = {
 };
 
 /** One row of the Community list. No score — the list would be enormous. */
-export type CommunityItem = Omit<PublishedSnapshot, 'score'>;
+export type CommunityItem = Omit<PublishedSnapshot, "score">;
 
 /** A snapshot without its score — what the picker lists, so it stays cheap. */
-export type SnapshotSummary = Omit<Snapshot, 'score' | 'uiPrefs'>;
+export type SnapshotSummary = Omit<Snapshot, "score" | "uiPrefs">;
 
 export type ProjectCreateRequest = {
   name: string;
@@ -1169,7 +1226,7 @@ export type ProjectDuplicateRequest = {
 
 export type ProjectListQuery = {
   search?: string;
-  sort?: 'updatedAt' | 'name';
+  sort?: "updatedAt" | "name";
 };
 
 // ---------------------------------------------------------------------------
@@ -1226,7 +1283,9 @@ export const publishedSnapshotSchema = z.object({
 });
 
 /** One row of the Community list. No score — the list would be enormous. */
-export const communityItemSchema = publishedSnapshotSchema.omit({ score: true });
+export const communityItemSchema = publishedSnapshotSchema.omit({
+  score: true,
+});
 
 export const publishRequestSchema = z.object({
   publisherName: z.string().min(1).max(80),
@@ -1258,7 +1317,7 @@ export const projectDuplicateRequestSchema = z.object({
 
 export const projectListQuerySchema = z.object({
   search: z.string().optional(),
-  sort: z.enum(['updatedAt', 'name']).optional(),
+  sort: z.enum(["updatedAt", "name"]).optional(),
 });
 
 // ---------------------------------------------------------------------------
@@ -1266,34 +1325,35 @@ export const projectListQuerySchema = z.object({
 // ---------------------------------------------------------------------------
 
 export const API_ERROR_CODES = {
-  QUOTA_EXCEEDED: 'QUOTA_EXCEEDED',
-  AI_GENERATION_FAILED: 'AI_GENERATION_FAILED',
-  AI_OUTPUT_INVALID: 'AI_OUTPUT_INVALID',
-  PROJECT_NOT_FOUND: 'PROJECT_NOT_FOUND',
-  UNAUTHORIZED: 'UNAUTHORIZED',
+  QUOTA_EXCEEDED: "QUOTA_EXCEEDED",
+  AI_GENERATION_FAILED: "AI_GENERATION_FAILED",
+  AI_OUTPUT_INVALID: "AI_OUTPUT_INVALID",
+  PROJECT_NOT_FOUND: "PROJECT_NOT_FOUND",
+  UNAUTHORIZED: "UNAUTHORIZED",
   /**
    * The project is owned by a running generation job and cannot be written.
    * Distinct from a generic failure so a client can tell "busy, try later"
    * from "something broke" — an autosave should quietly stand down, not
    * surface an error.
    */
-  PROJECT_GENERATING: 'PROJECT_GENERATING',
+  PROJECT_GENERATING: "PROJECT_GENERATING",
   /**
    * No transcription service is configured on this deployment.
    *
    * Distinct from a failure so the client can say "this server cannot
    * transcribe audio" and hide the option, rather than reporting a breakage.
    */
-  TRANSCRIPTION_UNAVAILABLE: 'TRANSCRIPTION_UNAVAILABLE',
+  TRANSCRIPTION_UNAVAILABLE: "TRANSCRIPTION_UNAVAILABLE",
   /**
    * The user has no credits left. Distinct from a quota refusal: a quota is a
    * rate limit that lifts on its own, and this does not — it lifts when the
    * user buys more, which is a different thing to tell them.
    */
-  INSUFFICIENT_CREDITS: 'INSUFFICIENT_CREDITS',
+  INSUFFICIENT_CREDITS: "INSUFFICIENT_CREDITS",
 } as const;
 
-export type ApiErrorCode = (typeof API_ERROR_CODES)[keyof typeof API_ERROR_CODES];
+export type ApiErrorCode =
+  (typeof API_ERROR_CODES)[keyof typeof API_ERROR_CODES];
 
 export type ApiResponse<T> = {
   success: boolean;
@@ -1308,56 +1368,95 @@ export function successResponse<T>(data: T): ApiResponse<T> {
 }
 
 /** Wraps an error message (and optional typed code) in the standard error envelope. */
-export function errorResponse(message: string, code?: ApiErrorCode): ApiResponse<never> {
-  return code ? { success: false, error: message, code } : { success: false, error: message };
+export function errorResponse(
+  message: string,
+  code?: ApiErrorCode,
+): ApiResponse<never> {
+  return code
+    ? { success: false, error: message, code }
+    : { success: false, error: message };
 }
 
 // ---------------------------------------------------------------------------
 // 10. Platform interfaces (implementations live in @sudobility/music_io)
 // ---------------------------------------------------------------------------
-export * from './platform/index.js';
+export * from "./platform/index.js";
 
 // ---------------------------------------------------------------------------
 // 10. Pure domain primitives (shared by frontend and backend)
 // ---------------------------------------------------------------------------
 
-export * from './domain/pitch/pitch.js';
-export * from './domain/pitch/transpose.js';
-export * from './domain/quantization/options.js';
-export * from './domain/quantization/quantize.js';
-export * from './domain/score/factory.js';
-export * from './domain/score/fragment.js';
-export * from './domain/score/ids.js';
-export * from './domain/score/queries.js';
-export * from './domain/score/ties.js';
-export * from './domain/selection/types.js';
-export * from './domain/time/durations.js';
-export * from './domain/time/fraction.js';
-export * from './domain/time/tempo-map.js';
-export * from './domain/time/ticks.js';
-export * from './domain/voicing/allocate.js';
-export * from './domain/validation/issues.js';
-export * from './domain/validation/validator.js';
+export * from "./domain/pitch/pitch.js";
+export * from "./domain/pitch/transpose.js";
+export * from "./domain/quantization/options.js";
+export * from "./domain/quantization/quantize.js";
+export * from "./domain/score/factory.js";
+export * from "./domain/score/fragment.js";
+export * from "./domain/score/ids.js";
+export * from "./domain/score/queries.js";
+export * from "./domain/score/ties.js";
+export * from "./domain/selection/types.js";
+export * from "./domain/time/durations.js";
+export * from "./domain/time/fraction.js";
+export * from "./domain/time/tempo-map.js";
+export * from "./domain/time/ticks.js";
+export * from "./domain/voicing/allocate.js";
+export * from "./domain/validation/issues.js";
+export * from "./domain/validation/validator.js";
 
 // ---------------------------------------------------------------------------
 // 11. Score commands (pure Score -> Score transformations, shared by both sides)
 // ---------------------------------------------------------------------------
 
-export * from './domain/commands/types.js';
-export * from './domain/commands/reflow.js';
-export * from './domain/commands/snapshot.js';
-export * from './domain/commands/structure-commands.js';
-export * from './domain/commands/track-commands.js';
-export * from './domain/commands/region-commands.js';
-export * from './domain/commands/note-commands.js';
-export * from './domain/commands/edit-commands.js';
-export * from './domain/commands/relocate-commands.js';
-export * from './domain/commands/ripple-commands.js';
-export * from './domain/instruments/gm.js';
-export * from './domain/instruments/gm-kit.js';
-export * from './domain/instruments/gm-range.js';
-export * from './domain/instruments/gm-polyphony.js';
-export * from './domain/instruments/gm-transposition.js';
-export * from './domain/instruments/gm-percussion.js';
-export * from './domain/selection/selection.js';
-export * from './services/regeneration/controller.js';
+export * from "./domain/commands/types.js";
+export * from "./domain/commands/reflow.js";
+export * from "./domain/commands/snapshot.js";
+export * from "./domain/commands/structure-commands.js";
+export * from "./domain/commands/track-commands.js";
+export * from "./domain/commands/region-commands.js";
+export * from "./domain/commands/note-commands.js";
+export * from "./domain/commands/edit-commands.js";
+export * from "./domain/commands/relocate-commands.js";
+export * from "./domain/commands/ripple-commands.js";
+export * from "./domain/instruments/gm.js";
+export * from "./domain/instruments/gm-kit.js";
+export * from "./domain/instruments/gm-range.js";
+export * from "./domain/instruments/gm-polyphony.js";
+export * from "./domain/instruments/gm-transposition.js";
+export * from "./domain/instruments/gm-percussion.js";
+export * from "./domain/selection/selection.js";
+export * from "./services/regeneration/controller.js";
+
+// Absorbed from music_lib: pure, synchronous, dependency-free model code
+// that both the app and the server need.
+export * from "./domain/commands/history.js";
+export * from "./domain/generation/replacement-region.js";
+export * from "./domain/instruments/gm-icon.js";
+export * from "./domain/instruments/icon-art.js";
+export * from "./domain/instruments/instrument-fit.js";
+export * from "./domain/instruments/instrument-options.js";
+export * from "./domain/instruments/track-instrument.js";
+export * from "./domain/notation/chord-symbol.js";
+export * from "./domain/notation/lyric-syllables.js";
+export * from "./domain/notation/music-vocabulary.js";
+export * from "./domain/score/articulation.js";
+export * from "./domain/score/bar-numbers.js";
+export * from "./domain/score/collapse-rests.js";
+export * from "./domain/score/cue-notes.js";
+export * from "./domain/score/dynamics.js";
+export * from "./domain/score/effective-clef.js";
+export * from "./domain/score/extract-part.js";
+export * from "./domain/score/fermata-tempo.js";
+export * from "./domain/score/flatten.js";
+export * from "./domain/score/ottava.js";
+export * from "./domain/score/performance-timeline.js";
+export * from "./domain/score/rehearsal-marks.js";
+export * from "./domain/score/repeat-order.js";
+export * from "./domain/score/snapshot-tree.js";
+export * from "./domain/score/written-pitch.js";
+export * from "./domain/selection/range-select.js";
+export * from "./domain/selection/selection-editing.js";
+export * from "./domain/time/duration-modifiers.js";
+export * from "./domain/time/duration-selection.js";
+export * from "./domain/time/tap-to-note.js";
+export * from "./domain/time/tuplets.js";

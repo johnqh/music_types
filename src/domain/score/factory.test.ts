@@ -1,17 +1,17 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from "vitest";
 import {
   appendMeasure,
   createEmptyScore,
   createTrack,
   rebuildMeasureTicks,
-} from './factory.js';
-import { isRestEvent } from '../../index.js';
-import { measureDurationTicks } from '../time/ticks.js';
+} from "./factory.js";
+import { isRestEvent } from "../../index.js";
+import { measureDurationTicks } from "../time/ticks.js";
 
-describe('createTrack', () => {
-  it('fills in defaults for an unspecified instrument track', () => {
-    const track = createTrack({ name: 'Lead' });
-    expect(track.name).toBe('Lead');
+describe("createTrack", () => {
+  it("fills in defaults for an unspecified instrument track", () => {
+    const track = createTrack({ name: "Lead" });
+    expect(track.name).toBe("Lead");
     expect(track.id).toBeTruthy();
     expect(track.midiChannel).toBeGreaterThanOrEqual(0);
     expect(track.midiProgram).toBeGreaterThanOrEqual(0);
@@ -22,29 +22,29 @@ describe('createTrack', () => {
     expect(track.measures).toEqual([]);
   });
 
-  it('respects explicit overrides', () => {
+  it("respects explicit overrides", () => {
     const track = createTrack({
-      name: 'Bass',
-      clef: 'bass',
+      name: "Bass",
+      clef: "bass",
       midiProgram: 33,
       midiChannel: 2,
     });
-    expect(track.clef).toBe('bass');
+    expect(track.clef).toBe("bass");
     expect(track.midiProgram).toBe(33);
     expect(track.midiChannel).toBe(2);
   });
 
-  it('generates a unique id per call', () => {
-    const a = createTrack({ name: 'A' });
-    const b = createTrack({ name: 'B' });
+  it("generates a unique id per call", () => {
+    const a = createTrack({ name: "A" });
+    const b = createTrack({ name: "B" });
     expect(a.id).not.toBe(b.id);
   });
 });
 
-describe('createEmptyScore', () => {
-  it('builds a score with sensible defaults from just a title', () => {
-    const score = createEmptyScore({ title: 'Untitled' });
-    expect(score.metadata.title).toBe('Untitled');
+describe("createEmptyScore", () => {
+  it("builds a score with sensible defaults from just a title", () => {
+    const score = createEmptyScore({ title: "Untitled" });
+    expect(score.metadata.title).toBe("Untitled");
     expect(score.ppq).toBe(480);
     expect(score.version).toBe(1);
     expect(score.tempoMap).toEqual([
@@ -53,18 +53,18 @@ describe('createEmptyScore', () => {
     expect(score.tracks.length).toBeGreaterThan(0);
   });
 
-  it('builds consistent measures with index/startTick/durationTicks per track', () => {
+  it("builds consistent measures with index/startTick/durationTicks per track", () => {
     const score = createEmptyScore({
-      title: 'Twinkle',
+      title: "Twinkle",
       ppq: 480,
       measures: 3,
       timeSignature: { numerator: 4, denominator: 4 },
       tracks: [
         {
-          name: 'Piano',
-          instrumentName: 'Piano',
+          name: "Piano",
+          instrumentName: "Piano",
           midiProgram: 0,
-          clef: 'treble',
+          clef: "treble",
         },
       ],
     });
@@ -74,7 +74,7 @@ describe('createEmptyScore', () => {
 
     const measureTicks = measureDurationTicks(
       { numerator: 4, denominator: 4 },
-      480
+      480,
     );
     track.measures.forEach((measure, i) => {
       expect(measure.index).toBe(i);
@@ -83,16 +83,16 @@ describe('createEmptyScore', () => {
     });
   });
 
-  it('fills each measure with one default voice containing a rest spanning the full measure', () => {
+  it("fills each measure with one default voice containing a rest spanning the full measure", () => {
     const score = createEmptyScore({
-      title: 'Twinkle',
+      title: "Twinkle",
       measures: 1,
       tracks: [
         {
-          name: 'Piano',
-          instrumentName: 'Piano',
+          name: "Piano",
+          instrumentName: "Piano",
           midiProgram: 0,
-          clef: 'treble',
+          clef: "treble",
         },
       ],
     });
@@ -109,13 +109,13 @@ describe('createEmptyScore', () => {
     expect(event.trackId).toBe(score.tracks[0].id);
   });
 
-  it('builds one set of measures per requested track, independently', () => {
+  it("builds one set of measures per requested track, independently", () => {
     const score = createEmptyScore({
-      title: 'Duet',
+      title: "Duet",
       measures: 2,
       tracks: [
-        { name: 'Treble', clef: 'treble' },
-        { name: 'Bass', clef: 'bass' },
+        { name: "Treble", clef: "treble" },
+        { name: "Bass", clef: "bass" },
       ],
     });
 
@@ -123,20 +123,20 @@ describe('createEmptyScore', () => {
     expect(score.tracks[0].measures).toHaveLength(2);
     expect(score.tracks[1].measures).toHaveLength(2);
     // Each track's measures/voices/events must have distinct ids.
-    const trackMeasureIds = score.tracks[0].measures.map(m => m.id);
-    const otherMeasureIds = score.tracks[1].measures.map(m => m.id);
-    expect(trackMeasureIds.some(id => otherMeasureIds.includes(id))).toBe(
-      false
+    const trackMeasureIds = score.tracks[0].measures.map((m) => m.id);
+    const otherMeasureIds = score.tracks[1].measures.map((m) => m.id);
+    expect(trackMeasureIds.some((id) => otherMeasureIds.includes(id))).toBe(
+      false,
     );
   });
 });
 
-describe('appendMeasure', () => {
-  it('appends one more measure to every track, continuing tick numbering', () => {
+describe("appendMeasure", () => {
+  it("appends one more measure to every track, continuing tick numbering", () => {
     const score = createEmptyScore({
-      title: 'Grows',
+      title: "Grows",
       measures: 2,
-      tracks: [{ name: 'Piano' }],
+      tracks: [{ name: "Piano" }],
     });
 
     const grown = appendMeasure(score);
@@ -145,7 +145,7 @@ describe('appendMeasure', () => {
 
     const measureTicks = measureDurationTicks(
       { numerator: 4, denominator: 4 },
-      480
+      480,
     );
     const newMeasure = track.measures[2];
     expect(newMeasure.index).toBe(2);
@@ -154,23 +154,23 @@ describe('appendMeasure', () => {
     expect(newMeasure.voices[0].events[0].startTick).toBe(newMeasure.startTick);
   });
 
-  it('does not mutate the original score', () => {
+  it("does not mutate the original score", () => {
     const score = createEmptyScore({
-      title: 'Immutable',
+      title: "Immutable",
       measures: 1,
-      tracks: [{ name: 'Piano' }],
+      tracks: [{ name: "Piano" }],
     });
     appendMeasure(score);
     expect(score.tracks[0].measures).toHaveLength(1);
   });
 });
 
-describe('rebuildMeasureTicks', () => {
-  it('recomputes index/startTick after a measure is removed from the middle', () => {
+describe("rebuildMeasureTicks", () => {
+  it("recomputes index/startTick after a measure is removed from the middle", () => {
     const score = createEmptyScore({
-      title: 'Edited',
+      title: "Edited",
       measures: 3,
-      tracks: [{ name: 'Piano' }],
+      tracks: [{ name: "Piano" }],
     });
     const [m0, , m2] = score.tracks[0].measures;
     const edited = {
@@ -187,11 +187,11 @@ describe('rebuildMeasureTicks', () => {
     expect(measures[1].startTick).toBe(measures[0].durationTicks);
   });
 
-  it('shifts event startTicks within a measure by the same delta as the measure', () => {
+  it("shifts event startTicks within a measure by the same delta as the measure", () => {
     const score = createEmptyScore({
-      title: 'Edited',
+      title: "Edited",
       measures: 3,
-      tracks: [{ name: 'Piano' }],
+      tracks: [{ name: "Piano" }],
     });
     const [m0, , m2] = score.tracks[0].measures;
     const edited = {
@@ -202,15 +202,15 @@ describe('rebuildMeasureTicks', () => {
     const rebuilt = rebuildMeasureTicks(edited);
     const secondMeasure = rebuilt.tracks[0].measures[1];
     expect(secondMeasure.voices[0].events[0].startTick).toBe(
-      secondMeasure.startTick
+      secondMeasure.startTick,
     );
   });
 
-  it('is a no-op (referentially, per measure) when ticks are already consistent', () => {
+  it("is a no-op (referentially, per measure) when ticks are already consistent", () => {
     const score = createEmptyScore({
-      title: 'Stable',
+      title: "Stable",
       measures: 2,
-      tracks: [{ name: 'Piano' }],
+      tracks: [{ name: "Piano" }],
     });
     const rebuilt = rebuildMeasureTicks(score);
     expect(rebuilt.tracks[0].measures[0]).toBe(score.tracks[0].measures[0]);

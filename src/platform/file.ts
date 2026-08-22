@@ -6,5 +6,9 @@
  */
 export interface FileExporter {
   /** Web downloads the file; React Native writes it and opens the share sheet. */
-  save(name: string, data: Uint8Array | string, mimeType: string): Promise<void>;
+  save(
+    name: string,
+    data: Uint8Array | string,
+    mimeType: string,
+  ): Promise<void>;
 }

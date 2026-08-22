@@ -7,9 +7,9 @@ import {
   findMeasure,
   findTrack,
   scoreEndTick,
-} from '../score/queries.js';
-import type { Score, Track } from '../../index.js';
-import type { ScoreRange, ScoreSelection } from './types.js';
+} from "../score/queries.js";
+import type { Score, Track } from "../../index.js";
+import type { ScoreRange, ScoreSelection } from "./types.js";
 
 /**
  * The smallest tick range, aligned to full-measure boundaries on every
@@ -28,7 +28,7 @@ import type { ScoreRange, ScoreSelection } from './types.js';
  */
 export function selectionToRange(
   score: Score,
-  sel: ScoreSelection
+  sel: ScoreSelection,
 ): ScoreRange | null {
   let minTick = Infinity;
   let maxTick = -Infinity;
@@ -47,8 +47,8 @@ export function selectionToRange(
     if (!measure) continue;
     minTick = Math.min(minTick, measure.startTick);
     maxTick = Math.max(maxTick, measure.startTick + measure.durationTicks);
-    const owningTrack = score.tracks.find(t =>
-      t.measures.some(m => m.id === measureId)
+    const owningTrack = score.tracks.find((t) =>
+      t.measures.some((m) => m.id === measureId),
     );
     if (owningTrack) trackIds.add(owningTrack.id);
   }
@@ -69,7 +69,7 @@ export function selectionToRange(
   const tracksInScope: Track[] =
     scopedTrackIds.length > 0
       ? scopedTrackIds
-          .map(id => findTrack(score, id))
+          .map((id) => findTrack(score, id))
           .filter((t): t is Track => t !== null)
       : score.tracks;
 
@@ -106,16 +106,16 @@ function dedupe(ids: string[]): string[] {
  */
 export function normalizeSelection(
   score: Score,
-  sel: ScoreSelection
+  sel: ScoreSelection,
 ): ScoreSelection {
   const eventIds = dedupe(sel.eventIds).filter(
-    id => findEvent(score, id) !== null
+    (id) => findEvent(score, id) !== null,
   );
   const measureIds = dedupe(sel.measureIds).filter(
-    id => findMeasure(score, id) !== null
+    (id) => findMeasure(score, id) !== null,
   );
   const trackIds = dedupe(sel.trackIds).filter(
-    id => findTrack(score, id) !== null
+    (id) => findTrack(score, id) !== null,
   );
 
   const normalized: ScoreSelection = { eventIds, measureIds, trackIds };
@@ -123,7 +123,7 @@ export function normalizeSelection(
   if (sel.range) {
     const startTick = Math.max(
       0,
-      Math.min(sel.range.startTick, sel.range.endTick)
+      Math.min(sel.range.startTick, sel.range.endTick),
     );
     const endTick = Math.max(sel.range.startTick, sel.range.endTick);
     normalized.range = {
@@ -143,13 +143,13 @@ export function normalizeSelection(
  */
 export function selectionIsRegenerable(
   score: Score,
-  sel: ScoreSelection
+  sel: ScoreSelection,
 ): boolean {
   const range = selectionToRange(score, sel);
   if (!range) return false;
   if (range.startTick < 0 || range.startTick >= range.endTick) return false;
   if (range.endTick > scoreEndTick(score)) return false;
-  return range.trackIds.every(id => findTrack(score, id) !== null);
+  return range.trackIds.every((id) => findTrack(score, id) !== null);
 }
 
 /**
@@ -185,7 +185,7 @@ export type SelectionSummaryCopy = {
 export function selectionSummaryLabel(
   sel: ScoreSelection,
   copy: SelectionSummaryCopy,
-  regenerated = false
+  regenerated = false,
 ): string {
   const mark = (summary: string) =>
     regenerated ? copy.regenerated(summary) : summary;

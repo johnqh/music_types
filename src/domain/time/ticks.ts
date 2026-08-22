@@ -1,15 +1,11 @@
-import type {
-  DurationName,
-  Fraction,
-  TimeSignature,
-} from '../../index.js';
-import { fraction, fractionToTicks } from './fraction.js';
+import type { DurationName, Fraction, TimeSignature } from "../../index.js";
+import { fraction, fractionToTicks } from "./fraction.js";
 
 /** Multiplies a fraction by a positive integer/rational scalar expressed as a fraction. */
 function scaleFraction(f: Fraction, scale: Fraction): Fraction {
   return fraction(
     f.numerator * scale.numerator,
-    f.denominator * scale.denominator
+    f.denominator * scale.denominator,
   );
 }
 
@@ -17,7 +13,7 @@ const DOTTED_SCALE = fraction(3, 2);
 const TRIPLET_SCALE = fraction(2, 3);
 
 const BASE_DURATIONS: Record<
-  'whole' | 'half' | 'quarter' | 'eighth' | 'sixteenth' | 'thirtysecond',
+  "whole" | "half" | "quarter" | "eighth" | "sixteenth" | "thirtysecond",
   Fraction
 > = {
   whole: fraction(1, 1),
@@ -39,23 +35,23 @@ export const DURATIONS: Record<DurationName, Fraction> = {
   eighth: BASE_DURATIONS.eighth,
   sixteenth: BASE_DURATIONS.sixteenth,
   thirtysecond: BASE_DURATIONS.thirtysecond,
-  'dotted-whole': scaleFraction(BASE_DURATIONS.whole, DOTTED_SCALE),
-  'dotted-half': scaleFraction(BASE_DURATIONS.half, DOTTED_SCALE),
-  'dotted-quarter': scaleFraction(BASE_DURATIONS.quarter, DOTTED_SCALE),
-  'dotted-eighth': scaleFraction(BASE_DURATIONS.eighth, DOTTED_SCALE),
-  'dotted-sixteenth': scaleFraction(BASE_DURATIONS.sixteenth, DOTTED_SCALE),
-  'dotted-thirtysecond': scaleFraction(
+  "dotted-whole": scaleFraction(BASE_DURATIONS.whole, DOTTED_SCALE),
+  "dotted-half": scaleFraction(BASE_DURATIONS.half, DOTTED_SCALE),
+  "dotted-quarter": scaleFraction(BASE_DURATIONS.quarter, DOTTED_SCALE),
+  "dotted-eighth": scaleFraction(BASE_DURATIONS.eighth, DOTTED_SCALE),
+  "dotted-sixteenth": scaleFraction(BASE_DURATIONS.sixteenth, DOTTED_SCALE),
+  "dotted-thirtysecond": scaleFraction(
     BASE_DURATIONS.thirtysecond,
-    DOTTED_SCALE
+    DOTTED_SCALE,
   ),
-  'triplet-whole': scaleFraction(BASE_DURATIONS.whole, TRIPLET_SCALE),
-  'triplet-half': scaleFraction(BASE_DURATIONS.half, TRIPLET_SCALE),
-  'triplet-quarter': scaleFraction(BASE_DURATIONS.quarter, TRIPLET_SCALE),
-  'triplet-eighth': scaleFraction(BASE_DURATIONS.eighth, TRIPLET_SCALE),
-  'triplet-sixteenth': scaleFraction(BASE_DURATIONS.sixteenth, TRIPLET_SCALE),
-  'triplet-thirtysecond': scaleFraction(
+  "triplet-whole": scaleFraction(BASE_DURATIONS.whole, TRIPLET_SCALE),
+  "triplet-half": scaleFraction(BASE_DURATIONS.half, TRIPLET_SCALE),
+  "triplet-quarter": scaleFraction(BASE_DURATIONS.quarter, TRIPLET_SCALE),
+  "triplet-eighth": scaleFraction(BASE_DURATIONS.eighth, TRIPLET_SCALE),
+  "triplet-sixteenth": scaleFraction(BASE_DURATIONS.sixteenth, TRIPLET_SCALE),
+  "triplet-thirtysecond": scaleFraction(
     BASE_DURATIONS.thirtysecond,
-    TRIPLET_SCALE
+    TRIPLET_SCALE,
   ),
 };
 
@@ -82,9 +78,9 @@ const DURATION_NAMES = Object.keys(DURATIONS) as DurationName[];
  */
 export function durationNameForTicks(
   ticks: number,
-  ppq: number
+  ppq: number,
 ): DurationName | null {
-  return DURATION_NAMES.find(name => ticksFor(name, ppq) === ticks) ?? null;
+  return DURATION_NAMES.find((name) => ticksFor(name, ppq) === ticks) ?? null;
 }
 
 /** Integer tick length of one full measure in the given time signature. */
@@ -109,7 +105,7 @@ function isCompoundMeter(ts: TimeSignature): boolean {
 export function beatDurationTicks(ts: TimeSignature, ppq: number): number {
   const denominatorNoteTicks = fractionToTicks(
     fraction(1, ts.denominator),
-    ppq
+    ppq,
   );
   return isCompoundMeter(ts) ? 3 * denominatorNoteTicks : denominatorNoteTicks;
 }

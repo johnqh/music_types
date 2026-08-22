@@ -3,21 +3,16 @@
  * §24). Each factory wraps a pure `(Score) => Score` transform via
  * `transformCommand`.
  */
-import { createId } from '../score/ids.js';
-import { splitNoteAcrossMeasures } from '../score/ties.js';
-import type {
-  MusicalEvent,
-  NoteEvent,
-  Score,
-  UUID,
-} from '../../index.js';
-import { isNoteEvent } from '../../index.js';
-import { transposePitch } from '../pitch/transpose.js';
-import { quantizeEvents } from '../quantization/quantize.js';
-import type { QuantizeOptions } from '../quantization/options.js';
-import type { ScoreCommand } from './types.js';
-import { transformCommand } from './snapshot.js';
-import { insertNoteIntoTrack, reflowVoice, withTracks } from './reflow.js';
+import { createId } from "../score/ids.js";
+import { splitNoteAcrossMeasures } from "../score/ties.js";
+import type { MusicalEvent, NoteEvent, Score, UUID } from "../../index.js";
+import { isNoteEvent } from "../../index.js";
+import { transposePitch } from "../pitch/transpose.js";
+import { quantizeEvents } from "../quantization/quantize.js";
+import type { QuantizeOptions } from "../quantization/options.js";
+import type { ScoreCommand } from "./types.js";
+import { transformCommand } from "./snapshot.js";
+import { insertNoteIntoTrack, reflowVoice, withTracks } from "./reflow.js";
 
 // ---- pasteEventsCommand -----------------------------------------------------------
 
@@ -30,13 +25,13 @@ export type PasteDestination = {
 function pasteEvents(
   score: Score,
   notes: readonly NoteEvent[],
-  destination: PasteDestination
+  destination: PasteDestination,
 ): Score {
-  const track = score.tracks.find(t => t.id === destination.trackId);
+  const track = score.tracks.find((t) => t.id === destination.trackId);
   if (!track || notes.length === 0) return score;
 
-  const originStart = Math.min(...notes.map(n => n.startTick));
-  const boundaries = track.measures.map(m => m.startTick);
+  const originStart = Math.min(...notes.map((n) => n.startTick));
+  const boundaries = track.measures.map((m) => m.startTick);
 
   let working = track;
   for (const note of notes) {
@@ -55,7 +50,7 @@ function pasteEvents(
     }
   }
 
-  const tracks = score.tracks.map(t => (t.id === track.id ? working : t));
+  const tracks = score.tracks.map((t) => (t.id === track.id ? working : t));
   return withTracks(score, tracks);
 }
 
@@ -71,10 +66,10 @@ function pasteEvents(
 export function pasteEventsCommand(
   notes: NoteEvent[],
   destination: PasteDestination,
-  label: string
+  label: string,
 ): ScoreCommand {
-  return transformCommand(label, score =>
-    pasteEvents(score, notes, destination)
+  return transformCommand(label, (score) =>
+    pasteEvents(score, notes, destination),
   );
 }
 
@@ -84,7 +79,7 @@ export function pasteEventsCommand(
 function clipToMeasure(
   event: MusicalEvent,
   measureStart: number,
-  measureEnd: number
+  measureEnd: number,
 ): MusicalEvent | null {
   const start = Math.max(event.startTick, measureStart);
   const end = Math.min(event.startTick + event.durationTicks, measureEnd);
@@ -124,14 +119,14 @@ export type QuantizeTarget = {
  */
 export function collectQuantizeTargets(
   score: Score,
-  eventIds: readonly UUID[]
+  eventIds: readonly UUID[],
 ): QuantizeTarget[] {
   const idSet = new Set(eventIds);
   const targets: QuantizeTarget[] = [];
   for (const track of score.tracks) {
     for (const measure of track.measures) {
       for (const voice of measure.voices) {
-        if (!voice.events.some(e => idSet.has(e.id))) continue;
+        if (!voice.events.some((e) => idSet.has(e.id))) continue;
         targets.push({
           trackId: track.id,
           measureId: measure.id,
@@ -159,7 +154,7 @@ export function collectQuantizeTargets(
 export function applyQuantizedGroups(
   score: Score,
   targets: readonly QuantizeTarget[],
-  quantizedByVoiceId: ReadonlyMap<UUID, MusicalEvent[]>
+  quantizedByVoiceId: ReadonlyMap<UUID, MusicalEvent[]>,
 ): Score {
   const targetsByTrackMeasure = new Map<string, QuantizeTarget[]>();
   for (const target of targets) {
@@ -169,10 +164,10 @@ export function applyQuantizedGroups(
     else targetsByTrackMeasure.set(key, [target]);
   }
 
-  const tracks = score.tracks.map(track => {
-    const measures = track.measures.map(measure => {
+  const tracks = score.tracks.map((track) => {
+    const measures = track.measures.map((measure) => {
       const measureTargets = targetsByTrackMeasure.get(
-        `${track.id}::${measure.id}`
+        `${track.id}::${measure.id}`,
       );
       if (!measureTargets) return measure;
 
@@ -180,12 +175,12 @@ export function applyQuantizedGroups(
       const measureEnd = measure.startTick + measure.durationTicks;
       for (const target of measureTargets) {
         const quantizedNotes = (quantizedByVoiceId.get(target.voiceId) ?? [])
-          .map(e => clipToMeasure(e, measure.startTick, measureEnd))
+          .map((e) => clipToMeasure(e, measure.startTick, measureEnd))
           .filter((e): e is MusicalEvent => e !== null);
         const withQuantized = {
           ...nextMeasure,
-          voices: nextMeasure.voices.map(v =>
-            v.id === target.voiceId ? { ...v, events: quantizedNotes } : v
+          voices: nextMeasure.voices.map((v) =>
+            v.id === target.voiceId ? { ...v, events: quantizedNotes } : v,
           ),
         };
         nextMeasure = reflowVoice(withQuantized, target.voiceId, track.id);
@@ -211,11 +206,11 @@ export function applyQuantizedGroups(
 function quantize(
   score: Score,
   eventIds: readonly UUID[],
-  options: QuantizeOptions
+  options: QuantizeOptions,
 ): Score {
   const targets = collectQuantizeTargets(score, eventIds);
   const quantizedByVoiceId = new Map(
-    targets.map(t => [t.voiceId, quantizeEvents(t.notes, options)] as const)
+    targets.map((t) => [t.voiceId, quantizeEvents(t.notes, options)] as const),
   );
   return applyQuantizedGroups(score, targets, quantizedByVoiceId);
 }
@@ -224,9 +219,9 @@ function quantize(
 export function quantizeCommand(
   eventIds: UUID[],
   options: QuantizeOptions,
-  label: string
+  label: string,
 ): ScoreCommand {
-  return transformCommand(label, score => quantize(score, eventIds, options));
+  return transformCommand(label, (score) => quantize(score, eventIds, options));
 }
 
 // ---- transposeCommand -----------------------------------------------------------
@@ -234,26 +229,26 @@ export function quantizeCommand(
 function transpose(
   score: Score,
   eventIds: readonly UUID[],
-  semitones: number
+  semitones: number,
 ): Score {
   const idSet = new Set(eventIds);
-  const tracks = score.tracks.map(track => {
-    const measures = track.measures.map(measure => {
-      const voices = measure.voices.map(voice => {
-        if (!voice.events.some(e => idSet.has(e.id))) return voice;
+  const tracks = score.tracks.map((track) => {
+    const measures = track.measures.map((measure) => {
+      const voices = measure.voices.map((voice) => {
+        if (!voice.events.some((e) => idSet.has(e.id))) return voice;
         return {
           ...voice,
-          events: voice.events.map(event =>
+          events: voice.events.map((event) =>
             isNoteEvent(event) && idSet.has(event.id)
               ? {
                   ...event,
                   pitch: transposePitch(
                     event.pitch,
                     semitones,
-                    measure.keySignature
+                    measure.keySignature,
                   ),
                 }
-              : event
+              : event,
           ),
         };
       });
@@ -270,9 +265,9 @@ function transpose(
 export function transposeCommand(
   eventIds: UUID[],
   semitones: number,
-  label: string
+  label: string,
 ): ScoreCommand {
-  return transformCommand(label, score =>
-    transpose(score, eventIds, semitones)
+  return transformCommand(label, (score) =>
+    transpose(score, eventIds, semitones),
   );
 }

@@ -6,12 +6,12 @@
  * the score, so folding it into that command would break the contract its
  * callers rely on.
  */
-import { appendMeasure } from '../score/factory.js';
-import { allNotes, scoreEndTick } from '../score/queries.js';
-import { addNoteCommand, moveNotesCommand } from './note-commands.js';
-import { transformCommand } from './snapshot.js';
-import type { ScoreCommand } from './types.js';
-import type { Articulation, Pitch, Score, UUID } from '../../index.js';
+import { appendMeasure } from "../score/factory.js";
+import { allNotes, scoreEndTick } from "../score/queries.js";
+import { addNoteCommand, moveNotesCommand } from "./note-commands.js";
+import { transformCommand } from "./snapshot.js";
+import type { ScoreCommand } from "./types.js";
+import type { Articulation, Pitch, Score, UUID } from "../../index.js";
 
 export type RippleInsertParams = {
   trackId: UUID;
@@ -34,10 +34,10 @@ export type RippleInsertParams = {
  */
 function growToFit(score: Score, trackId: UUID, neededTicks: number): Score {
   const lastNoteEnd = allNotes(score)
-    .filter(note => note.trackId === trackId)
+    .filter((note) => note.trackId === trackId)
     .reduce(
       (end, note) => Math.max(end, note.startTick + note.durationTicks),
-      0
+      0,
     );
 
   let next = score;
@@ -60,15 +60,15 @@ export function makeRoom(
   score: Score,
   trackId: UUID,
   atTick: number,
-  ticks: number
+  ticks: number,
 ): Score {
   const grown = growToFit(score, trackId, ticks);
 
   // Gathered by id rather than by span: `moveNotesCommand` is the primitive
   // that already knows how to re-place notes and reflow their measures.
   const displaced = allNotes(grown)
-    .filter(note => note.trackId === trackId && note.startTick >= atTick)
-    .map(note => note.id);
+    .filter((note) => note.trackId === trackId && note.startTick >= atTick)
+    .map((note) => note.id);
   if (displaced.length === 0) return grown;
 
   return moveNotesCommand(
@@ -77,7 +77,7 @@ export function makeRoom(
       deltaTicks: ticks,
       deltaSemitones: 0,
     },
-    'Move notes'
+    "Move notes",
   ).execute(grown);
 }
 
@@ -99,15 +99,15 @@ export function closeGap(
   score: Score,
   trackId: UUID,
   fromTick: number,
-  ticks: number
+  ticks: number,
 ): Score {
   if (ticks <= 0) return score;
 
   const displaced = allNotes(score)
     .filter(
-      note => note.trackId === trackId && note.startTick >= fromTick + ticks
+      (note) => note.trackId === trackId && note.startTick >= fromTick + ticks,
     )
-    .map(note => note.id);
+    .map((note) => note.id);
   if (displaced.length === 0) return score;
 
   return moveNotesCommand(
@@ -116,7 +116,7 @@ export function closeGap(
       deltaTicks: -ticks,
       deltaSemitones: 0,
     },
-    'Move notes'
+    "Move notes",
   ).execute(score);
 }
 
@@ -130,14 +130,14 @@ export function closeGap(
  */
 export function insertWithRippleCommand(
   params: RippleInsertParams,
-  label: string
+  label: string,
 ): ScoreCommand {
-  return transformCommand(label, score => {
+  return transformCommand(label, (score) => {
     const shifted = makeRoom(
       score,
       params.trackId,
       params.startTick,
-      params.durationTicks
+      params.durationTicks,
     );
 
     return addNoteCommand(
@@ -150,7 +150,7 @@ export function insertWithRippleCommand(
         durationTicks: params.durationTicks,
         ...(params.articulation ? { articulation: params.articulation } : {}),
       },
-      'Add note'
+      "Add note",
     ).execute(shifted);
   });
 }

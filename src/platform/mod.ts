@@ -14,7 +14,7 @@
  * reimplemented per platform.
  */
 
-export type TrackerFormat = 'mod' | 's3m' | 'xm' | 'it' | 'dsm' | 'mptm';
+export type TrackerFormat = "mod" | "s3m" | "xm" | "it" | "dsm" | "mptm";
 
 /** One instrument slot. In MOD/S3M/DSM a sample *is* the instrument; XM, IT and MPTM put a layer above. */
 export type TrackerInstrument = { index: number; name: string };
@@ -36,7 +36,7 @@ export type TrackerCell = {
   /** 0 means "keep whatever this channel was already playing". */
   instrument: number;
   /** MIDI note number, `'off'` for an explicit release or cut, `null` for an empty cell. */
-  note: number | 'off' | null;
+  note: number | "off" | null;
   /** Ticks per row, where this cell changes it. */
   speed?: number;
   /** Beats per minute, where this cell changes it. */

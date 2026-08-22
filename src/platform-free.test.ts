@@ -1,19 +1,22 @@
-import { describe, expect, it } from 'vitest';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { describe, expect, it } from "vitest";
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { join } from "node:path";
 
 function sourceFiles(dir: string, found: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {
     const path = join(dir, entry);
     if (statSync(path).isDirectory()) sourceFiles(path, found);
-    else if (/\.tsx?$/.test(path) && !/\.test\.tsx?$/.test(path)) found.push(path);
+    else if (/\.tsx?$/.test(path) && !/\.test\.tsx?$/.test(path))
+      found.push(path);
   }
   return found;
 }
 
 /** Prose is not code — a doc comment naming `document.` must not fail the build. The `[^:]` guard keeps `https://` from eating the rest of its line. */
 function stripComments(text: string): string {
-  return text.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/.*$/gm, '$1');
+  return text
+    .replace(/\/\*[\s\S]*?\*\//g, " ")
+    .replace(/(^|[^:])\/\/.*$/gm, "$1");
 }
 
 /**
@@ -23,17 +26,17 @@ function stripComments(text: string): string {
  * Native implements them too, and this client is built out of exactly those.
  */
 const WEB_ONLY_GLOBALS = [
-  'document',
-  'window',
-  'navigator',
-  'localStorage',
-  'sessionStorage',
-  'DOMParser',
-  'XMLHttpRequest',
-  'requestAnimationFrame',
-  'getComputedStyle',
-  'matchMedia',
-  'alert',
+  "document",
+  "window",
+  "navigator",
+  "localStorage",
+  "sessionStorage",
+  "DOMParser",
+  "XMLHttpRequest",
+  "requestAnimationFrame",
+  "getComputedStyle",
+  "matchMedia",
+  "alert",
 ];
 
 /**
@@ -45,10 +48,15 @@ const WEB_ONLY_GLOBALS = [
  * appearing here. This is the check that objects. Mirrors `music_lib`'s
  * `src/platform/no-platform-imports.test.ts`.
  */
-describe('music_types is platform-free', () => {
-  it('touches no web-only global', () => {
-    const pattern = new RegExp(`(^|[^.\\w])(globalThis\\.)?(${WEB_ONLY_GLOBALS.join('|')})\\s*[.([]`, 'm');
-    const offenders = sourceFiles('src').filter((path) => pattern.test(stripComments(readFileSync(path, 'utf8'))));
+describe("music_types is platform-free", () => {
+  it("touches no web-only global", () => {
+    const pattern = new RegExp(
+      `(^|[^.\\w])(globalThis\\.)?(${WEB_ONLY_GLOBALS.join("|")})\\s*[.([]`,
+      "m",
+    );
+    const offenders = sourceFiles("src").filter((path) =>
+      pattern.test(stripComments(readFileSync(path, "utf8"))),
+    );
     expect(offenders).toEqual([]);
   });
 
@@ -59,8 +67,8 @@ describe('music_types is platform-free', () => {
    * which is why nothing else here would notice.
    */
   it("emits no `import.meta`, which React Native's bundler cannot parse", () => {
-    const offenders = sourceFiles('src').filter((path) =>
-      /import\s*\.\s*meta/.test(stripComments(readFileSync(path, 'utf8'))),
+    const offenders = sourceFiles("src").filter((path) =>
+      /import\s*\.\s*meta/.test(stripComments(readFileSync(path, "utf8"))),
     );
     expect(offenders).toEqual([]);
   });

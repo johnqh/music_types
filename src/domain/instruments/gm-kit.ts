@@ -31,19 +31,19 @@ export type GmKit = {
  * arithmetically the way instrument families can.
  */
 export const GM_KITS: readonly GmKit[] = [
-  { program: 0, name: 'Standard Kit' },
-  { program: 8, name: 'Room Kit' },
-  { program: 16, name: 'Power Kit' },
-  { program: 24, name: 'Electronic Kit' },
-  { program: 25, name: 'TR-808 Kit' },
-  { program: 32, name: 'Jazz Kit' },
-  { program: 40, name: 'Brush Kit' },
-  { program: 48, name: 'Orchestra Kit' },
+  { program: 0, name: "Standard Kit" },
+  { program: 8, name: "Room Kit" },
+  { program: 16, name: "Power Kit" },
+  { program: 24, name: "Electronic Kit" },
+  { program: 25, name: "TR-808 Kit" },
+  { program: 32, name: "Jazz Kit" },
+  { program: 40, name: "Brush Kit" },
+  { program: 48, name: "Orchestra Kit" },
 ];
 
 /** The kit at exactly `program`, or `null` where no kit is defined there. */
 export function gmKit(program: number): GmKit | null {
-  return GM_KITS.find(kit => kit.program === program) ?? null;
+  return GM_KITS.find((kit) => kit.program === program) ?? null;
 }
 
 /**

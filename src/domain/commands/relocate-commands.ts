@@ -7,20 +7,20 @@
  * from two dispatches would make undo step back through the middle of a
  * gesture the user experienced as one.
  */
-import { isNoteEvent } from '../../index.js';
-import type { NoteEvent, Score, Track, UUID } from '../../index.js';
-import { transformCommand } from './snapshot.js';
-import type { ScoreCommand } from './types.js';
+import { isNoteEvent } from "../../index.js";
+import type { NoteEvent, Score, Track, UUID } from "../../index.js";
+import { transformCommand } from "./snapshot.js";
+import type { ScoreCommand } from "./types.js";
 import {
   clearDanglingTies,
   insertNoteIntoTrack,
   removeNotesFromTrack,
   withTracks,
-} from './reflow.js';
-import { makeRoom } from './ripple-commands.js';
+} from "./reflow.js";
+import { makeRoom } from "./ripple-commands.js";
 
 /** What happens to music already at the destination. Mirrors the editor's edit mode. */
-export type CollisionMode = 'stack' | 'replace' | 'ripple';
+export type CollisionMode = "stack" | "replace" | "ripple";
 
 export type RelocateNotesParams = {
   targetTrackId: UUID;
@@ -58,7 +58,7 @@ function occupantsOf(
   track: Track,
   from: number,
   to: number,
-  voices: ReadonlySet<number>
+  voices: ReadonlySet<number>,
 ): UUID[] {
   const ids: UUID[] = [];
   for (const measure of track.measures) {
@@ -82,18 +82,18 @@ function occupantsOf(
 function relocateNotes(
   score: Score,
   eventIds: readonly UUID[],
-  params: RelocateNotesParams
+  params: RelocateNotesParams,
 ): Score {
   const ids = new Set(eventIds);
   const moving = collect(score, ids);
   if (moving.length === 0) return score;
-  if (!score.tracks.some(t => t.id === params.targetTrackId)) return score;
+  if (!score.tracks.some((t) => t.id === params.targetTrackId)) return score;
 
   // Partners left behind must not keep a tie to a note that has gone.
   const detied = clearDanglingTies(score, ids);
   let working = withTracks(
     detied,
-    detied.tracks.map(track => removeNotesFromTrack(track, ids))
+    detied.tracks.map((track) => removeNotesFromTrack(track, ids)),
   );
 
   // Written as a check rather than a `!`, though the guard above has already
@@ -101,7 +101,7 @@ function relocateNotes(
   // assertion states a guarantee the compiler cannot verify, and this states
   // the same one at no cost. Unreachable in practice, and returning the score
   // unchanged is the same answer the guard above gives.
-  const target = working.tracks.find(t => t.id === params.targetTrackId);
+  const target = working.tracks.find((t) => t.id === params.targetTrackId);
   if (!target) return score;
   const placed = moving.map(({ note, voiceIndex }) => ({
     note,
@@ -110,33 +110,33 @@ function relocateNotes(
       0,
       Math.min(
         note.startTick + params.deltaTicks,
-        lastStart(target, note.durationTicks)
-      )
+        lastStart(target, note.durationTicks),
+      ),
     ),
   }));
 
-  const from = Math.min(...placed.map(p => p.startTick));
-  const to = Math.max(...placed.map(p => p.startTick + p.note.durationTicks));
+  const from = Math.min(...placed.map((p) => p.startTick));
+  const to = Math.max(...placed.map((p) => p.startTick + p.note.durationTicks));
 
-  if (params.collision === 'replace') {
-    const voices = new Set(placed.map(p => p.voiceIndex));
+  if (params.collision === "replace") {
+    const voices = new Set(placed.map((p) => p.voiceIndex));
     const doomed = new Set(occupantsOf(target, from, to, voices));
     if (doomed.size > 0) {
       working = withTracks(
         working,
-        working.tracks.map(t =>
-          t.id === params.targetTrackId ? removeNotesFromTrack(t, doomed) : t
-        )
+        working.tracks.map((t) =>
+          t.id === params.targetTrackId ? removeNotesFromTrack(t, doomed) : t,
+        ),
       );
     }
-  } else if (params.collision === 'ripple') {
+  } else if (params.collision === "ripple") {
     working = makeRoom(working, params.targetTrackId, from, to - from);
   }
 
   for (const { note, voiceIndex, startTick } of placed) {
     working = withTracks(
       working,
-      working.tracks.map(t =>
+      working.tracks.map((t) =>
         t.id === params.targetTrackId
           ? insertNoteIntoTrack(
               t,
@@ -149,10 +149,10 @@ function relocateNotes(
                 tieStart: undefined,
                 tieStop: undefined,
               },
-              voiceIndex
+              voiceIndex,
             )
-          : t
-      )
+          : t,
+      ),
     );
   }
 
@@ -169,9 +169,9 @@ function relocateNotes(
 export function relocateNotesCommand(
   eventIds: UUID[],
   params: RelocateNotesParams,
-  label: string
+  label: string,
 ): ScoreCommand {
-  return transformCommand(label, score =>
-    relocateNotes(score, eventIds, params)
+  return transformCommand(label, (score) =>
+    relocateNotes(score, eventIds, params),
   );
 }

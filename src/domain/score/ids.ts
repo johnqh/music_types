@@ -1,6 +1,6 @@
-import type { UUID } from '../../index.js';
+import type { UUID } from "../../index.js";
 
-const HEX_CHARS = '0123456789abcdef';
+const HEX_CHARS = "0123456789abcdef";
 
 /**
  * Fallback v4-UUID generator for non-secure contexts, where
@@ -9,12 +9,12 @@ const HEX_CHARS = '0123456789abcdef';
  * identifiers only.
  */
 function randomUuidFallback(): UUID {
-  let result = '';
+  let result = "";
   for (let i = 0; i < 36; i += 1) {
     if (i === 8 || i === 13 || i === 18 || i === 23) {
-      result += '-';
+      result += "-";
     } else if (i === 14) {
-      result += '4';
+      result += "4";
     } else if (i === 19) {
       result += HEX_CHARS[8 + Math.floor(Math.random() * 4)]; // one of 8, 9, a, b
     } else {
@@ -31,8 +31,8 @@ function randomUuidFallback(): UUID {
  */
 export function createId(): UUID {
   if (
-    typeof crypto !== 'undefined' &&
-    typeof crypto.randomUUID === 'function'
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
   ) {
     return crypto.randomUUID();
   }

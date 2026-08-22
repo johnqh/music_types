@@ -7,10 +7,10 @@
  * things that import an audio library; everything that depends on playback
  * depends on this file instead, so the engine stays swappable and mockable.
  */
-import type { ScoreRange } from '../index.js';
-import type { RenderTrack } from './audio.js';
+import type { ScoreRange } from "../index.js";
+import type { RenderTrack } from "./audio.js";
 
-export type TransportPlaybackState = 'stopped' | 'playing' | 'paused';
+export type TransportPlaybackState = "stopped" | "playing" | "paused";
 
 /**
  * Callbacks the engine invokes as playback advances. `onPositionTick` fires at
@@ -155,10 +155,10 @@ export type PlaybackPlan = {
 };
 
 export type PlaybackLoadState =
-  | { status: 'idle' }
-  | { status: 'loading'; fraction: number | null }
-  | { status: 'ready' }
-  | { status: 'failed'; message: string };
+  | { status: "idle" }
+  | { status: "loading"; fraction: number | null }
+  | { status: "ready" }
+  | { status: "failed"; message: string };
 
 export interface PlaybackEngine {
   initialize(): Promise<void>;
