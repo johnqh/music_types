@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import { isNoteEvent } from "../../index.js";
 import type { NoteEvent, Score } from "../../index.js";
 import { twinkleScore } from "../../test/fixtures.js";
-import { toGraceNoteCommand } from "../commands/note-commands.js";
+import { toGraceNoteCommand } from "../commands/note-marks.js";
 import { flattenScoreNotes } from "./flatten.js";
 
 /** Twinkle with its first note turned into an ornament on the second. */

@@ -1,14 +1,16 @@
 import { rebuildMeasureTicks } from "./factory.js";
 import { measuresInRange } from "./queries.js";
-import type { Measure, Score, ScoreFragment } from "../../index.js";
+import type { Measure, Score } from "../../index.js";
+import type { ScoreFragment } from "../../model/score.js";
 import type { ScoreRange } from "../selection/types.js";
 
-/**
- * `ScoreFragment` is canonical in @sudobility/music_types and re-exported
- * here so domain modules keep one import site. A fragment is a snapshot of
- * a tick range of a score (measures shared by reference, not deep-cloned).
- */
-export type { ScoreFragment } from "../../index.js";
+/*
+  `ScoreFragment` is declared in `model/score.ts` and re-exported from the
+  package index, so it is imported above with the rest of the model rather
+  than re-exported from here — re-exporting it made the same name arrive at
+  the index twice.
+*/
+export type { ScoreFragment };
 
 /** Captures the measures overlapping `range` (per track named in `range.trackIds`, or all tracks if empty). */
 export function extractFragment(

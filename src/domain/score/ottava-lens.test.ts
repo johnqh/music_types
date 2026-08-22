@@ -9,7 +9,7 @@ import { describe, expect, it } from "vitest";
 import type { NoteEvent, Ottava, Score } from "../../index.js";
 import { isNoteEvent } from "../../index.js";
 import { twinkleScore } from "../../test/fixtures.js";
-import { toggleOttavaCommand } from "../commands/note-commands.js";
+import { toggleOttavaCommand } from "../commands/note-marks.js";
 import { hasOttava, ottavaScore } from "./ottava.js";
 
 function notes(score: Score): NoteEvent[] {

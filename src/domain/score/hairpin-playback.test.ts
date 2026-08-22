@@ -6,8 +6,8 @@ import { describe, expect, it } from "vitest";
 import type { Score } from "../../index.js";
 import { isNoteEvent } from "../../index.js";
 import { twinkleScore } from "../../test/fixtures.js";
-import { toggleHairpinCommand } from "../commands/note-commands.js";
-import { changeDynamicCommand } from "../commands/note-commands.js";
+import { toggleHairpinCommand } from "../commands/note-marks.js";
+import { changeDynamicCommand } from "../commands/note-marks.js";
 import { flattenScoreNotes } from "./flatten.js";
 
 const trackId = twinkleScore().tracks[0].id;

@@ -1,0 +1,351 @@
+/**
+ * The AI generation contracts, and the schemas that validate them.
+ *
+ * The request and result shapes `music_api` and the app agree on. Both sides
+ * import these, which is the whole reason this package exists.
+ */
+import { z } from "zod";
+import {
+  clefSchema,
+  keySignatureSchema,
+  measureSchema,
+  scoreSchema,
+  timeSignatureSchema,
+} from "./schemas.js";
+import type {
+  Score,
+  ScoreFragment,
+  KeySignature,
+  ScoreRange,
+  TimeSignature,
+  Track,
+  UUID,
+} from "./score.js";
+// ---------------------------------------------------------------------------
+// 5. AI generation contracts
+// ---------------------------------------------------------------------------
+
+export type GenerateScoreRequestTrack = {
+  name: string;
+  instrumentName: string;
+  midiProgram: number;
+  clef: Track["clef"];
+  range?: { lowestMidi: number; highestMidi: number };
+  maximumPolyphony?: number;
+};
+
+export type GenerateScoreRequest = {
+  prompt: string;
+  title?: string;
+  style?: string;
+  mood?: string;
+  durationMeasures: number;
+  tempo?: number;
+  timeSignature?: TimeSignature;
+  keySignature?: KeySignature;
+  tracks: GenerateScoreRequestTrack[];
+  complexity?: "simple" | "moderate" | "complex";
+};
+
+/** Never a rendered/notation payload and never raw MIDI: always a structured `Score`. */
+export type GenerateScoreResult = { score: Score; warnings: string[] };
+
+export type RegenerationConstraints = {
+  /**
+   * Absent for a region that does not sit on barlines (Replace Notes), where
+   * "preserve the measure count" says nothing and only muddies the prompt.
+   * Still never `false`: a regeneration that may add or drop measures is not
+   * a thing this system asks for.
+   */
+  preserveMeasureCount?: true;
+  preserveTimeSignatures: true;
+  preserveTempoEvents: true;
+  preserveBoundaryNotes?: boolean;
+  preserveHarmony?: boolean;
+  preserveRhythm?: boolean;
+  preserveMelody?: boolean;
+  maximumPolyphony?: number;
+  allowedPitchRangeByTrack?: Record<
+    string,
+    { lowestMidi: number; highestMidi: number }
+  >;
+};
+
+export type RegenerateRegionRequest = {
+  scoreId: string;
+  instruction: string;
+  range: ScoreRange;
+  precedingContext: ScoreFragment;
+  selectedFragment: ScoreFragment;
+  followingContext: ScoreFragment;
+  constraints: RegenerationConstraints;
+  candidateCount: number;
+  /** Same three dials whole-score generation has; the prompt builder emits them identically. */
+  style?: string;
+  mood?: string;
+  complexity?: "simple" | "moderate" | "complex";
+};
+
+export type RegenerationCandidate = {
+  id: string;
+  label: string;
+  fragment: ScoreFragment;
+};
+
+export type RegenerateRegionResult = {
+  candidates: RegenerationCandidate[];
+  warnings: string[];
+};
+
+export interface MusicGenerationProvider {
+  id: string;
+  name: string;
+  generateScore(
+    request: GenerateScoreRequest,
+    signal?: AbortSignal,
+  ): Promise<GenerateScoreResult>;
+  regenerateRegion(
+    request: RegenerateRegionRequest,
+    signal?: AbortSignal,
+  ): Promise<RegenerateRegionResult>;
+}
+
+// ---------------------------------------------------------------------------
+// 6. Zod schemas for the generation contracts
+// ---------------------------------------------------------------------------
+
+export const midiRangeSchema = z.object({
+  lowestMidi: z.number().int().min(0).max(127),
+  highestMidi: z.number().int().min(0).max(127),
+});
+
+export const scoreRangeSchema = z.object({
+  startTick: z.number().int().nonnegative(),
+  endTick: z.number().int().nonnegative(),
+  trackIds: z.array(z.string().min(1)),
+});
+
+export const scoreFragmentSchema = z.object({
+  range: scoreRangeSchema,
+  ppq: z.number().int().positive(),
+  tracks: z.array(
+    z.object({ trackId: z.string().min(1), measures: z.array(measureSchema) }),
+  ),
+});
+
+export const generateScoreRequestTrackSchema = z.object({
+  name: z.string(),
+  instrumentName: z.string(),
+  midiProgram: z.number().int().min(0).max(127),
+  clef: clefSchema,
+  range: midiRangeSchema.optional(),
+  maximumPolyphony: z.number().int().positive().optional(),
+});
+
+export const generateScoreRequestSchema = z.object({
+  prompt: z.string(),
+  title: z.string().optional(),
+  style: z.string().optional(),
+  mood: z.string().optional(),
+  durationMeasures: z.number().int().positive(),
+  tempo: z.number().positive().optional(),
+  timeSignature: timeSignatureSchema.optional(),
+  keySignature: keySignatureSchema.optional(),
+  tracks: z.array(generateScoreRequestTrackSchema),
+  complexity: z.enum(["simple", "moderate", "complex"]).optional(),
+});
+
+export const generateScoreResultSchema = z.object({
+  score: scoreSchema,
+  warnings: z.array(z.string()),
+});
+
+export const regenerationConstraintsSchema = z.object({
+  preserveMeasureCount: z.literal(true).optional(),
+  preserveTimeSignatures: z.literal(true),
+  preserveTempoEvents: z.literal(true),
+  preserveBoundaryNotes: z.boolean().optional(),
+  preserveHarmony: z.boolean().optional(),
+  preserveRhythm: z.boolean().optional(),
+  preserveMelody: z.boolean().optional(),
+  maximumPolyphony: z.number().int().positive().optional(),
+  allowedPitchRangeByTrack: z.record(z.string(), midiRangeSchema).optional(),
+});
+
+export const regenerateRegionRequestSchema = z.object({
+  scoreId: z.string().min(1),
+  instruction: z.string(),
+  range: scoreRangeSchema,
+  precedingContext: scoreFragmentSchema,
+  selectedFragment: scoreFragmentSchema,
+  followingContext: scoreFragmentSchema,
+  constraints: regenerationConstraintsSchema,
+  candidateCount: z.number().int().positive(),
+  style: z.string().optional(),
+  mood: z.string().optional(),
+  complexity: z.enum(["simple", "moderate", "complex"]).optional(),
+});
+
+export const regenerationCandidateSchema = z.object({
+  id: z.string().min(1),
+  label: z.string(),
+  fragment: scoreFragmentSchema,
+});
+
+export const regenerateRegionResultSchema = z.object({
+  candidates: z.array(regenerationCandidateSchema),
+  warnings: z.array(z.string()),
+});
+
+/** Whether a project can be edited right now. Two states, because that is the only question the editor asks. */
+/**
+ * What currently owns a project.
+ *
+ * `generating` and `transcribing` both mean "a job is producing this project's
+ * music, and writes must be refused until it lands" — they are distinct so the
+ * editor can say which is happening, since one takes seconds of model time and
+ * the other minutes of audio.
+ */
+export type ProjectStatus = "ready" | "generating" | "transcribing";
+
+export const projectStatusSchema = z.enum([
+  "ready",
+  "generating",
+  "transcribing",
+]);
+
+/** Which of the five generation entry points produced a job. */
+export type GenerationJobKind =
+  | "generate-score"
+  | "generate-track"
+  | "replace-notes"
+  | "replace-measures"
+  | "replace-track";
+
+export const generationJobKindSchema = z.enum([
+  "generate-score",
+  "generate-track",
+  "replace-notes",
+  "replace-measures",
+  "replace-track",
+]);
+
+/**
+ * A job's own lifecycle, which is richer than its project's: `cancelled`
+ * records that a result was produced and thrown away, which `ready` on the
+ * project cannot express.
+ */
+/**
+ * `queued` is a job waiting its turn: a user's generations run one at a time, so
+ * a job accepted while another is running waits rather than being refused. Its
+ * project is already `generating` — the request is built against the stored
+ * score, so that score must not move underneath it while it waits.
+ */
+export type GenerationJobStatus =
+  "queued" | "running" | "done" | "failed" | "cancelled";
+
+export const generationJobStatusSchema = z.enum([
+  "queued",
+  "running",
+  "done",
+  "failed",
+  "cancelled",
+]);
+
+/**
+ * A job as reported to the client. The stored `request`/`result` payloads are
+ * deliberately absent — they are large and the client never needs them.
+ */
+export type GenerationJob = {
+  id: UUID;
+  projectId: UUID;
+  kind: GenerationJobKind;
+  status: GenerationJobStatus;
+  createdAt: string;
+  finishedAt: string | null;
+  error: string | null;
+  /** Absent when the job never reached the model, or the stream reported no usage. */
+  usage?: TokenUsage;
+};
+
+/**
+ * What one generation job cost the provider.
+ *
+ * Lives here rather than in music_api because the client sees it: `GET /jobs/:id`
+ * carries it, and the app has no other way to report what a generation used.
+ *
+ * There is deliberately no `totalTokens` — it is the sum of the other two, and a
+ * stored derivable value is a chance for them to disagree. `model` is present
+ * because tokens only become money per-model and the model is env-configurable,
+ * so a total without it cannot be priced afterwards.
+ */
+export type TokenUsage = {
+  promptTokens: number;
+  completionTokens: number;
+  model: string;
+};
+
+export const tokenUsageSchema = z.object({
+  promptTokens: z.number().int().nonnegative(),
+  completionTokens: z.number().int().nonnegative(),
+  model: z.string().min(1),
+});
+
+export const generationJobSchema = z.object({
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  kind: generationJobKindSchema,
+  status: generationJobStatusSchema,
+  createdAt: z.string(),
+  finishedAt: z.string().nullable(),
+  error: z.string().nullable(),
+  usage: tokenUsageSchema.optional(),
+});
+
+/**
+ * `request` is the whole provider request, stored verbatim so the job never
+ * re-reads the project. Its shape varies by `kind`, so it is unknown here and
+ * narrowed by the runner.
+ */
+export type CreateGenerationJobRequest = {
+  projectId: UUID;
+  kind: GenerationJobKind;
+  request: unknown;
+};
+
+export const createGenerationJobRequestSchema = z.object({
+  projectId: z.string().min(1),
+  kind: generationJobKindSchema,
+  request: z.unknown(),
+});
+
+/** Parses and validates untrusted JSON as a `GenerateScoreRequest`. Throws `ZodError` on invalid input. */
+export function parseGenerateScoreRequest(json: unknown): GenerateScoreRequest {
+  return generateScoreRequestSchema.parse(json) as GenerateScoreRequest;
+}
+
+/** Parses and validates untrusted JSON as a `GenerateScoreResult`. Throws `ZodError` on invalid input. */
+export function parseGenerateScoreResult(json: unknown): GenerateScoreResult {
+  return generateScoreResultSchema.parse(json) as GenerateScoreResult;
+}
+
+/** Parses and validates untrusted JSON as a `RegenerateRegionRequest`. Throws `ZodError` on invalid input. */
+export function parseRegenerateRegionRequest(
+  json: unknown,
+): RegenerateRegionRequest {
+  return regenerateRegionRequestSchema.parse(json) as RegenerateRegionRequest;
+}
+
+/** Parses and validates untrusted JSON as a `RegenerateRegionResult`. Throws `ZodError` on invalid input. */
+export function parseRegenerateRegionResult(
+  json: unknown,
+): RegenerateRegionResult {
+  return regenerateRegionResultSchema.parse(json) as RegenerateRegionResult;
+}
+
+/** Parses and validates untrusted JSON as a `RegenerationCandidate`. Throws `ZodError` on invalid input. */
+export function parseRegenerationCandidate(
+  json: unknown,
+): RegenerationCandidate {
+  return regenerationCandidateSchema.parse(json) as RegenerationCandidate;
+}

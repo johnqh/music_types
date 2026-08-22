@@ -8,21 +8,23 @@ import { allNotes } from "../score/queries.js";
 import { ticksFor } from "../time/ticks.js";
 import {
   addNoteCommand,
-  changeAccidentalCommand,
-  changeArticulationCommand,
   changeDurationCommand,
-  changePitchCommand,
-  changeVelocityCommand,
   changeVoiceCommand,
   deleteEventsCommand,
   moveNotesCommand,
   resizeNotesCommand,
+} from "./note-commands.js";
+import {
+  changeAccidentalCommand,
+  changeArticulationCommand,
+  changePitchCommand,
+  changeVelocityCommand,
   clearGraceNotesCommand,
   toGraceNoteCommand,
   toggleFermataCommand,
   toggleSlurCommand,
   toggleTieCommand,
-} from "./note-commands.js";
+} from "./note-marks.js";
 
 const PITCH: Pitch = { step: "C", accidental: 0, octave: 4 };
 
