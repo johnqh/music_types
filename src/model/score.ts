@@ -259,6 +259,26 @@ export type NoteEvent = {
    */
   arpeggiate?: boolean;
   /**
+   * A departure from automatic beaming — nothing when the default is wanted.
+   *
+   * Beams are **derived**, like tuplets and for the same reason: a run of
+   * eighths under one beat *is* a beam, so storing the grouping would let it
+   * fall out of step with the durations the moment one note is retimed,
+   * deleted or pasted over. What is stored is only where the engraver
+   * disagrees with the default.
+   *
+   * `break` starts a new group at this note, which is what splits one beam
+   * into two — the common case, and what vocal writing needs, since a beam
+   * there follows the syllables rather than the beat. `none` takes the note
+   * out of beaming altogether so it draws its flag.
+   *
+   * There is deliberately no `join`: beaming *across* a beat is the one
+   * change that cannot be expressed by segmenting the default grouping, and
+   * supporting it would mean reimplementing beat grouping here rather than
+   * reusing the renderer's. Left out rather than half-built.
+   */
+  beam?: BeamOverride;
+  /**
    * The ends of an octave bracket, shaped like the hairpin and the slur.
    *
    * The start carries the displacement; the stop only says where it closes.
@@ -504,6 +524,9 @@ export type ScoreRange = {
   endTick: number;
   trackIds: string[];
 };
+
+/** How a note departs from automatic beaming. See `NoteEvent.beam`. */
+export type BeamOverride = "break" | "none";
 
 export type ScoreSelection = {
   eventIds: string[];

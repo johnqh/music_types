@@ -62,6 +62,7 @@ const FULL_NOTE: NoteEvent = {
   hairpinStart: "crescendo",
   hairpinStop: true,
   arpeggiate: true,
+  beam: "break",
   ottavaStart: "8va",
   ottavaStop: true,
   glissandoStart: true,

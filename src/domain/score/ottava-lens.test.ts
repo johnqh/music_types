@@ -10,7 +10,7 @@ import type { NoteEvent, Ottava, Score } from "../../index.js";
 import { isNoteEvent } from "../../index.js";
 import { twinkleScore } from "../../test/fixtures.js";
 import { toggleOttavaCommand } from "../commands/note-marks.js";
-import { hasOttava, ottavaScore } from "./ottava.js";
+import { hasOttava, ottavaScore, ottavaShiftAt } from "./ottava.js";
 
 function notes(score: Score): NoteEvent[] {
   return score.tracks[0].measures
@@ -84,5 +84,55 @@ describe("ottavaScore", () => {
     expect(notes(marked).map((n) => n.pitch.octave)).toEqual(
       notes(bracketed("8va")).map((n) => n.pitch.octave),
     );
+  });
+});
+
+describe("ottavaShiftAt", () => {
+  it("is 0 on an unbracketed score", () => {
+    const score = twinkleScore();
+    const trackId = score.tracks[0].id;
+    expect(ottavaShiftAt(score, trackId, 0)).toBe(0);
+    expect(ottavaShiftAt(score, trackId, 960)).toBe(0);
+  });
+
+  it("reports the bracket covering a tick, and 0 past its end", () => {
+    // The lens and this must agree about reach, or a note written just inside
+    // a bracket lands an octave away from the notes drawn beside it.
+    const marked = bracketed("8va", 3);
+    const trackId = marked.tracks[0].id;
+    const inside = notes(marked).slice(0, 3);
+    const after = notes(marked)[3];
+
+    for (const note of inside) {
+      expect(ottavaShiftAt(marked, trackId, note.startTick)).toBe(1);
+    }
+    expect(ottavaShiftAt(marked, trackId, after.startTick)).toBe(0);
+  });
+
+  it("agrees with the lens: drawn + shift === sounding", () => {
+    // The property the whole fix rests on. `ottavaScore` draws at
+    // `octave - shift`, so adding the shift back to a drawn pitch is exactly
+    // the inverse — which is what note entry applies to a clicked position.
+    const marked = bracketed("8vb", 2);
+    const trackId = marked.tracks[0].id;
+    const drawn = notes(ottavaScore(marked));
+    const sounding = notes(marked);
+
+    drawn.forEach((note, index) => {
+      const shift = ottavaShiftAt(marked, trackId, note.startTick);
+      expect(note.pitch.octave + shift).toBe(sounding[index].pitch.octave);
+    });
+  });
+
+  it("answers for a tick with no note on it, between bracketed notes", () => {
+    // The case that matters: a click lands on empty staff inside a bracket,
+    // where there is no note to look the shift up from.
+    const marked = bracketed("15ma", 3);
+    const trackId = marked.tracks[0].id;
+    const first = notes(marked)[0];
+    const second = notes(marked)[1];
+    const between = Math.floor((first.startTick + second.startTick) / 2);
+    expect(between).toBeGreaterThan(first.startTick);
+    expect(ottavaShiftAt(marked, trackId, between)).toBe(2);
   });
 });

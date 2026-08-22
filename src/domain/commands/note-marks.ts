@@ -16,6 +16,7 @@
 import type {
   Accidental,
   Articulation,
+  BeamOverride,
   Dynamic,
   GraceNote,
   Hairpin,
@@ -294,6 +295,43 @@ export function toggleHairpinCommand(
  * selecting a bar and rolling its chords should not fail because one beat
  * happens to be a single note.
  */
+/**
+ * Sets, or clears, a beaming override on the selected notes.
+ *
+ * Applying the mode already in force **removes** it, the same way
+ * `changeMeasureClefCommand` treats setting the clef already in force: "break
+ * here" and "clear the break" must not produce two scores that look identical,
+ * and the toolbar button is a toggle rather than a pair.
+ *
+ * Reads the current state from whether *every* selected note already carries
+ * the mode, so a partly-marked selection becomes fully marked instead of
+ * inverting note by note — the rule `toggleFermataCommand` already uses.
+ */
+export function changeBeamCommand(
+  eventIds: UUID[],
+  mode: BeamOverride,
+  label: string,
+): ScoreCommand {
+  return transformCommand(label, (score) => {
+    const notes = eventIds
+      .map((id) => findEvent(score, id))
+      .filter(
+        (event): event is NoteEvent => event !== null && isNoteEvent(event),
+      );
+    if (notes.length === 0) return score;
+
+    const allMarked = notes.every((note) => note.beam === mode);
+    return mapNotes(score, eventIds, (note) => {
+      if (allMarked) {
+        const updated: NoteEvent = { ...note };
+        delete updated.beam;
+        return updated;
+      }
+      return { ...note, beam: mode };
+    });
+  });
+}
+
 export function toggleArpeggiateCommand(
   eventIds: UUID[],
   label: string,

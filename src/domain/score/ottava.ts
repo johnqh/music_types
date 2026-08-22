@@ -15,10 +15,12 @@
  * identity cache is untouched by a score that has none — which is almost every
  * score.
  *
- * **Known limitation**, shared with `writtenScore`: clicking to place a note
- * *inside* a bracket writes the drawn pitch as the sounding one, because note
- * entry has no inverse for the display lens. That gap predates this and is not
- * specific to ottava.
+ * Note entry inverts this — see `ottavaShiftAt` below, and
+ * `soundingPitchForDrawn` in music_app, which undoes both display lenses
+ * before storing a clicked position. It used to not: a click inside a bracket
+ * stored the drawn pitch as the sounding one, so the note sounded an octave
+ * from where it was placed while drawing exactly where it was clicked, which
+ * is why it went unnoticed.
  */
 import type { NoteEvent, Ottava, Score } from "../../index.js";
 import { isNoteEvent } from "../../index.js";
@@ -88,6 +90,53 @@ export function ottavaScore(score: Score): Score {
       })),
     })),
   };
+}
+
+/**
+ * The bracket in force at `tick`, in octaves — the inverse note entry needs.
+ *
+ * `octaveShifts` answers for notes that already exist, keyed by id, which is
+ * all the *lens* needs. Writing a new note needs the other question: a click
+ * lands on a staff position that was drawn through the lens, so turning it
+ * back into a sounding pitch means knowing which bracket covers the tick being
+ * written at, before any note is there to look up.
+ *
+ * Walked per voice ordinal like `octaveShifts`, so the two cannot disagree
+ * about where a bracket reaches. A bracket stays open through the note
+ * carrying `ottavaStop` and is closed for anything after it — the same
+ * "closed *after* shifting" rule, so a note written at the closing note's own
+ * tick is inside the bracket and one written later is not.
+ *
+ * Returns 0 when no bracket covers the point, which is almost every call.
+ */
+export function ottavaShiftAt(
+  score: Score,
+  trackId: string,
+  tick: number,
+  voiceIndex = 0,
+): number {
+  const track = score.tracks.find((t) => t.id === trackId);
+  if (!track) return 0;
+
+  const line: NoteEvent[] = [];
+  for (const measure of track.measures) {
+    const voice = measure.voices[voiceIndex];
+    if (!voice) continue;
+    for (const event of voice.events) {
+      if (isNoteEvent(event)) line.push(event);
+    }
+  }
+  line.sort((a, b) => a.startTick - b.startTick);
+
+  let open: Ottava | null = null;
+  for (const note of line) {
+    // Strictly after the point: a note written *at* an existing note's tick
+    // takes the bracket state that note is under, not the one after it.
+    if (note.startTick > tick) break;
+    if (!open && note.ottavaStart) open = note.ottavaStart;
+    if (open && note.ottavaStop && note.startTick < tick) open = null;
+  }
+  return open ? OTTAVA_OCTAVES[open] : 0;
 }
 
 /**

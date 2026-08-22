@@ -5,6 +5,7 @@ import { isNoteEvent } from "../../index.js";
 import type { NoteEvent, Pitch, Score } from "../../index.js";
 import { twinkleScore } from "../../test/fixtures.js";
 import { allNotes } from "../score/queries.js";
+import { changeBeamCommand } from "./note-marks.js";
 import { ticksFor } from "../time/ticks.js";
 import {
   addNoteCommand,
@@ -828,5 +829,69 @@ describe("toggleFermataCommand", () => {
   it("does nothing when the selection holds no notes", () => {
     const score = twinkleScore();
     expect(toggleFermataCommand([], "Fermata").execute(score)).toBe(score);
+  });
+});
+
+describe("changeBeamCommand", () => {
+  function firstIds(score: Score, count: number): string[] {
+    return allNotes(score)
+      .sort((a, b) => a.startTick - b.startTick)
+      .slice(0, count)
+      .map((n) => n.id);
+  }
+
+  it("marks every selected note", () => {
+    const score = twinkleScore();
+    const ids = firstIds(score, 2);
+    const marked = changeBeamCommand(ids, "break", "Beam").execute(score);
+    const byId = new Map(allNotes(marked).map((n) => [n.id, n]));
+    for (const id of ids) expect(byId.get(id)?.beam).toBe("break");
+  });
+
+  it("clears the mode when every selected note already has it", () => {
+    // "Break here" and "clear the break" must not produce two scores that
+    // draw identically, so the second application removes rather than repeats.
+    const score = twinkleScore();
+    const ids = firstIds(score, 2);
+    const marked = changeBeamCommand(ids, "break", "Beam").execute(score);
+    const cleared = changeBeamCommand(ids, "break", "Beam").execute(marked);
+    const byId = new Map(allNotes(cleared).map((n) => [n.id, n]));
+    for (const id of ids) expect(byId.get(id)?.beam).toBeUndefined();
+  });
+
+  it("marks a partly-marked selection fully rather than inverting it", () => {
+    // The rule `toggleFermataCommand` already uses: a user who selects a run
+    // and presses the button means "make these all break", not "flip each".
+    const score = twinkleScore();
+    const ids = firstIds(score, 3);
+    const half = changeBeamCommand([ids[0]], "break", "Beam").execute(score);
+    const all = changeBeamCommand(ids, "break", "Beam").execute(half);
+    const byId = new Map(allNotes(all).map((n) => [n.id, n]));
+    for (const id of ids) expect(byId.get(id)?.beam).toBe("break");
+  });
+
+  it("switches modes rather than clearing when the other one is applied", () => {
+    const score = twinkleScore();
+    const ids = firstIds(score, 1);
+    const broken = changeBeamCommand(ids, "break", "Beam").execute(score);
+    const none = changeBeamCommand(ids, "none", "Beam").execute(broken);
+    expect(allNotes(none).find((n) => n.id === ids[0])?.beam).toBe("none");
+  });
+
+  it("leaves a score with nothing selected untouched, by identity", () => {
+    const score = twinkleScore();
+    expect(changeBeamCommand([], "break", "Beam").execute(score)).toBe(score);
+  });
+
+  it("keeps the score valid — beaming is notation, not timing", () => {
+    const score = twinkleScore();
+    const marked = changeBeamCommand(
+      firstIds(score, 3),
+      "break",
+      "Beam",
+    ).execute(score);
+    expect(validateScore(marked).filter((i) => i.severity === "error")).toEqual(
+      [],
+    );
   });
 });

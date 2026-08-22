@@ -112,6 +112,7 @@ export const noteEventSchema = z
     hairpinStart: hairpinSchema.optional(),
     hairpinStop: z.boolean().optional(),
     arpeggiate: z.boolean().optional(),
+    beam: z.enum(["break", "none"]).optional(),
     ottavaStart: ottavaSchema.optional(),
     ottavaStop: z.boolean().optional(),
     glissandoStart: z.boolean().optional(),
