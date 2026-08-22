@@ -87,6 +87,16 @@ export type Articulation = 'staccato' | 'accent' | 'tenuto' | 'marcato';
 export type Ornament = 'trill' | 'mordent' | 'inverted-mordent' | 'turn';
 
 /**
+ * A gradual change of loudness, written as a wedge under the stave.
+ *
+ * The other half of `Dynamic`: a dynamic is a *level* that holds until the
+ * next one, and a hairpin is the *change* between two of them. Most dynamic
+ * writing is hairpins, so a score that had only levels could say "loud here"
+ * but never "get louder".
+ */
+export type Hairpin = 'crescendo' | 'diminuendo';
+
+/**
  * A dynamic marking, from softest to loudest.
  *
  * Attached to the note it applies *from*, and in force until the next one on
@@ -191,6 +201,33 @@ export type NoteEvent = {
    */
   slurStart?: boolean;
   slurStop?: boolean;
+  /**
+   * The ends of a hairpin.
+   *
+   * Shaped exactly like `slurStart`/`slurStop`, because a hairpin is the same
+   * kind of object — a span with two endpoints, written across a run of notes.
+   * The *start* carries the direction, since that is what the wedge's opening
+   * says; the stop only has to say where it closes.
+   *
+   * Kept apart from `dynamic`, which marks a level beginning at a note, for
+   * the reason the two are different marks on paper: a hairpin can run between
+   * two dynamics, from one without a following one, or over notes that carry
+   * no dynamic at all.
+   */
+  hairpinStart?: Hairpin;
+  hairpinStop?: boolean;
+  /**
+   * Roll this chord rather than striking it together.
+   *
+   * A flag per note, although the mark belongs to the *chord*, because a chord
+   * here is several `NoteEvent`s sharing a tick — there is no chord object to
+   * hang it on. That is also MusicXML's shape: `<arpeggiate/>` appears on every
+   * note of the chord, not once.
+   *
+   * On a single note it means nothing and draws nothing: there is only one
+   * notehead to roll through.
+   */
+  arpeggiate?: boolean;
   /**
    * The syllable sung on this note.
    *
@@ -443,6 +480,7 @@ export const tempoEventSchema = z.object({
 });
 
 export const articulationSchema = z.enum(['staccato', 'accent', 'tenuto', 'marcato']);
+export const hairpinSchema = z.enum(['crescendo', 'diminuendo']);
 export const ornamentSchema = z.enum([
   'trill',
   'mordent',
@@ -470,6 +508,9 @@ export const noteEventSchema = z
     dynamic: dynamicSchema.optional(),
     slurStart: z.boolean().optional(),
     slurStop: z.boolean().optional(),
+    hairpinStart: hairpinSchema.optional(),
+    hairpinStop: z.boolean().optional(),
+    arpeggiate: z.boolean().optional(),
     chordSymbol: z.string().optional(),
     graceNotes: z
       .array(

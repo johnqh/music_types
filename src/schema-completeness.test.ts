@@ -53,6 +53,9 @@ const FULL_NOTE: NoteEvent = {
   dynamic: 'ff',
   slurStart: true,
   slurStop: true,
+  hairpinStart: 'crescendo',
+  hairpinStop: true,
+  arpeggiate: true,
   lyric: { text: 'la', syllabic: 'begin' },
   graceNotes: [
     { pitch: { step: 'D', accidental: 0, octave: 4 }, durationTicks: 120, slashed: true },
