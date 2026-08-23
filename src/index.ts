@@ -40,6 +40,12 @@ export * from "./model/selection-source.js";
 // ---------------------------------------------------------------------------
 // 10. Score file-format models (codecs live in @sudobility/music_codecs)
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Playhead — the one stateful service here; see position/music-position.ts
+// ---------------------------------------------------------------------------
+export * from "./position/index.js";
+export * from "./bytes/index.js";
+
 export * from "./formats/index.js";
 
 // ---------------------------------------------------------------------------

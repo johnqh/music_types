@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { MidiFile, PlaybackEngine, XmlElement } from "./index.js";
+import type { MidiFile, XmlElement } from "./index.js";
 import { XmlParseError } from "./index.js";
 
 describe("platform interfaces", () => {
@@ -47,8 +47,4 @@ describe("platform interfaces", () => {
     expect(file.tracks[0].controlChanges[7]?.[0].value).toBe(1);
   });
 
-  it("PlaybackEngine is implementable with no platform imports", () => {
-    const engine: Partial<PlaybackEngine> = { pause: () => {}, stop: () => {} };
-    expect(typeof engine.stop).toBe("function");
-  });
 });

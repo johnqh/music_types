@@ -39,6 +39,26 @@ Everything exports from a single sectioned `src/index.ts`:
 
 ## Gotchas
 
+- **The playhead is the one stateful service in this package, and that is a
+  deliberate precedent.** `MusicPosition` and its singleton live in
+  `src/position/`. Everything else here is model and primitives; the playhead
+  earns the exception because it has exactly one writer
+  (`@sudobility/music_player`) and readers in every other package — the caret,
+  the note highlighting, the piano keyboard — so any other home creates a
+  dependency edge that exists only to reach it. It still obeys the four rules:
+  works on both sides, no dependency, no hooks, no async.
+- **`base64.ts` is here because its two consumers ended up in different
+  packages.** `music_io`'s React Native file exporter encodes; `music_player`'s
+  sample-pack loader decodes. The module exists precisely so there is one
+  alphabet and one round-trip test rather than a copy each — splitting it would
+  break the property it was written to guarantee.
+- **The playback *plan* is here; the engine *contract* is not.** `PlaybackPlan`
+  composes `PerformanceTimeline`, which `performanceTimeline()` in
+  `domain/score/` produces, so the whole plan cluster is anchored here — moving
+  it would make this package import from `music_player`. `PlaybackEngine`,
+  `PlaybackObserver` and `AuditionVoice` did move, because that package is the
+  only thing that implements or calls them.
+
 - No domain logic here: tick math, factories, commands, validation logic all live in `@sudobility/music_lib`. This package must never depend on music_lib (music_api depends on this package and must not pull in UI/audio code).
 - `noteEventSchema`/`restEventSchema` are `.strict()` on purpose (a stray `pitch` key must not pass as a rest); other schemas strip unknown keys for forward compatibility.
 - Ticks are integers at 480 PPQ by convention; `startTick` is absolute.
