@@ -120,4 +120,5 @@ export * from "./domain/selection/selection-editing.js";
 export * from "./domain/time/duration-modifiers.js";
 export * from "./domain/time/duration-selection.js";
 export * from "./domain/time/tap-to-note.js";
+export * from "./domain/time/beams.js";
 export * from "./domain/time/tuplets.js";

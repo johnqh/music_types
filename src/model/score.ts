@@ -273,9 +273,12 @@ export type NoteEvent = {
    * out of beaming altogether so it draws its flag.
    *
    * There is deliberately no `join`: beaming *across* a beat is the one
-   * change that cannot be expressed by segmenting the default grouping, and
-   * supporting it would mean reimplementing beat grouping here rather than
-   * reusing the renderer's. Left out rather than half-built.
+   * change these two cannot express, since they only split and remove.
+   * Supporting it would mean owning a second grouping rule rather than
+   * deriving one — see `beamGroups`, which is the rule both the renderer and
+   * the MusicXML exporter read. It is also the one thing a MusicXML file can
+   * say that this model cannot: such a passage imports with our grouping
+   * rather than the file's.
    */
   beam?: BeamOverride;
   /**
