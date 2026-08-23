@@ -1,8 +1,10 @@
 /**
  * Playing notes in from a MIDI keyboard.
  *
- * Separate from `MidiCodec`, which reads and writes `.mid` files: this is a
- * live input device, and the two have nothing in common but the word MIDI.
+ * Separate from the `.mid` file codec in `@sudobility/music_codecs`: reading a
+ * file is byte arithmetic that runs anywhere, while this is a live input
+ * device that only a platform can offer. The two have nothing in common but
+ * the word MIDI, which is why only this one is a capability.
  *
  * A capability rather than a direct Web MIDI call, for the same reason
  * playback is one: the browser has `navigator.requestMIDIAccess`, React Native

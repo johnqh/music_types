@@ -48,8 +48,3 @@ export type MidiFile = {
   /** Longest track duration in seconds. */
   duration: number;
 };
-
-export interface MidiCodec {
-  decode(data: ArrayBuffer): MidiFile;
-  encode(file: MidiFile): Uint8Array;
-}

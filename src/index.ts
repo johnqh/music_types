@@ -38,7 +38,12 @@ export * from "./model/position.js";
 export * from "./model/selection-source.js";
 
 // ---------------------------------------------------------------------------
-// 10. Platform interfaces (implementations live in @sudobility/music_io)
+// 10. Score file-format models (codecs live in @sudobility/music_codecs)
+// ---------------------------------------------------------------------------
+export * from "./formats/index.js";
+
+// ---------------------------------------------------------------------------
+// 11. Platform interfaces (implementations live in @sudobility/music_io)
 // ---------------------------------------------------------------------------
 export * from "./platform/index.js";
 

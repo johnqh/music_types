@@ -55,24 +55,3 @@ export type TrackerModule = {
   /** `patterns[p][row][channel]`. Row count varies per pattern — MOD is always 64, IT allows 200. */
   patterns: TrackerCell[][][];
 };
-
-/**
- * Reading a tracker module.
- *
- * A capability for surface consistency — the app reaches every file format
- * through `getAppServices().io` — even though nothing about parsing is
- * platform-bound. All three implementations delegate to one shared module.
- */
-export interface TrackerCodec {
-  /** Sniffs the format from the bytes and decodes it. Throws on anything that is not one, rather than returning a garbage module that looks imported. */
-  decode(bytes: ArrayBuffer): TrackerModule;
-  /**
-   * Writes a module out, in the format `module.format` names.
-   *
-   * No sample data is written: a module is a notes format, so the slots are
-   * named and empty and the file is silent until somebody fills them. Throws
-   * for a format export does not write (`dsm`, `mptm`) rather than guessing a
-   * near neighbour.
-   */
-  encode(module: TrackerModule): ArrayBuffer;
-}
