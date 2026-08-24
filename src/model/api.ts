@@ -115,6 +115,15 @@ export type Snapshot = {
   publicId?: string;
   /** Shown on the Community list. Never the account email. */
   publisherName?: string;
+  /**
+   * The title a stranger sees, set when published.
+   *
+   * Kept apart from `name`, which is the version label this project's own
+   * picker draws: "Version 1" is what the tree needs and not what a public
+   * page should be called, and renaming for the public must not rewrite the
+   * history's labels.
+   */
+  publicName?: string;
   createdAt: string;
 };
 
@@ -122,6 +131,8 @@ export type Snapshot = {
 export type PublishedSnapshot = {
   publicId: string;
   name: string;
+  /** The public title. Falls back to `name` for anything published before it existed. */
+  publicName: string;
   publisherName: string;
   score: Score;
   createdAt: string;
@@ -196,6 +207,7 @@ export const snapshotSummarySchema = z.object({
   // picker badges from, and it is also all a publish response needs to return.
   publicId: z.string().min(1).optional(),
   publisherName: z.string().min(1).optional(),
+  publicName: z.string().min(1).optional(),
 });
 
 export const snapshotSchema = snapshotSummarySchema.extend({
@@ -207,6 +219,7 @@ export const snapshotSchema = snapshotSummarySchema.extend({
 export const publishedSnapshotSchema = z.object({
   publicId: z.string().min(1),
   name: z.string().min(1),
+  publicName: z.string().min(1),
   publisherName: z.string().min(1),
   score: scoreSchema,
   createdAt: z.string().min(1),
@@ -219,6 +232,10 @@ export const communityItemSchema = publishedSnapshotSchema.omit({
 
 export const publishRequestSchema = z.object({
   publisherName: z.string().min(1).max(80),
+  // Required: publishing without a public title would put "Version 1" on a
+  // page strangers read. Re-publishing an already-public snapshot is how a
+  // title is changed, so this arrives on every publish, not only the first.
+  publicName: z.string().min(1).max(200),
 });
 
 export const snapshotCreateRequestSchema = z.object({

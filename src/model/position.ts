@@ -42,6 +42,23 @@ export interface IMusicPosition {
    */
   readonly tick: number;
 
+  /**
+   * The last position the transport actually vouched for.
+   *
+   * Exposed beside {@link tick} deliberately: a smoothed playhead and the
+   * report it was projected from are both wanted — a caret glides, while a
+   * scrubber, a bar/beat readout or a scroll that follows the music wants the
+   * position something corroborated. Keeping the pair on one implementation is
+   * what stops them drifting; when the bus kept its own copy of the report and
+   * the playhead projected from another, a producer that stopped reporting
+   * left the caret gliding the length of the score while everything reading
+   * the copy sat at bar one.
+   *
+   * "Vouched for" rather than "reported": the transport also banks a position
+   * when it starts or stops, and that is equally authoritative.
+   */
+  readonly reportedTick: number;
+
   /** Whether the transport is advancing, which is when smoothing applies. */
   readonly isPlaying: boolean;
 

@@ -74,6 +74,8 @@ export * from "./domain/time/ticks.js";
 export * from "./domain/voicing/allocate.js";
 export * from "./domain/validation/issues.js";
 export * from "./domain/validation/validator.js";
+export * from "./domain/validation/limits.js";
+export * from "./domain/validation/repair.js";
 
 // ---------------------------------------------------------------------------
 // 11. Score commands (pure Score -> Score transformations, shared by both sides)
@@ -87,6 +89,7 @@ export * from "./domain/commands/track-commands.js";
 export * from "./domain/commands/region-commands.js";
 export * from "./domain/commands/note-commands.js";
 export * from "./domain/commands/note-marks.js";
+export * from "./domain/commands/repair-commands.js";
 export * from "./domain/commands/edit-commands.js";
 export * from "./domain/commands/relocate-commands.js";
 export * from "./domain/commands/ripple-commands.js";

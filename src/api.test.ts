@@ -355,6 +355,7 @@ describe("publishing schemas", () => {
   const published = {
     publicId: "pub_abc123",
     name: "Version 1",
+    publicName: "My Song Version 1",
     publisherName: "Jane",
     score,
     createdAt: "2026-01-01T00:00:00.000Z",
@@ -391,8 +392,25 @@ describe("publishing schemas", () => {
 
   it("accepts a publish request carrying a publisher name", () => {
     expect(
-      publishRequestSchema.parse({ publisherName: "Jane" }).publisherName,
+      publishRequestSchema.parse({
+        publisherName: "Jane",
+        publicName: "My Song Version 1",
+      }).publisherName,
     ).toBe("Jane");
+  });
+
+  it("rejects a publish request with no public name", () => {
+    // The version label is what would show on the public page instead, and
+    // "Version 1" tells a stranger nothing.
+    expect(() => publishRequestSchema.parse({ publisherName: "Jane" })).toThrow();
+  });
+
+  it("keeps the public title apart from the version label", () => {
+    // Both travel: the picker still needs "Version 1" while the public page
+    // shows the title.
+    const parsed = publishedSnapshotSchema.parse(published);
+    expect(parsed.name).toBe("Version 1");
+    expect(parsed.publicName).toBe("My Song Version 1");
   });
 
   it("accepts a snapshot that is published, and one that is not", () => {

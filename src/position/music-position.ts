@@ -33,11 +33,32 @@
 import type {
   IMusicPositionSource,
   UnsubscribePosition,
-} from '../model/position.js';
+} from "../model/position.js";
+
+/**
+ * How far the playhead may be projected past its last report.
+ *
+ * Dead reckoning is an interpolation between reports, not a substitute for
+ * them. Reports arrive about thirty times a second and in clumps, so the bound
+ * has to absorb a clump — but past that, continuing to advance is asserting a
+ * position nothing has corroborated.
+ *
+ * That distinction is not academic: when the engine's own report throttle
+ * silenced it, this projected on regardless and the caret glided the length of
+ * the score while every consumer of the *reported* tick — the scroll, the
+ * bar/beat readout, the scrubber — sat at bar one. One writer, but two
+ * behaviours, and they disagreed by the whole piece. Bounded, a stalled
+ * producer stops the playhead everywhere at once, which reads as the one fault
+ * it is instead of as a caret that works and a page that does not.
+ *
+ * Half a second is roughly fifteen missed reports: far beyond any clump, far
+ * short of anything a reader would call motion.
+ */
+const MAX_PROJECTION_SECONDS = 0.5;
 
 /** Wall-clock seconds, monotonic where the platform offers it. */
 function nowSeconds(): number {
-  return typeof performance !== 'undefined'
+  return typeof performance !== "undefined"
     ? performance.now() / 1000
     : Date.now() / 1000;
 }
@@ -66,13 +87,27 @@ export class MusicPosition implements IMusicPositionSource {
    */
   get tick(): number {
     if (!this.playing || this.ticksPerSecond <= 0) return this.anchorTick;
-    const elapsed = nowSeconds() - this.anchorSeconds;
+    // Capped: see `MAX_PROJECTION_SECONDS`. Past the bound the playhead holds
+    // its last corroborated position rather than inventing motion.
+    const elapsed = Math.min(
+      nowSeconds() - this.anchorSeconds,
+      MAX_PROJECTION_SECONDS,
+    );
     // Never backwards: a report that arrives late would otherwise pull the
     // playhead back a few ticks, which reads as a stutter.
     return Math.max(
       this.anchorTick,
-      this.anchorTick + elapsed * this.ticksPerSecond
+      this.anchorTick + elapsed * this.ticksPerSecond,
     );
+  }
+
+  /**
+   * The last vouched-for position: the last report, or the position banked
+   * when the transport last changed state. `tick` projects from exactly this,
+   * so the two cannot describe different moments.
+   */
+  get reportedTick(): number {
+    return this.anchorTick;
   }
 
   report(tick: number, atSeconds?: number): void {

@@ -9,32 +9,24 @@ import { isNoteEvent } from "../../index.js";
 import { pitchToMidi } from "../pitch/pitch.js";
 import { voiceChannel } from "../score/ties.js";
 import type { ChannelCandidate } from "../score/ties.js";
+import {
+  MAX_BPM,
+  MAX_FIFTHS,
+  MAX_MIDI,
+  MAX_MIDI_CHANNEL,
+  MAX_MIDI_PROGRAM,
+  MAX_SIMULTANEOUS_NOTES,
+  MAX_VELOCITY,
+  MIN_BPM,
+  MIN_FIFTHS,
+  MIN_MIDI,
+  MIN_MIDI_CHANNEL,
+  MIN_MIDI_PROGRAM,
+  MIN_VELOCITY,
+  VALID_TIME_SIG_DENOMINATORS,
+} from "./limits.js";
 import { ISSUE_CODES } from "./issues.js";
 import type { ValidationIssue } from "./issues.js";
-
-const MIN_MIDI = 0;
-const MAX_MIDI = 127;
-const MIN_VELOCITY = 0;
-const MAX_VELOCITY = 127;
-const MIN_MIDI_PROGRAM = 0;
-const MAX_MIDI_PROGRAM = 127;
-const MIN_MIDI_CHANNEL = 0;
-const MAX_MIDI_CHANNEL = 15;
-const VALID_TIME_SIG_DENOMINATORS = new Set([1, 2, 4, 8, 16, 32]);
-const MIN_FIFTHS = -7;
-const MAX_FIFTHS = 7;
-const MIN_BPM = 20;
-const MAX_BPM = 400;
-
-/**
- * Maximum number of notes sounding at once (within a single track) before a
- * "too many simultaneous notes" readability warning fires. Spec §23 names
- * this rule but doesn't give a number; 10 is a deliberate implementer
- * default (roughly as many notes as a two-hand piano voicing on one staff
- * can render legibly), documented here so a later task can make it
- * configurable if that turns out to be too strict/loose in practice.
- */
-const MAX_SIMULTANEOUS_NOTES = 10;
 
 function samePitch(a: Pitch, b: Pitch): boolean {
   return (

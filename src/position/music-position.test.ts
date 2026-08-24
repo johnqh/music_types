@@ -37,10 +37,35 @@ describe('MusicPosition', () => {
     position.setPlaying(true, 960); // 960 ticks per second
     position.report(0, now);
 
+    // Both sample points sit inside the projection bound; the point here is
+    // that motion between reports is even, not how long it may run unaided.
+    now = 10.25;
+    expect(position.tick).toBeCloseTo(240, 0);
     now = 10.5;
     expect(position.tick).toBeCloseTo(480, 0);
-    now = 11;
-    expect(position.tick).toBeCloseTo(960, 0);
+  });
+
+  /*
+    Dead reckoning interpolates between reports; it does not replace them.
+
+    When the engine's report throttle silenced it after a replay, this
+    projected on regardless — the caret glided the length of the score while
+    every consumer of the reported tick sat at bar one. One writer, two
+    behaviours. Bounded, a stalled producer stops the playhead everywhere at
+    once and the fault reads as the single thing it is.
+  */
+  it('stops projecting once its last report is too old to stand on', () => {
+    const position = new MusicPosition();
+    let now = 10;
+    vi.spyOn(performance, 'now').mockImplementation(() => now * 1000);
+
+    position.setPlaying(true, 960);
+    position.report(0, now);
+
+    now = 10.5;
+    const atBound = position.tick;
+    now = 30; // twenty seconds with nothing corroborating it
+    expect(position.tick).toBe(atBound);
   });
 
   it('anchors on the engine’s clock, not on when the report was handled', () => {
@@ -83,10 +108,12 @@ describe('MusicPosition', () => {
     position.setPlaying(true, 960);
     position.report(0, 0);
 
-    now = 1;
+    // Paused while the last report is still fresh enough to project from, so
+    // what is banked is the projected position and not the bound.
+    now = 0.5;
     position.setPlaying(false);
     now = 60; // a minute paused
-    expect(position.tick).toBeCloseTo(960, 0);
+    expect(position.tick).toBeCloseTo(480, 0);
   });
 
   it('tells every subscriber the same thing', () => {
