@@ -65,6 +65,8 @@ function nowSeconds(): number {
 
 export class MusicPosition implements IMusicPositionSource {
   private readonly listeners = new Set<(tick: number) => void>();
+  /** Kept apart from `listeners`: the transport follows these and must not follow its own reports. */
+  private readonly moveListeners = new Set<(tick: number) => void>();
 
   /** The last authoritative report, and the clock reading it belongs to. */
   private anchorTick = 0;
@@ -114,6 +116,28 @@ export class MusicPosition implements IMusicPositionSource {
     this.anchorTick = tick;
     this.anchorSeconds = atSeconds ?? nowSeconds();
     for (const listener of this.listeners) listener(tick);
+  }
+
+  /**
+   * Somebody moved the playhead.
+   *
+   * Anchors exactly as `report` does — the position *is* here now, and a
+   * projection from the old anchor would glide away from it — then tells the
+   * ordinary subscribers, so anything drawing the caret sees one number change
+   * whoever moved it, and finally the movement subscribers, which is how the
+   * transport learns to follow.
+   */
+  moveTo(tick: number): void {
+    const target = Math.max(0, tick);
+    this.anchorTick = target;
+    this.anchorSeconds = nowSeconds();
+    for (const listener of this.listeners) listener(target);
+    for (const listener of this.moveListeners) listener(target);
+  }
+
+  subscribeToMoves(listener: (tick: number) => void): UnsubscribePosition {
+    this.moveListeners.add(listener);
+    return () => this.moveListeners.delete(listener);
   }
 
   /**

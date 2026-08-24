@@ -175,3 +175,66 @@ describe('the singleton', () => {
     expect(initializeMusicPosition()).not.toBe(first);
   });
 });
+
+describe('moving the playhead', () => {
+  it('tells ordinary subscribers, so the caret sees one number change', () => {
+    const position = new MusicPosition();
+    const seen: number[] = [];
+    position.subscribe((t) => seen.push(t));
+
+    position.moveTo(960);
+
+    expect(seen).toEqual([960]);
+    expect(position.tick).toBe(960);
+    expect(position.reportedTick).toBe(960);
+  });
+
+  it('tells movement subscribers, which is how the transport follows a seek', () => {
+    const position = new MusicPosition();
+    const moves: number[] = [];
+    position.subscribeToMoves((t) => moves.push(t));
+
+    position.moveTo(480);
+
+    expect(moves).toEqual([480]);
+  });
+
+  it('never tells movement subscribers about its own reports', () => {
+    // The loop this exists to prevent: a transport that followed its own
+    // reports would seek to where it already is, thirty times a second.
+    const position = new MusicPosition();
+    const moves: number[] = [];
+    position.subscribeToMoves((t) => moves.push(t));
+
+    position.setPlaying(true, 960);
+    position.report(480);
+    position.report(960);
+
+    expect(moves).toEqual([]);
+  });
+
+  it('re-anchors, so a moved playhead does not glide back to where it was', () => {
+    let clock = 0;
+    const position = new MusicPosition(() => clock);
+    position.setPlaying(true, 1000);
+    position.report(0, 0);
+
+    clock = 0.1;
+    position.moveTo(5000);
+    // Projected from the move, not from the report it replaced.
+    clock = 0.2;
+    expect(position.tick).toBeGreaterThanOrEqual(5000);
+    expect(position.tick).toBeLessThan(5200);
+  });
+
+  it('stops telling a listener that unsubscribed', () => {
+    const position = new MusicPosition();
+    const moves: number[] = [];
+    const off = position.subscribeToMoves((t) => moves.push(t));
+    off();
+
+    position.moveTo(480);
+
+    expect(moves).toEqual([]);
+  });
+});

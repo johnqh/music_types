@@ -81,6 +81,33 @@ export interface IMusicPosition {
  */
 export interface IMusicPositionSource extends IMusicPosition {
   /**
+   * Move the playhead, because something other than the transport decided to.
+   *
+   * A click on the stave, an arrow key, a note written at the caret: all of
+   * them are somebody saying where the position *should be*, and they are the
+   * opposite of {@link report}, which is the transport saying where it already
+   * is. Keeping the two apart is what lets the transport follow this one
+   * without following its own reports around a loop.
+   *
+   * It is on this interface rather than the read one so a passive follower
+   * still cannot move the playhead by accident — but note that moving it is
+   * not a transport privilege. The editor moves the playhead; it just has no
+   * business knowing that a transport exists, so it says where the position is
+   * and whatever is playing follows.
+   */
+  moveTo(tick: number): void;
+
+  /**
+   * Observe deliberate moves, and *only* those.
+   *
+   * The transport subscribes here to follow a seek. It must not use
+   * {@link IMusicPosition.subscribe}, which also fires on its own reports:
+   * following those would mean seeking to where it already is, thirty times a
+   * second, forever.
+   */
+  subscribeToMoves(listener: (tick: number) => void): UnsubscribePosition;
+
+  /**
    * Report an authoritative position, in score ticks.
    *
    * `atSeconds` is the *engine's own* clock reading for this position, not the
