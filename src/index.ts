@@ -131,6 +131,8 @@ export * from "./domain/score/snapshot-tree.js";
 export * from "./domain/score/written-pitch.js";
 export * from "./domain/selection/range-select.js";
 export * from "./domain/selection/selection-editing.js";
+export * from "./domain/selection/clipboard-prompts.js";
+export * from "./domain/notation/display-lens.js";
 export * from "./domain/time/duration-modifiers.js";
 export * from "./domain/time/duration-selection.js";
 export * from "./domain/time/tap-to-note.js";

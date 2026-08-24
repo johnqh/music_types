@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { createEmptyScore } from "./factory.js";
+import {
+  measureAtTick,
+  measureIndexOf,
+  noteIdsOverlappingRange,
+  noteIndexAtOrAfter,
+  trackNotesInOrder,
+  voiceNumberOf,
+} from "./queries.js";
 import { createEmptyScore as testScore } from "../../test-helpers.js";
 
 /**
@@ -313,5 +321,102 @@ describe("scoreWithTracks", () => {
   it("leaves the tracks it keeps untouched", () => {
     const s = score();
     expect(scoreWithTracks(s, [s.tracks[1].id]).tracks[0]).toBe(s.tracks[1]);
+  });
+});
+
+describe("score queries added for the UI extraction", () => {
+  const scoreWithNotes = (): Score => {
+    const score = createEmptyScore({
+      title: "Q",
+      measures: 2,
+      tracks: [{ name: "One" }, { name: "Two" }],
+    });
+    const track = score.tracks[0];
+    const voice = track.measures[0].voices[0];
+    voice.events = [
+      {
+        id: "b",
+        startTick: 960,
+        durationTicks: 480,
+        voiceId: voice.id,
+        trackId: track.id,
+        pitch: { step: "E", accidental: 0, octave: 4 },
+        velocity: 80,
+      },
+      {
+        id: "a",
+        startTick: 0,
+        durationTicks: 480,
+        voiceId: voice.id,
+        trackId: track.id,
+        pitch: { step: "C", accidental: 0, octave: 4 },
+        velocity: 80,
+      },
+      { id: "r", startTick: 480, durationTicks: 480, voiceId: voice.id, trackId: track.id },
+    ];
+    return score;
+  };
+
+  it("trackNotesInOrder sorts by tick and drops rests", () => {
+    // The sort is part of the answer: anything meaning "the next note after
+    // here" depends on it, and it must not be each caller's job to remember.
+    const score = scoreWithNotes();
+    const notes = trackNotesInOrder(score, score.tracks[0].id);
+    expect(notes.map((n) => n.id)).toEqual(["a", "b"]);
+  });
+
+  it("noteIndexAtOrAfter falls back to the start past the end", () => {
+    // "Begin here" with the caret past the last note means begin at the
+    // beginning, because the command has to start somewhere.
+    const score = scoreWithNotes();
+    const notes = trackNotesInOrder(score, score.tracks[0].id);
+    expect(noteIndexAtOrAfter(notes, 0)).toBe(0);
+    expect(noteIndexAtOrAfter(notes, 500)).toBe(1);
+    expect(noteIndexAtOrAfter(notes, 99999)).toBe(0);
+  });
+
+  it("voiceNumberOf counts from 1, matching the toolbar", () => {
+    const score = scoreWithNotes();
+    const note = trackNotesInOrder(score, score.tracks[0].id)[0];
+    expect(voiceNumberOf(score, note)).toBe(1);
+  });
+
+  it("measureIndexOf finds a measure in its own track", () => {
+    const score = scoreWithNotes();
+    expect(measureIndexOf(score, score.tracks[0].measures[1].id)).toBe(1);
+    expect(measureIndexOf(score, "nope")).toBeNull();
+  });
+
+  it("measureAtTick clamps past the end rather than answering null", () => {
+    const score = scoreWithNotes();
+    const track = score.tracks[0];
+    expect(measureAtTick(score, track.id, 0)?.id).toBe(track.measures[0].id);
+    expect(measureAtTick(score, track.id, 9_999_999)?.id).toBe(
+      track.measures[track.measures.length - 1].id,
+    );
+  });
+
+  it("noteIdsOverlappingRange takes a note that starts before and sounds inside", () => {
+    // Overlap, not containment: such a note was replaced by whatever was
+    // written there, so it is part of what changed.
+    const score = scoreWithNotes();
+    const track = score.tracks[0];
+    const ids = noteIdsOverlappingRange(score, {
+      startTick: 240,
+      endTick: 300,
+      trackIds: [track.id],
+    });
+    expect(ids).toEqual(["a"]);
+  });
+
+  it("noteIdsOverlappingRange ignores tracks outside the range", () => {
+    const score = scoreWithNotes();
+    expect(
+      noteIdsOverlappingRange(score, {
+        startTick: 0,
+        endTick: 99999,
+        trackIds: [score.tracks[1].id],
+      }),
+    ).toEqual([]);
   });
 });

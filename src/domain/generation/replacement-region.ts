@@ -14,6 +14,8 @@
  * discovered afterwards.
  */
 import type { Score, ScoreRange, ScoreSelection } from "../../index.js";
+import { createEmptyScore } from "../score/factory.js";
+import type { GenerateScoreRequest } from "../../index.js";
 import { isNoteEvent } from "../../index.js";
 import { findEvent, findMeasure, findTrack } from "../score/queries.js";
 
@@ -138,4 +140,26 @@ export function replacementRegion(
     false,
     new Set(notes.map((n) => n.id)),
   );
+}
+
+/**
+ * The placeholder score a generation request implies.
+ *
+ * Created up front rather than on completion so a generating project appears
+ * in the list with its badge from the first second, instead of materialising
+ * minutes later out of nowhere — and shaped like what was asked for, so the
+ * editor can open it meaningfully mid-generation.
+ */
+export function emptyScoreForRequest(request: GenerateScoreRequest): Score {
+  return createEmptyScore({
+    title: request.title?.trim() || "Untitled",
+    measures: request.durationMeasures,
+    tracks: request.tracks.map((t) => ({
+      name: t.name,
+      instrumentName: t.instrumentName,
+      clef: t.clef,
+    })),
+    ...(request.timeSignature ? { timeSignature: request.timeSignature } : {}),
+    ...(request.keySignature ? { keySignature: request.keySignature } : {}),
+  });
 }

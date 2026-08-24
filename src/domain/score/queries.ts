@@ -161,3 +161,122 @@ export function scoreWithTracks(score: Score, trackIds: string[]): Score {
   if (tracks.length === score.tracks.length) return score;
   return { ...score, tracks };
 }
+
+/**
+ * A track's notes in tick order.
+ *
+ * Lyric entry walks these, and so does anything that means "the next note
+ * after here" — so the sort is part of the answer rather than something each
+ * caller remembers. Rests are dropped: they carry no syllable and nothing that
+ * steps through notes wants to stop on one.
+ */
+export function trackNotesInOrder(
+  score: Score,
+  trackId: UUID,
+): NoteEvent[] {
+  const track = findTrack(score, trackId);
+  if (!track) return [];
+  const notes: NoteEvent[] = [];
+  for (const measure of track.measures) {
+    for (const voice of measure.voices) {
+      for (const event of voice.events) {
+        if (isNoteEvent(event)) notes.push(event);
+      }
+    }
+  }
+  return notes.sort((a, b) => a.startTick - b.startTick);
+}
+
+/**
+ * The index of the first note at or after `tick`, or 0 when the tick is past
+ * every note.
+ *
+ * Falling back to the start rather than to -1: "begin here" with the caret
+ * past the end means begin at the beginning, which is what a writer expects
+ * from a command that has to start somewhere.
+ */
+export function noteIndexAtOrAfter(
+  notes: readonly NoteEvent[],
+  tick: number,
+): number {
+  const at = notes.findIndex((note) => note.startTick >= tick);
+  return at === -1 ? 0 : at;
+}
+
+/**
+ * Which voice a note is in, counted from 1.
+ *
+ * From 1 because that is what the toolbar's own Voice 1 / Voice 2 buttons say;
+ * the same note used to read as "Voice 1" on the bar and `0` in the panel.
+ */
+export function voiceNumberOf(score: Score, note: NoteEvent): number {
+  for (const track of score.tracks) {
+    for (const measure of track.measures) {
+      const index = measure.voices.findIndex((v) => v.id === note.voiceId);
+      if (index >= 0) return index + 1;
+    }
+  }
+  return 1;
+}
+
+/** The position of a measure in its own track, or `null` if it is not in the score. */
+export function measureIndexOf(score: Score, measureId: UUID): number | null {
+  for (const track of score.tracks) {
+    const index = track.measures.findIndex((m) => m.id === measureId);
+    if (index >= 0) return index;
+  }
+  return null;
+}
+
+/** The measure holding `tick` on `trackId`, clamped to the last one past the end. */
+export function measureAtTick(
+  score: Score,
+  trackId: UUID,
+  tick: number,
+): Measure | null {
+  const track = findTrack(score, trackId);
+  if (!track || track.measures.length === 0) return null;
+  return (
+    track.measures.find(
+      (m) => tick >= m.startTick && tick < m.startTick + m.durationTicks,
+    ) ?? track.measures[track.measures.length - 1]
+  );
+}
+
+/**
+ * The ids of notes whose sound overlaps `range` on the range's own tracks.
+ *
+ * Overlap, not containment: a note that starts before the range and is still
+ * sounding inside it was replaced by whatever was written there, so it is part
+ * of what changed.
+ */
+export function noteIdsOverlappingRange(
+  score: Score,
+  range: ScoreRange,
+): UUID[] {
+  return allNotes(score)
+    .filter(
+      (note) =>
+        range.trackIds.includes(note.trackId) &&
+        note.startTick < range.endTick &&
+        note.startTick + note.durationTicks > range.startTick,
+    )
+    .map((note) => note.id);
+}
+
+/** The track a measure belongs to, or `null` if it is not in the score. */
+export function trackOfMeasure(score: Score, measureId: UUID): Track | null {
+  return (
+    score.tracks.find((t) => t.measures.some((m) => m.id === measureId)) ?? null
+  );
+}
+
+/**
+ * How many bars the score has.
+ *
+ * Off track 0, because every track shares the measure grid — the convention
+ * the layout, the gutter and `measureIndexOf` all already rely on.
+ */
+export function barCount(score: Score | null): number {
+  return score?.tracks[0]?.measures.length ?? 0;
+}
