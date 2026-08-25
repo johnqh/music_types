@@ -388,3 +388,113 @@ describe("prepareRegenerationRequest still snaps", () => {
     ).toBe(1);
   });
 });
+
+describe("the request says who is playing", () => {
+  it("describes each track of the fragment, in the fragment's order", () => {
+    // A `ScoreFragment` carries measures and no identity, so a request without
+    // this left the model inferring the instrument from the notes.
+    const score = createEmptyScore({
+      title: "S",
+      measures: 4,
+      tracks: [
+        { name: "Cello", midiProgram: 42, clef: "bass" },
+        { name: "Kit", midiProgram: 16, clef: "percussion" },
+      ],
+    });
+    const request = prepareRegenerationRequestForRange(
+      score,
+      {
+        startTick: 0,
+        endTick: 1920,
+        trackIds: score.tracks.map((t) => t.id),
+      },
+      "busier",
+    );
+
+    expect(request.tracks?.map((t) => t.name)).toEqual(["Cello", "Kit"]);
+    expect(request.tracks?.map((t) => t.clef)).toEqual(["bass", "percussion"]);
+  });
+
+  it("names the kit, not the melodic instrument sharing its program", () => {
+    // Program 16 is the Power kit on a drum track and a Drawbar Organ
+    // everywhere else. Telling the model it is writing for an organ while
+    // handing it the drum map is worse than saying nothing at all.
+    const score = createEmptyScore({
+      title: "S",
+      measures: 2,
+      tracks: [{ name: "Kit", midiProgram: 16, clef: "percussion" }],
+    });
+    const request = prepareRegenerationRequestForRange(
+      score,
+      { startTick: 0, endTick: 1920, trackIds: [score.tracks[0].id] },
+      "busier",
+    );
+
+    expect(request.tracks?.[0].instrumentName).toBe("Power Kit");
+  });
+
+  it("gives the kit its own compass, not the compass of program 16", () => {
+    // Program 16 is a drawbar organ on a pitched track and the Power kit on a
+    // drum one, so a range read from the program alone is wrong for the kit.
+    const score = createEmptyScore({
+      title: "S",
+      measures: 2,
+      tracks: [{ name: "Kit", midiProgram: 16, clef: "percussion" }],
+    });
+    const request = prepareRegenerationRequestForRange(
+      score,
+      { startTick: 0, endTick: 1920, trackIds: [score.tracks[0].id] },
+      "busier",
+    );
+
+    const range = request.tracks?.[0].range;
+    expect(range).toEqual({ lowestMidi: 35, highestMidi: 81 });
+  });
+});
+
+describe("the request carries what the new part must fit", () => {
+  it("sends the other tracks over the same bars, with who plays them", () => {
+    // "Write something that works with the piano" is unfollowable by a model
+    // that was never shown the piano — and the preceding/following contexts
+    // are earlier and later BARS, not other parts of the same bars.
+    const score = createEmptyScore({
+      title: "S",
+      measures: 4,
+      tracks: [
+        { name: "Piano", midiProgram: 0, clef: "treble" },
+        { name: "Cello", midiProgram: 42, clef: "bass" },
+      ],
+    });
+    const cello = score.tracks[1];
+
+    const request = prepareRegenerationRequestForRange(
+      score,
+      { startTick: 0, endTick: 1920, trackIds: [cello.id] },
+      "sing over the piano",
+    );
+
+    expect(request.accompaniment?.tracks.map((t) => t.name)).toEqual(["Piano"]);
+    expect(request.accompaniment?.fragment.tracks.map((t) => t.trackId)).toEqual(
+      [score.tracks[0].id],
+    );
+    // The same bars the new part will occupy, not earlier or later ones.
+    expect(request.accompaniment?.fragment.range.startTick).toBe(0);
+    expect(request.accompaniment?.fragment.range.endTick).toBe(1920);
+  });
+
+  it("omits it when the region already covers every track", () => {
+    // Nothing left to listen to; an empty accompaniment would only cost bytes.
+    const score = createEmptyScore({
+      title: "S",
+      measures: 2,
+      tracks: [{ name: "Piano" }],
+    });
+    const request = prepareRegenerationRequestForRange(
+      score,
+      { startTick: 0, endTick: 1920, trackIds: [score.tracks[0].id] },
+      "again",
+    );
+
+    expect(request.accompaniment).toBeUndefined();
+  });
+});

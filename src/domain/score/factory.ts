@@ -8,11 +8,13 @@ import type {
   Track,
 } from "../../index.js";
 import { measureDurationTicks } from "../time/ticks.js";
+import {
+  DEFAULT_BPM,
+  DEFAULT_KEY_SIGNATURE,
+  DEFAULT_PPQ,
+  DEFAULT_TIME_SIGNATURE,
+} from "./defaults.js";
 
-const DEFAULT_PPQ = 480;
-const DEFAULT_TEMPO_BPM = 120;
-const DEFAULT_TIME_SIGNATURE: TimeSignature = { numerator: 4, denominator: 4 };
-const DEFAULT_KEY_SIGNATURE: KeySignature = { fifths: 0, mode: "major" };
 const DEFAULT_MEASURE_COUNT = 1;
 const DEFAULT_VOICE_NAME = "Voice 1";
 
@@ -139,9 +141,7 @@ export function createEmptyScore(opts: CreateEmptyScoreOptions): Score {
     version: 1,
     ppq,
     metadata,
-    tempoMap: [
-      { id: createId(), tick: 0, bpm: opts.tempo ?? DEFAULT_TEMPO_BPM },
-    ],
+    tempoMap: [{ id: createId(), tick: 0, bpm: opts.tempo ?? DEFAULT_BPM }],
     tracks,
   };
 }

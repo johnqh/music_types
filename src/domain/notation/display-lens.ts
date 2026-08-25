@@ -47,12 +47,16 @@ export function soundingPitchForDrawn(
     (m) => tick >= m.startTick && tick < m.startTick + m.durationTicks,
   );
   // Same fallback the inspector uses: a measure carries the key in force.
-  const key = measure?.keySignature ?? { fifths: 0, mode: 'major' };
+  const key = measure?.keySignature ?? { fifths: 0, mode: "major" };
 
   const untransposed =
-    pitchDisplay === 'written' ? soundingPitchForTrack(drawn, track, key) : drawn;
+    pitchDisplay === "written"
+      ? soundingPitchForTrack(drawn, track, key)
+      : drawn;
 
   // `ottavaScore` draws at `octave - shift`, so the inverse adds it back.
   const shift = ottavaShiftAt(score, trackId, tick);
-  return shift === 0 ? untransposed : { ...untransposed, octave: untransposed.octave + shift };
+  return shift === 0
+    ? untransposed
+    : { ...untransposed, octave: untransposed.octave + shift };
 }

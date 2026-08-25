@@ -12,8 +12,8 @@
  * and the anchor is either stamped at the engine's time or at delivery time.
  * A fake clock makes the difference exact and the result reproducible.
  */
-import { describe, expect, it, vi, afterEach } from 'vitest';
-import { MusicPosition } from './music-position.js';
+import { describe, expect, it, vi, afterEach } from "vitest";
+import { MusicPosition } from "./music-position.js";
 
 /** 120bpm at 480ppq: two quarters a second, so 960 ticks a second. */
 const TICKS_PER_SECOND = 960;
@@ -35,7 +35,7 @@ const trueTick = (t: number): number => t * TICKS_PER_SECOND;
 let clock = 0;
 
 function useFakeClock(): void {
-  vi.spyOn(performance, 'now').mockImplementation(() => clock * 1000);
+  vi.spyOn(performance, "now").mockImplementation(() => clock * 1000);
 }
 
 afterEach(() => vi.restoreAllMocks());
@@ -50,7 +50,7 @@ afterEach(() => vi.restoreAllMocks());
  */
 function worstError(
   deliveryLatency: number,
-  anchorOnEngineClock: boolean
+  anchorOnEngineClock: boolean,
 ): number {
   clock = 0;
   const position = new MusicPosition();
@@ -68,7 +68,7 @@ function worstError(
       clock = sampledAt + deliveryLatency;
       position.report(
         trueTick(sampledAt),
-        anchorOnEngineClock ? sampledAt : undefined
+        anchorOnEngineClock ? sampledAt : undefined,
       );
       reportIndex += 1;
     }
@@ -78,8 +78,8 @@ function worstError(
   return worst;
 }
 
-describe('caret drift against the audio clock', () => {
-  it('anchoring on the engine clock tracks the music exactly', () => {
+describe("caret drift against the audio clock", () => {
+  it("anchoring on the engine clock tracks the music exactly", () => {
     useFakeClock();
     // Zero, not "small": the anchor and the projection are both in engine
     // time, so the arithmetic is exact whatever the delivery latency.
@@ -87,7 +87,7 @@ describe('caret drift against the audio clock', () => {
     expect(worstError(0.12, true)).toBeLessThan(1e-6);
   });
 
-  it('anchoring on delivery time lags by latency times the tick rate', () => {
+  it("anchoring on delivery time lags by latency times the tick rate", () => {
     useFakeClock();
     // 30ms of delivery latency at 960 ticks/sec is ~28.8 ticks — six percent
     // of a quarter note, and the caret sits that far behind the note the
@@ -98,11 +98,11 @@ describe('caret drift against the audio clock', () => {
     expect(worstError(0.12, false)).toBeGreaterThan(100);
   });
 
-  it('the engine-clock anchor is dramatically better at every latency', () => {
+  it("the engine-clock anchor is dramatically better at every latency", () => {
     useFakeClock();
     for (const latency of [0.01, 0.03, 0.06, 0.12]) {
       expect(worstError(latency, true)).toBeLessThan(
-        worstError(latency, false)
+        worstError(latency, false),
       );
     }
   });

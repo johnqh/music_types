@@ -80,6 +80,39 @@ export type RegenerateRegionRequest = {
   followingContext: ScoreFragment;
   constraints: RegenerationConstraints;
   candidateCount: number;
+  /**
+   * Who is playing each track of `selectedFragment`, in the same order.
+   *
+   * A fragment carries measures and nothing else — no name, no clef, no
+   * program — so without this the model regenerates blind and has to guess the
+   * instrument from the notes in front of it. On a drum track there is nothing
+   * to guess from: the pitches are drum numbers, and a model that does not
+   * know that writes a melody on a kit. (Measured on a real "Replace Track"
+   * over a Power Kit: the kick landed on every eighth of all 118 bars at one
+   * velocity, because the model was never told it was writing for a kit.)
+   *
+   * Optional because a client that predates it still gets a valid request;
+   * the prompt simply omits what it was not given.
+   */
+  tracks?: GenerateScoreRequestTrack[];
+  /**
+   * The tracks that are NOT being regenerated, over the same span.
+   *
+   * "Write a part that works with the piano" cannot be obeyed by a model that
+   * has never been shown the piano. `selectedFragment` holds only the tracks
+   * being rewritten, and the preceding/following contexts are *earlier and
+   * later bars*, not *other parts of the same bars* — so regenerating one
+   * track of an arrangement showed the model an empty stave and asked it to
+   * harmonise with nothing. It answered with something plausible in C major
+   * that had no relationship to the music it was joining.
+   *
+   * `tracks` and `fragment` are matched by position, like the roster above.
+   * The model must not write these; they are there to be listened to.
+   */
+  accompaniment?: {
+    tracks: GenerateScoreRequestTrack[];
+    fragment: ScoreFragment;
+  };
   /** Same three dials whole-score generation has; the prompt builder emits them identically. */
   style?: string;
   mood?: string;
@@ -181,6 +214,13 @@ export const regenerateRegionRequestSchema = z.object({
   followingContext: scoreFragmentSchema,
   constraints: regenerationConstraintsSchema,
   candidateCount: z.number().int().positive(),
+  tracks: z.array(generateScoreRequestTrackSchema).optional(),
+  accompaniment: z
+    .object({
+      tracks: z.array(generateScoreRequestTrackSchema),
+      fragment: scoreFragmentSchema,
+    })
+    .optional(),
   style: z.string().optional(),
   mood: z.string().optional(),
   complexity: z.enum(["simple", "moderate", "complex"]).optional(),

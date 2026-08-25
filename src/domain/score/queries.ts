@@ -170,10 +170,7 @@ export function scoreWithTracks(score: Score, trackIds: string[]): Score {
  * caller remembers. Rests are dropped: they carry no syllable and nothing that
  * steps through notes wants to stop on one.
  */
-export function trackNotesInOrder(
-  score: Score,
-  trackId: UUID,
-): NoteEvent[] {
+export function trackNotesInOrder(score: Score, trackId: UUID): NoteEvent[] {
   const track = findTrack(score, trackId);
   if (!track) return [];
   const notes: NoteEvent[] = [];

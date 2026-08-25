@@ -27,7 +27,7 @@
  */
 
 const ALPHABET =
-  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 /**
  * Character code to sextet, -1 for anything else.
@@ -52,7 +52,7 @@ const ENCODE_CHUNK_CHARS = 8192;
 /** Bytes to base64, padded. */
 export function bytesToBase64(bytes: Uint8Array): string {
   const chunks: string[] = [];
-  let piece = '';
+  let piece = "";
   for (let i = 0; i < bytes.length; i += 3) {
     const a = bytes[i]!;
     const b = bytes[i + 1];
@@ -60,15 +60,15 @@ export function bytesToBase64(bytes: Uint8Array): string {
     piece +=
       ALPHABET[a >> 2]! +
       ALPHABET[((a & 0x03) << 4) | ((b ?? 0) >> 4)]! +
-      (b === undefined ? '=' : ALPHABET[((b & 0x0f) << 2) | ((c ?? 0) >> 6)]!) +
-      (c === undefined ? '=' : ALPHABET[c & 0x3f]!);
+      (b === undefined ? "=" : ALPHABET[((b & 0x0f) << 2) | ((c ?? 0) >> 6)]!) +
+      (c === undefined ? "=" : ALPHABET[c & 0x3f]!);
     if (piece.length >= ENCODE_CHUNK_CHARS) {
       chunks.push(piece);
-      piece = '';
+      piece = "";
     }
   }
   if (piece) chunks.push(piece);
-  return chunks.join('');
+  return chunks.join("");
 }
 
 /**

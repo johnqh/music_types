@@ -14,10 +14,12 @@ export type UUID = string;
 
 export type Fraction = { numerator: number; denominator: number };
 
-export type PitchStep = "C" | "D" | "E" | "F" | "G" | "A" | "B";
+export const PITCH_STEPS = ["C", "D", "E", "F", "G", "A", "B"] as const;
+export type PitchStep = (typeof PITCH_STEPS)[number];
 
 /** -2 = double flat, -1 = flat, 0 = natural, 1 = sharp, 2 = double sharp. */
-export type Accidental = -2 | -1 | 0 | 1 | 2;
+export const ACCIDENTALS = [-2, -1, 0, 1, 2] as const;
+export type Accidental = (typeof ACCIDENTALS)[number];
 
 export type Pitch = { step: PitchStep; accidental: Accidental; octave: number };
 
@@ -51,7 +53,13 @@ export type DurationName =
   | "triplet-sixteenth"
   | "triplet-thirtysecond";
 
-export type Articulation = "staccato" | "accent" | "tenuto" | "marcato";
+export const ARTICULATIONS = [
+  "staccato",
+  "accent",
+  "tenuto",
+  "marcato",
+] as const;
+export type Articulation = (typeof ARTICULATIONS)[number];
 
 /**
  * An ornament sign written over a note.
@@ -66,7 +74,13 @@ export type Articulation = "staccato" | "accent" | "tenuto" | "marcato";
  * vertical stroke and `inverted-mordent` the one without. (VexFlow's own codes
  * use these two words the other way round — see `convert.ts`.)
  */
-export type Ornament = "trill" | "mordent" | "inverted-mordent" | "turn";
+export const ORNAMENTS = [
+  "trill",
+  "mordent",
+  "inverted-mordent",
+  "turn",
+] as const;
+export type Ornament = (typeof ORNAMENTS)[number];
 
 /**
  * A gradual change of loudness, written as a wedge under the stave.
@@ -76,7 +90,8 @@ export type Ornament = "trill" | "mordent" | "inverted-mordent" | "turn";
  * writing is hairpins, so a score that had only levels could say "loud here"
  * but never "get louder".
  */
-export type Hairpin = "crescendo" | "diminuendo";
+export const HAIRPINS = ["crescendo", "diminuendo"] as const;
+export type Hairpin = (typeof HAIRPINS)[number];
 
 /**
  * An octave-displacement bracket: play the written notes an octave (or two)
@@ -89,7 +104,8 @@ export type Hairpin = "crescendo" | "diminuendo";
  * model that stored written pitch would make an ottava change what a note
  * *sounds* like, which is the opposite of what the mark means.
  */
-export type Ottava = "8va" | "8vb" | "15ma" | "15mb";
+export const OTTAVAS = ["8va", "8vb", "15ma", "15mb"] as const;
+export type Ottava = (typeof OTTAVAS)[number];
 
 /**
  * The line drawn at the end of a bar, where it is not an ordinary single one.
@@ -100,7 +116,8 @@ export type Ottava = "8va" | "8vb" | "15ma" | "15mb";
  * independent flags rather than one choice, and a bar can both end a repeat
  * and end the piece.
  */
-export type BarlineStyle = "double" | "final";
+export const BARLINE_STYLES = ["double", "final"] as const;
+export type BarlineStyle = (typeof BARLINE_STYLES)[number];
 
 /**
  * A jump instruction written at the end of a bar.
@@ -111,13 +128,15 @@ export type BarlineStyle = "double" | "final";
  * a direction and a target composed separately: only these combinations are
  * written, and the pairs that are not written should not be expressible.
  */
-export type RepeatJump =
-  | "da-capo"
-  | "da-capo-al-fine"
-  | "da-capo-al-coda"
-  | "dal-segno"
-  | "dal-segno-al-fine"
-  | "dal-segno-al-coda";
+export const REPEAT_JUMPS = [
+  "da-capo",
+  "da-capo-al-fine",
+  "da-capo-al-coda",
+  "dal-segno",
+  "dal-segno-al-fine",
+  "dal-segno-al-coda",
+] as const;
+export type RepeatJump = (typeof REPEAT_JUMPS)[number];
 
 /**
  * A dynamic marking, from softest to loudest.
@@ -128,7 +147,25 @@ export type RepeatJump =
  * score says; the velocity a player gives it is derived (`velocityForDynamic`
  * in music_lib) and stays adjustable per note on top.
  */
-export type Dynamic = "ppp" | "pp" | "p" | "mp" | "mf" | "f" | "ff" | "fff";
+/**
+ * Softest first, which is the order a picker should offer them in.
+ *
+ * The array is the declaration and the type is read off it, so a value cannot
+ * be added to one without the other. This used to be a union *and* a parallel
+ * array kept in step by hand — and a third copy in music_api's decoder, which
+ * is how a validator came to disagree with the model it was validating.
+ */
+export const DYNAMICS = [
+  "ppp",
+  "pp",
+  "p",
+  "mp",
+  "mf",
+  "f",
+  "ff",
+  "fff",
+] as const;
+export type Dynamic = (typeof DYNAMICS)[number];
 
 /**
  * How a sung syllable joins its neighbours.
@@ -137,7 +174,8 @@ export type Dynamic = "ppp" | "pp" | "p" | "mp" | "mf" | "f" | "ff" | "fff";
  * whether a hyphen is drawn to the next note. "beau-ti-ful" over three notes
  * is `begin`, `middle`, `end`; a one-syllable word is `single`.
  */
-export type Syllabic = "single" | "begin" | "middle" | "end";
+export const SYLLABICS = ["single", "begin", "middle", "end"] as const;
+export type Syllabic = (typeof SYLLABICS)[number];
 
 /**
  * A small ornamental note played just before the note it decorates.
@@ -170,19 +208,8 @@ export type Lyric = {
   syllabic?: Syllabic;
 };
 
-/** Softest first, which is the order a picker should offer them in. */
-export const DYNAMICS: readonly Dynamic[] = [
-  "ppp",
-  "pp",
-  "p",
-  "mp",
-  "mf",
-  "f",
-  "ff",
-  "fff",
-] as const;
-
-export type Clef = "treble" | "bass" | "alto" | "tenor" | "percussion";
+export const CLEFS = ["treble", "bass", "alto", "tenor", "percussion"] as const;
+export type Clef = (typeof CLEFS)[number];
 
 export type NoteEvent = {
   id: UUID;
@@ -529,7 +556,8 @@ export type ScoreRange = {
 };
 
 /** How a note departs from automatic beaming. See `NoteEvent.beam`. */
-export type BeamOverride = "break" | "none";
+export const BEAM_OVERRIDES = ["break", "none"] as const;
+export type BeamOverride = (typeof BEAM_OVERRIDES)[number];
 
 export type ScoreSelection = {
   eventIds: string[];

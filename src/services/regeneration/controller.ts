@@ -15,6 +15,7 @@ import type {
 import { extractFragment } from "../../domain/score/fragment.js";
 import { replaceRegionCommand } from "../../domain/commands/region-commands.js";
 import type { ScoreCommand } from "../../domain/commands/types.js";
+import { describeTrackForGeneration } from "../../domain/instruments/track-instrument.js";
 import type {
   RegenerateRegionRequest,
   RegenerationCandidate,
@@ -270,10 +271,45 @@ export function prepareRegenerationRequestForRange(
     followingContext,
     constraints,
     candidateCount: CANDIDATE_COUNT,
+    // Who is playing each track of the fragment, in the fragment's own order.
+    // A fragment is measures and nothing else, so without this the model has
+    // to guess the instrument from the notes — and on a drum track there is
+    // nothing to guess from.
+    tracks: selectedFragment.tracks.flatMap((entry) => {
+      const track = findTrack(score, entry.trackId);
+      return track ? [describeTrackForGeneration(track)] : [];
+    }),
+    // What the new part has to fit: every other track over the same bars.
+    // Without it "write something that works with the piano" is an
+    // instruction the model has no way to follow.
+    ...accompanimentFor(score, range),
     ...(options.style ? { style: options.style } : {}),
     ...(options.mood ? { mood: options.mood } : {}),
     ...(options.complexity ? { complexity: options.complexity } : {}),
     expandedToFullMeasures: false,
+  };
+}
+
+/**
+ * The tracks not being rewritten, over the same span, with who plays them.
+ *
+ * Omitted entirely when the region covers every track — there is nothing left
+ * to listen to, and an empty accompaniment would cost prompt bytes to say so.
+ */
+function accompanimentFor(
+  score: Score,
+  range: ScoreRange,
+): Pick<RegenerateRegionRequest, "accompaniment"> {
+  const others = score.tracks.filter((t) => !range.trackIds.includes(t.id));
+  if (others.length === 0) return {};
+  return {
+    accompaniment: {
+      tracks: others.map(describeTrackForGeneration),
+      fragment: extractFragment(score, {
+        ...range,
+        trackIds: others.map((t) => t.id),
+      }),
+    },
   };
 }
 

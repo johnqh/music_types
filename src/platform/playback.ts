@@ -26,7 +26,6 @@ export type SoundingNote = {
   midi: number;
 };
 
-
 /**
  * The engine's readiness to play, for a progress indicator.
  *
@@ -58,7 +57,6 @@ export type PlaybackTrack = RenderTrack & {
   muted: boolean;
   solo: boolean;
 };
-
 
 /** One playback-ready note, in score ticks, carrying the ids playback reports back. */
 export type PlaybackNote = {
@@ -130,4 +128,3 @@ export type PlaybackLoadState =
   | { status: "loading"; fraction: number | null }
   | { status: "ready" }
   | { status: "failed"; message: string };
-

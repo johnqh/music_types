@@ -16,7 +16,8 @@ function notesAfter(score: Score, trackId: string, tick: number): NoteEvent[] {
   for (const measure of track.measures) {
     for (const voice of measure.voices) {
       for (const event of voice.events) {
-        if ('pitch' in event && event.startTick >= tick) found.push(event as NoteEvent);
+        if ("pitch" in event && event.startTick >= tick)
+          found.push(event as NoteEvent);
       }
     }
   }
@@ -35,16 +36,23 @@ function notesAfter(score: Score, trackId: string, tick: number): NoteEvent[] {
  * for, and doing it to several at once by accident would be worse than not
  * offering it.
  */
-export function cutNeedsPrompt(score: Score, notes: readonly NoteEvent[]): boolean {
+export function cutNeedsPrompt(
+  score: Score,
+  notes: readonly NoteEvent[],
+): boolean {
   if (notes.length === 0) return false;
 
   const trackId = notes[0].trackId;
   if (!notes.every((note) => note.trackId === trackId)) return false;
 
   const cutIds = new Set(notes.map((note) => note.id));
-  const cutEnd = Math.max(...notes.map((note) => note.startTick + note.durationTicks));
+  const cutEnd = Math.max(
+    ...notes.map((note) => note.startTick + note.durationTicks),
+  );
 
-  return notesAfter(score, trackId, cutEnd).some((note) => !cutIds.has(note.id));
+  return notesAfter(score, trackId, cutEnd).some(
+    (note) => !cutIds.has(note.id),
+  );
 }
 
 /**
@@ -67,10 +75,11 @@ export function pasteNeedsPrompt(
   for (const measure of track.measures) {
     for (const voice of measure.voices) {
       for (const event of voice.events) {
-        if (!('pitch' in event)) continue;
+        if (!("pitch" in event)) continue;
         const note = event as NoteEvent;
         const overlaps =
-          note.startTick < anchorTick + span && note.startTick + note.durationTicks > anchorTick;
+          note.startTick < anchorTick + span &&
+          note.startTick + note.durationTicks > anchorTick;
         if (overlaps) return true;
       }
     }

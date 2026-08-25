@@ -19,7 +19,11 @@
  * These wrappers are the single place that distinction is encoded. Call them
  * instead of the program-keyed tables anywhere a `Track` is in hand.
  */
-import type { Score, Track } from "../../index.js";
+import type {
+  GenerateScoreRequestTrack,
+  Score,
+  Track,
+} from "../../index.js";
 import { gmInstrumentRange, type MidiRange } from "./gm-range.js";
 import { gmMaxPolyphony, UNLIMITED_POLYPHONY } from "./gm-polyphony.js";
 import { gmWrittenTransposition } from "./gm-transposition.js";
@@ -138,5 +142,45 @@ export function scoreWithResolvedKits(score: Score): Score {
       const kit = gmKitAt(track.midiProgram);
       return { ...track, midiProgram: kit.program, instrumentName: kit.name };
     }),
+  };
+}
+
+/**
+ * How a track is described to the generation model.
+ *
+ * One function for both paths, because the two used to disagree by omission:
+ * whole-score generation named each track's instrument, and regeneration named
+ * nothing at all — a `ScoreFragment` carries measures and no identity, so
+ * "Replace Track" handed the model anonymous bars and let it infer the
+ * instrument from the notes. On a kit there is nothing to infer from, since
+ * the pitches are drum numbers rather than notes, and the result was a part
+ * that treated the kick as a metronome.
+ *
+ * Range and polyphony come from the track's own program through
+ * `trackKeyboardRange`/`trackMaxPolyphony`, so a drum track answers about its
+ * kit rather than about whatever melodic instrument shares its program number.
+ */
+export function describeTrackForGeneration(
+  track: Track,
+): GenerateScoreRequestTrack {
+  // `MidiRange` is {min,max} and the wire's `range` is
+  // {lowestMidi,highestMidi} — the same fact under two names, mapped here
+  // rather than left for each call site to get right.
+  const range = trackKeyboardRange(track);
+  const polyphony = trackMaxPolyphony(track);
+  return {
+    name: track.name,
+    // `trackInstrumentLabel`, not the stored `instrumentName`: on a drum
+    // track the two disagree, because program 16 names the Power kit there
+    // and a Drawbar Organ everywhere else. Telling the model it is writing
+    // for an organ while handing it the drum map is worse than saying
+    // nothing.
+    instrumentName: trackInstrumentLabel(track),
+    midiProgram: track.midiProgram,
+    clef: track.clef,
+    range: { lowestMidi: range.min, highestMidi: range.max },
+    // A keyboard's ceiling is `UNLIMITED_POLYPHONY` (Infinity), which is not a
+    // number the wire can carry; omitting it says the same thing.
+    ...(Number.isFinite(polyphony) ? { maximumPolyphony: polyphony } : {}),
   };
 }

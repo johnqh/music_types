@@ -46,5 +46,4 @@ describe("platform interfaces", () => {
     };
     expect(file.tracks[0].controlChanges[7]?.[0].value).toBe(1);
   });
-
 });

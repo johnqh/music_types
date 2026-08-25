@@ -29,8 +29,8 @@ export type TupletGroup = {
 };
 
 /** Triplets are the only tuplet the duration table can express, so far. */
-const TRIPLET_ACTUAL = 3;
-const TRIPLET_NORMAL = 2;
+export const TRIPLET_ACTUAL = 3;
+export const TRIPLET_NORMAL = 2;
 
 /**
  * Every tuplet in `events`, in order.

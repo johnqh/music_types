@@ -402,7 +402,9 @@ describe("publishing schemas", () => {
   it("rejects a publish request with no public name", () => {
     // The version label is what would show on the public page instead, and
     // "Version 1" tells a stranger nothing.
-    expect(() => publishRequestSchema.parse({ publisherName: "Jane" })).toThrow();
+    expect(() =>
+      publishRequestSchema.parse({ publisherName: "Jane" }),
+    ).toThrow();
   });
 
   it("keeps the public title apart from the version label", () => {

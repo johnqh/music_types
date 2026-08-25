@@ -352,7 +352,13 @@ describe("score queries added for the UI extraction", () => {
         pitch: { step: "C", accidental: 0, octave: 4 },
         velocity: 80,
       },
-      { id: "r", startTick: 480, durationTicks: 480, voiceId: voice.id, trackId: track.id },
+      {
+        id: "r",
+        startTick: 480,
+        durationTicks: 480,
+        voiceId: voice.id,
+        trackId: track.id,
+      },
     ];
     return score;
   };

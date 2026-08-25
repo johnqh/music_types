@@ -13,8 +13,8 @@
 import type {
   IMusicPosition,
   IMusicPositionSource,
-} from '../model/position.js';
-import { MusicPosition } from './music-position.js';
+} from "../model/position.js";
+import { MusicPosition } from "./music-position.js";
 
 let instance: IMusicPositionSource | null = null;
 
@@ -25,7 +25,7 @@ let instance: IMusicPositionSource | null = null;
  * silently swap the playhead out from under everything subscribed to it.
  */
 export function initializeMusicPosition(
-  override?: IMusicPositionSource
+  override?: IMusicPositionSource,
 ): IMusicPositionSource {
   if (!instance) instance = override ?? new MusicPosition();
   return instance;

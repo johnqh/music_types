@@ -1,4 +1,16 @@
 /**
+ * The score fixtures every package in the family builds its tests on.
+ *
+ * Published as `@sudobility/music_types/test` rather than copied. It WAS
+ * copied — five byte-identical files differing only in quote style — which
+ * meant a fixture corrected in one repo left four suites still asserting
+ * against the old shape, and "the tests pass" stopped meaning the same thing
+ * in each. The fixtures describe the model, and the model lives here.
+ *
+ * A package with a rendering fixture of its own (music_drawing's render
+ * theme) imports these and adds to them; it does not restate them.
+ */
+/**
  * Score fixtures for the codec suites.
  *
  * Copied from `music_lib`'s test tree when the codecs moved here, minus
@@ -24,12 +36,17 @@ import type {
   Track,
 } from "../index.js";
 import { measureDurationTicks, ticksFor } from "../index.js";
+import {
+  DEFAULT_KEY_SIGNATURE,
+  DEFAULT_TIME_SIGNATURE,
+  PITCH_STEPS,
+} from "../index.js";
 import type { DurationName } from "../index.js";
 
-const FIXED_TIMESTAMP = "2024-01-01T00:00:00.000Z";
+export const FIXED_TIMESTAMP = "2024-01-01T00:00:00.000Z";
 
 /** A per-call, per-prefix incrementing id generator (deterministic, cheap). */
-function makeIdFactory() {
+export function makeIdFactory() {
   const counters = new Map<string, number>();
   return {
     next(prefix: string): string {
@@ -117,10 +134,16 @@ function buildChordMeasures(
   });
 }
 
-const C_MAJOR: KeySignature = { fifths: 0, mode: "major" };
-const FOUR_FOUR: TimeSignature = { numerator: 4, denominator: 4 };
+/**
+ * Named for what a reading test is about — "C major, four four" says more at
+ * an assertion than "the default key" does. They ARE the defaults, and are
+ * aliased rather than retyped so a fixture cannot describe a score the
+ * factory would not build.
+ */
+export const C_MAJOR: KeySignature = DEFAULT_KEY_SIGNATURE;
+export const FOUR_FOUR: TimeSignature = DEFAULT_TIME_SIGNATURE;
 
-function naturalPitch(step: PitchStep, octave: number): Pitch {
+export function naturalPitch(step: PitchStep, octave: number): Pitch {
   return { step, accidental: 0, octave };
 }
 
@@ -459,7 +482,7 @@ export function chordScore(): Score {
   };
 }
 
-const STRESS_SCALE: PitchStep[] = ["C", "D", "E", "F", "G", "A", "B"];
+const STRESS_SCALE: readonly PitchStep[] = PITCH_STEPS;
 
 /**
  * Generates a score with `trackCount` tracks of `measureCount` measures
