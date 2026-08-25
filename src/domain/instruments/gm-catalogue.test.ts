@@ -90,10 +90,19 @@ describe("the GM catalogue", () => {
     expect(gmRangeIsBinding(127)).toBe(false); // Gunshot — unpitched
   });
 
-  it("gives a synthetic or unpitched program the whole keyboard", () => {
-    // Narrowing an electronic patch would be inventing a limit.
+  it("gives a synthetic patch and a sound effect the whole keyboard", () => {
+    /*
+      Narrowing an electronic patch would be inventing a limit, and a gunshot
+      has no register to sit in.
+
+      Untuned PERCUSSION is `unpitched` too but deliberately not included: a
+      woodblock or an agogo has a characteristic sound with a natural register,
+      and the range is what the on-screen keyboard offers. Nothing refuses a
+      note against it either way — `gmRangeIsBinding` is false for both.
+    */
     for (const spec of GM_CATALOGUE) {
-      if (spec.basis !== "synthetic" && spec.basis !== "unpitched") continue;
+      const isEffect = spec.family === "sound-effects";
+      if (spec.basis !== "synthetic" && !isEffect) continue;
       expect(spec.range.min, spec.name).toBeLessThanOrEqual(24);
       expect(spec.range.max, spec.name).toBeGreaterThanOrEqual(96);
     }
@@ -112,7 +121,7 @@ describe("the GM catalogue", () => {
     ["Vibraphone", 11, 53, 89, "F3-F6"],
     ["Marimba", 12, 36, 96, "C2-C7, the five-octave concert instrument"],
     ["Xylophone", 13, 65, 108, "F4-C8"],
-    ["Tubular Bells", 14, 60, 77, "C4-F5, the orchestral chime set"],
+    ["Tubular Bells", 14, 60, 79, "C4-F5 written, to G5 on professional models"],
     ["Timpani", 47, 38, 57, "D2-A3 across a set"],
     ["Violin", 40, 55, 100, "G3-E7"],
     ["Viola", 41, 48, 88, "C3-E6"],
@@ -126,6 +135,11 @@ describe("the GM catalogue", () => {
     ["Flute", 73, 60, 98, "C4-D7"],
     ["Shakuhachi", 77, 62, 91, "D4 fundamental, two octaves and a partial third"],
     ["Steel Drums", 114, 33, 91, "steelpan family A1-G6"],
+    ["Whistle", 78, 74, 98, "a D tin whistle, D5-D7"],
+    ["Shanai", 111, 57, 81, "A3-A5"],
+    ["Ocarina", 79, 69, 89, "a 12-hole alto C, A4-F6"],
+    ["Bagpipe", 109, 62, 86, "Highland and uilleann chanters together"],
+    ["Fiddle", 110, 55, 100, "a fiddle is a violin"],
   ])(
     "keeps %s at the compass its source gives it",
     (name, program, min, max) => {
@@ -164,13 +178,46 @@ describe("the GM catalogue", () => {
     ).toMatchSnapshot();
   });
 
-  it("leaves an unverified compass wide, and does not quietly renumber it", () => {
-    // An assumed value swapped for another assumed value is churn: it moves
-    // the on-screen keyboard's compass with no evidence behind it.
+  it("has no rows left that nobody checked", () => {
+    /*
+      `assumed` meant "carried over from the old family default and never
+      verified". Every one of the 31 has since been settled — most by looking
+      the instrument up, and ten by finding that the honest answer is
+      `tunable`: a shamisen is tuned to the singer, a koto to the piece, an
+      mbira to notes that are not on the tempered scale at all. That is a
+      different answer from "unverified", and it is the true one.
+
+      A new row may be added as `assumed` while it is being worked out. It may
+      not be left that way.
+    */
+    const unchecked = GM_CATALOGUE.filter((s) => s.basis === "assumed");
+    expect(unchecked.map((s) => s.name)).toEqual([]);
+  });
+
+  it("gives a section the union of the instruments in it", () => {
+    // Derived rather than looked up, so a string section cannot end up
+    // narrower than the cello sitting inside it.
+    const contrabass = gmSpec(43)!;
+    const violin = gmSpec(40)!;
+    for (const program of [44, 45, 48, 49]) {
+      const section = gmSpec(program)!;
+      expect(section.range.min, section.name).toBe(contrabass.range.min);
+      expect(section.range.max, section.name).toBe(violin.range.max);
+      // A section plays chords, whatever one player of it could manage.
+      expect(section.maxPolyphony, section.name).toBe(UNLIMITED_POLYPHONY);
+    }
+    const brass = gmSpec(61)!;
+    expect(brass.range.min).toBe(gmSpec(58)!.range.min); // Tuba
+    expect(brass.range.max).toBe(gmSpec(56)!.range.max); // Trumpet
+  });
+
+  it("never binds a range that is not measured", () => {
+    // The whole point of the field: refusing a note against a compass nobody
+    // checked, or against an instrument with no fixed pitch, rejects music
+    // that was fine.
     for (const spec of GM_CATALOGUE) {
-      if (spec.basis !== "assumed") continue;
-      expect(spec.range.max - spec.range.min, spec.name).toBeGreaterThanOrEqual(
-        24,
+      expect(gmRangeIsBinding(spec.program), spec.name).toBe(
+        spec.basis === "measured",
       );
     }
   });

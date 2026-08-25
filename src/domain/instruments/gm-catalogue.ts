@@ -19,6 +19,13 @@
  * trusting a number:
  *
  * - `measured`   — checked against a source for that instrument.
+ * - `tunable`    — the instrument has no fixed absolute pitch. A shamisen is
+ *                  tuned to the singer, a koto to the piece, an mbira to
+ *                  notes that are not on the tempered scale at all, and a pan
+ *                  flute or hammered dulcimer is built in many sizes. The
+ *                  range is a typical span, and refusing a note against it
+ *                  would be refusing against the sampler rather than the
+ *                  instrument.
  * - `synthetic`  — an electronic patch with no acoustic compass. The range is
  *                  the full keyboard because narrowing it would be a fiction.
  * - `unpitched`  — a sound effect. There is no pitch to be outside of.
@@ -34,6 +41,7 @@ import { UNLIMITED_POLYPHONY } from "./gm-polyphony.js";
 /** How much to trust a row's numbers. See the module doc. */
 export const INSTRUMENT_BASES = [
   "measured",
+  "tunable",
   "synthetic",
   "unpitched",
   "assumed",
@@ -78,17 +86,17 @@ const ROWS: readonly Row[] = [
   { program: 7, name: "Clavinet", family: "piano", min: 29, max: 88, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "measured", note: "Clavinet D6: 60 keys, F1-E6 (Wikipedia)" },
   { program: 8, name: "Celesta", family: "chromatic-percussion", min: 60, max: 108, poly: UNLIMITED_POLYPHONY, transpose: -12, basis: "measured", note: "C4-C8 sounding; written an octave lower" },
   { program: 9, name: "Glockenspiel", family: "chromatic-percussion", min: 79, max: 108, poly: UNLIMITED_POLYPHONY, transpose: -24, basis: "measured", note: "G5-C8 sounding; written two octaves lower" },
-  { program: 10, name: "Music Box", family: "chromatic-percussion", min: 48, max: 96, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "assumed", note: "a music box movement is small and high, but no authoritative compass was found"},
+  { program: 10, name: "Music Box", family: "chromatic-percussion", min: 48, max: 96, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "tunable", note: "a movement is built for one tune and spans about two and a half octaves"},
   { program: 11, name: "Vibraphone", family: "chromatic-percussion", min: 53, max: 89, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "measured", note: "F3-F6, three octaves" },
   { program: 12, name: "Marimba", family: "chromatic-percussion", min: 36, max: 96, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "measured", note: "C2-C7, the five-octave concert marimba" },
   { program: 13, name: "Xylophone", family: "chromatic-percussion", min: 65, max: 108, poly: UNLIMITED_POLYPHONY, transpose: -12, basis: "measured", note: "F4-C8 sounding; written an octave lower" },
-  { program: 14, name: "Tubular Bells", family: "chromatic-percussion", min: 60, max: 77, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "measured", note: "C4-F5, the orchestral chime set" },
-  { program: 15, name: "Dulcimer", family: "chromatic-percussion", min: 48, max: 96, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "assumed", note: "hammered dulcimers vary widely by build" },
+  { program: 14, name: "Tubular Bells", family: "chromatic-percussion", min: 60, max: 79, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "measured", note: "orchestral chimes are written C4-F5, though professional models reach G5" },
+  { program: 15, name: "Dulcimer", family: "chromatic-percussion", min: 48, max: 96, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "tunable", note: "hammered dulcimers are built 15/14, 16/15 and larger, spanning about three octaves" },
   { program: 16, name: "Drawbar Organ", family: "organ", min: 36, max: 96, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "measured", note: "Hammond drawbar manual: 61 keys, C2-C7" },
   { program: 17, name: "Percussive Organ", family: "organ", min: 36, max: 96, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "measured", note: "same manual" },
   { program: 18, name: "Rock Organ", family: "organ", min: 36, max: 96, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "measured", note: "same manual" },
   { program: 19, name: "Church Organ", family: "organ", min: 24, max: 96, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "measured", note: "C1-C7 manuals; the 32' pedal reaches lower but is a separate part" },
-  { program: 20, name: "Reed Organ", family: "organ", min: 36, max: 96, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "assumed", note: "reed organs vary; the Hammond manual is the usable overlap" },
+  { program: 20, name: "Reed Organ", family: "organ", min: 36, max: 84, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "measured", note: "a reed organ is commonly 39-49 keys, about four octaves" },
   { program: 21, name: "Accordion", family: "organ", min: 41, max: 81, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "measured", note: "piano-accordion right hand, F2-A5 on a 41-key model" },
   { program: 22, name: "Harmonica", family: "organ", min: 60, max: 96, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "measured", note: "12-hole chromatic, C4-C7" },
   { program: 23, name: "Tango Accordion", family: "organ", min: 41, max: 81, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "measured", note: "as the accordion above" },
@@ -112,26 +120,26 @@ const ROWS: readonly Row[] = [
   { program: 41, name: "Viola", family: "strings", min: 48, max: 88, poly: 2, transpose: 0, basis: "measured", note: "checked against an orchestration range chart" },
   { program: 42, name: "Cello", family: "strings", min: 36, max: 84, poly: 2, transpose: 0, basis: "measured", note: "checked against an orchestration range chart" },
   { program: 43, name: "Contrabass", family: "strings", min: 28, max: 67, poly: 2, transpose: 12, basis: "measured", note: "checked against an orchestration range chart" },
-  { program: 44, name: "Tremolo Strings", family: "strings", min: 36, max: 96, poly: 2, transpose: 0, basis: "assumed", note: "inherited from the family default; not individually verified" },
-  { program: 45, name: "Pizzicato Strings", family: "strings", min: 36, max: 96, poly: 2, transpose: 0, basis: "assumed", note: "inherited from the family default; not individually verified" },
+  { program: 44, name: "Tremolo Strings", family: "strings", min: 28, max: 100, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "measured", note: "a tremolo STRING SECTION: the union of its instruments, and it plays chords" },
+  { program: 45, name: "Pizzicato Strings", family: "strings", min: 28, max: 100, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "measured", note: "a pizzicato STRING SECTION: the union of its instruments, and it plays chords" },
   { program: 46, name: "Orchestral Harp", family: "strings", min: 24, max: 103, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "measured", note: "checked against an orchestration range chart" },
   { program: 47, name: "Timpani", family: "strings", min: 38, max: 57, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "measured", note: "D2-A3 across a set; a timpanist plays several drums and can sound them together" },
-  { program: 48, name: "String Ensemble 1", family: "ensemble", min: 36, max: 96, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "assumed", note: "inherited from the family default; not individually verified" },
-  { program: 49, name: "String Ensemble 2", family: "ensemble", min: 36, max: 96, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "assumed", note: "inherited from the family default; not individually verified" },
-  { program: 50, name: "Synth Strings 1", family: "ensemble", min: 36, max: 96, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "assumed", note: "inherited from the family default; not individually verified" },
-  { program: 51, name: "Synth Strings 2", family: "ensemble", min: 36, max: 96, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "assumed", note: "inherited from the family default; not individually verified" },
+  { program: 48, name: "String Ensemble 1", family: "ensemble", min: 28, max: 100, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "measured", note: "the string section: contrabass floor to violin ceiling" },
+  { program: 49, name: "String Ensemble 2", family: "ensemble", min: 28, max: 100, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "measured", note: "the string section: contrabass floor to violin ceiling" },
+  { program: 50, name: "Synth Strings 1", family: "ensemble", min: 21, max: 108, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "synthetic", note: "a synth pad in the shape of strings" },
+  { program: 51, name: "Synth Strings 2", family: "ensemble", min: 21, max: 108, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "synthetic", note: "a synth pad in the shape of strings" },
   { program: 52, name: "Choir Aahs", family: "ensemble", min: 48, max: 84, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "measured", note: "checked against an orchestration range chart" },
   { program: 53, name: "Voice Oohs", family: "ensemble", min: 48, max: 84, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "measured", note: "checked against an orchestration range chart" },
-  { program: 54, name: "Synth Voice", family: "ensemble", min: 36, max: 96, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "assumed", note: "inherited from the family default; not individually verified" },
-  { program: 55, name: "Orchestra Hit", family: "ensemble", min: 36, max: 96, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "assumed", note: "inherited from the family default; not individually verified" },
+  { program: 54, name: "Synth Voice", family: "ensemble", min: 21, max: 108, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "synthetic", note: "a synthesised voice, not a singer" },
+  { program: 55, name: "Orchestra Hit", family: "ensemble", min: 21, max: 108, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "unpitched", note: "a sampled orchestral stab, not an instrument with a compass" },
   { program: 56, name: "Trumpet", family: "brass", min: 52, max: 86, poly: 1, transpose: 2, basis: "measured", note: "checked against an orchestration range chart" },
   { program: 57, name: "Trombone", family: "brass", min: 40, max: 77, poly: 1, transpose: 0, basis: "measured", note: "checked against an orchestration range chart" },
   { program: 58, name: "Tuba", family: "brass", min: 26, max: 65, poly: 1, transpose: 0, basis: "measured", note: "checked against an orchestration range chart" },
   { program: 59, name: "Muted Trumpet", family: "brass", min: 52, max: 86, poly: 1, transpose: 2, basis: "measured", note: "a muted trumpet is a B-flat trumpet with a mute in the bell" },
   { program: 60, name: "French Horn", family: "brass", min: 35, max: 77, poly: 1, transpose: 7, basis: "measured", note: "checked against an orchestration range chart" },
-  { program: 61, name: "Brass Section", family: "brass", min: 34, max: 82, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "assumed", note: "inherited from the family default; not individually verified" },
-  { program: 62, name: "Synth Brass 1", family: "brass", min: 34, max: 82, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "assumed", note: "inherited from the family default; not individually verified" },
-  { program: 63, name: "Synth Brass 2", family: "brass", min: 34, max: 82, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "assumed", note: "inherited from the family default; not individually verified" },
+  { program: 61, name: "Brass Section", family: "brass", min: 26, max: 86, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "measured", note: "the brass section: tuba floor to trumpet ceiling" },
+  { program: 62, name: "Synth Brass 1", family: "brass", min: 21, max: 108, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "synthetic", note: "a synth patch in the shape of brass" },
+  { program: 63, name: "Synth Brass 2", family: "brass", min: 21, max: 108, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "synthetic", note: "a synth patch in the shape of brass" },
   { program: 64, name: "Soprano Sax", family: "reed", min: 56, max: 88, poly: 1, transpose: 2, basis: "measured", note: "checked against an orchestration range chart" },
   { program: 65, name: "Alto Sax", family: "reed", min: 49, max: 81, poly: 1, transpose: 9, basis: "measured", note: "checked against an orchestration range chart" },
   { program: 66, name: "Tenor Sax", family: "reed", min: 44, max: 76, poly: 1, transpose: 14, basis: "measured", note: "checked against an orchestration range chart" },
@@ -143,11 +151,11 @@ const ROWS: readonly Row[] = [
   { program: 72, name: "Piccolo", family: "pipe", min: 74, max: 108, poly: 1, transpose: -12, basis: "measured", note: "checked against an orchestration range chart" },
   { program: 73, name: "Flute", family: "pipe", min: 60, max: 98, poly: 1, transpose: 0, basis: "measured", note: "checked against an orchestration range chart" },
   { program: 74, name: "Recorder", family: "pipe", min: 65, max: 98, poly: 1, transpose: 0, basis: "measured", note: "alto F4-G6 and soprano C5-D7 together; GM does not say which" },
-  { program: 75, name: "Pan Flute", family: "pipe", min: 60, max: 98, poly: 1, transpose: 0, basis: "assumed", note: "inherited from the family default; not individually verified" },
-  { program: 76, name: "Blown Bottle", family: "pipe", min: 60, max: 98, poly: 1, transpose: 0, basis: "assumed", note: "inherited from the family default; not individually verified" },
+  { program: 75, name: "Pan Flute", family: "pipe", min: 55, max: 91, poly: 1, transpose: 0, basis: "tunable", note: "a Romanian nai is built in 20, 22, 25, 28 and 30 pipes, in G or in C; 22 tubes in G spans about three octaves" },
+  { program: 76, name: "Blown Bottle", family: "pipe", min: 48, max: 96, poly: 1, transpose: 0, basis: "tunable", note: "the pitch of a blown bottle is the bottle" },
   { program: 77, name: "Shakuhachi", family: "pipe", min: 62, max: 91, poly: 1, transpose: 0, basis: "measured", note: "1.8 shakuhachi: D4 fundamental, two octaves and a partial third" },
-  { program: 78, name: "Whistle", family: "pipe", min: 60, max: 98, poly: 1, transpose: 0, basis: "assumed", note: "inherited from the family default; not individually verified" },
-  { program: 79, name: "Ocarina", family: "pipe", min: 60, max: 98, poly: 1, transpose: 0, basis: "assumed", note: "inherited from the family default; not individually verified" },
+  { program: 78, name: "Whistle", family: "pipe", min: 74, max: 98, poly: 1, transpose: 0, basis: "measured", note: "a D tin whistle: D5-D7, two octaves" },
+  { program: 79, name: "Ocarina", family: "pipe", min: 69, max: 89, poly: 1, transpose: 0, basis: "measured", note: "a 12-hole alto C ocarina: A4-F6, the octave and a sixth Wikipedia gives" },
   { program: 80, name: "Lead 1 (square)", family: "synth-lead", min: 24, max: 96, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "synthetic", note: "an electronic patch has no acoustic compass" },
   { program: 81, name: "Lead 2 (sawtooth)", family: "synth-lead", min: 24, max: 96, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "synthetic", note: "an electronic patch has no acoustic compass" },
   { program: 82, name: "Lead 3 (calliope)", family: "synth-lead", min: 24, max: 96, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "synthetic", note: "an electronic patch has no acoustic compass" },
@@ -172,21 +180,21 @@ const ROWS: readonly Row[] = [
   { program: 101, name: "FX 6 (goblins)", family: "synth-effects", min: 24, max: 96, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "synthetic", note: "an electronic patch has no acoustic compass" },
   { program: 102, name: "FX 7 (echoes)", family: "synth-effects", min: 24, max: 96, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "synthetic", note: "an electronic patch has no acoustic compass" },
   { program: 103, name: "FX 8 (sci-fi)", family: "synth-effects", min: 24, max: 96, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "synthetic", note: "an electronic patch has no acoustic compass" },
-  { program: 104, name: "Sitar", family: "ethnic", min: 40, max: 84, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "assumed", note: "sitar compass not authoritatively sourced"},
+  { program: 104, name: "Sitar", family: "ethnic", min: 40, max: 84, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "tunable", note: "a sitar is tuned to the singer, not to concert pitch"},
   { program: 105, name: "Banjo", family: "ethnic", min: 48, max: 84, poly: 5, transpose: 0, basis: "measured", note: "5-string banjo open G reaches D3; tenor banjo down to C3; up to about C6" },
-  { program: 106, name: "Shamisen", family: "ethnic", min: 48, max: 79, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "assumed", note: "inherited from the family default; not individually verified" },
-  { program: 107, name: "Koto", family: "ethnic", min: 43, max: 84, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "assumed", note: "inherited from the family default; not individually verified" },
-  { program: 108, name: "Kalimba", family: "ethnic", min: 53, max: 89, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "assumed", note: "inherited from the family default; not individually verified" },
-  { program: 109, name: "Bagpipe", family: "ethnic", min: 40, max: 84, poly: 1, transpose: 0, basis: "assumed", note: "inherited from the family default; not individually verified" },
-  { program: 110, name: "Fiddle", family: "ethnic", min: 40, max: 84, poly: 2, transpose: 0, basis: "assumed", note: "inherited from the family default; not individually verified" },
-  { program: 111, name: "Shanai", family: "ethnic", min: 40, max: 84, poly: 1, transpose: 0, basis: "assumed", note: "inherited from the family default; not individually verified" },
-  { program: 112, name: "Tinkle Bell", family: "percussive", min: 48, max: 84, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "assumed", note: "tinkle bell is a high sound, but no authoritative compass was found"},
-  { program: 113, name: "Agogo", family: "percussive", min: 48, max: 84, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "assumed", note: "inherited from the family default; not individually verified" },
+  { program: 106, name: "Shamisen", family: "ethnic", min: 48, max: 79, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "tunable", note: "a shamisen is tuned to whatever register the singer wants" },
+  { program: 107, name: "Koto", family: "ethnic", min: 43, max: 84, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "tunable", note: "a koto is tuned to the piece before it is played" },
+  { program: 108, name: "Kalimba", family: "ethnic", min: 53, max: 89, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "tunable", note: "mbira and kalimba tunings vary by maker and are often not on the tempered scale" },
+  { program: 109, name: "Bagpipe", family: "ethnic", min: 62, max: 86, poly: 1, transpose: 0, basis: "measured", note: "General MIDI says only \"Bagpipe\": the Highland chanter is nine notes G4-A5, the uilleann chanter two octaves from D4, so this is the pair" },
+  { program: 110, name: "Fiddle", family: "ethnic", min: 55, max: 100, poly: 2, transpose: 0, basis: "measured", note: "a fiddle is a violin: G3-E7" },
+  { program: 111, name: "Shanai", family: "ethnic", min: 57, max: 81, poly: 1, transpose: 0, basis: "measured", note: "the shehnai: A3-A5, two octaves" },
+  { program: 112, name: "Tinkle Bell", family: "percussive", min: 48, max: 84, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "unpitched", note: "a tinkle bell has a sound, not a scale"},
+  { program: 113, name: "Agogo", family: "percussive", min: 48, max: 84, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "unpitched", note: "an agogo is two or three bells, not a scale" },
   { program: 114, name: "Steel Drums", family: "percussive", min: 33, max: 91, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "measured", note: "steelpan family A1-G6"},
-  { program: 115, name: "Woodblock", family: "percussive", min: 48, max: 84, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "assumed", note: "a woodblock is a small set of pitched blocks; no authoritative compass"},
-  { program: 116, name: "Taiko Drum", family: "percussive", min: 48, max: 84, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "assumed", note: "inherited from the family default; not individually verified" },
-  { program: 117, name: "Melodic Tom", family: "percussive", min: 48, max: 84, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "assumed", note: "inherited from the family default; not individually verified" },
-  { program: 118, name: "Synth Drum", family: "percussive", min: 48, max: 84, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "assumed", note: "inherited from the family default; not individually verified" },
+  { program: 115, name: "Woodblock", family: "percussive", min: 48, max: 84, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "unpitched", note: "a woodblock has a sound, not a scale"},
+  { program: 116, name: "Taiko Drum", family: "percussive", min: 48, max: 84, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "tunable", note: "a taiko is tuned by its head tension; a set has no standard compass" },
+  { program: 117, name: "Melodic Tom", family: "percussive", min: 48, max: 84, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "tunable", note: "a melodic tom set is tuned by the player" },
+  { program: 118, name: "Synth Drum", family: "percussive", min: 21, max: 108, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "synthetic", note: "an electronic drum voice" },
   { program: 119, name: "Reverse Cymbal", family: "percussive", min: 21, max: 108, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "unpitched", note: "reverse cymbal is an effect, not a pitch" },
   { program: 120, name: "Guitar Fret Noise", family: "sound-effects", min: 21, max: 108, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "unpitched", note: "sound effect" },
   { program: 121, name: "Breath Noise", family: "sound-effects", min: 21, max: 108, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "unpitched", note: "sound effect" },
@@ -197,12 +205,27 @@ const ROWS: readonly Row[] = [
   { program: 126, name: "Applause", family: "sound-effects", min: 21, max: 108, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "unpitched", note: "sound effect" },
   { program: 127, name: "Gunshot", family: "sound-effects", min: 21, max: 108, poly: UNLIMITED_POLYPHONY, transpose: 0, basis: "unpitched", note: "sound effect" },];
 
+/**
+ * Section patches take the union of the instruments in them, computed rather
+ * than typed, so a string section cannot end up narrower than the cello
+ * sitting inside it when the cello's own row is corrected.
+ */
+const SECTION_MEMBERS: Record<number, number[]> = {
+  44: [40, 41, 42, 43], // Tremolo Strings
+  45: [40, 41, 42, 43], // Pizzicato Strings
+  48: [40, 41, 42, 43], // String Ensemble 1
+  49: [40, 41, 42, 43], // String Ensemble 2
+  61: [56, 57, 58, 60], // Brass Section: trumpet, trombone, tuba, horn
+};
+
 /** The catalogue, in program order. */
 export const GM_CATALOGUE: readonly GmInstrumentSpec[] = ROWS.map((r) => ({
   program: r.program,
   name: r.name,
   family: r.family,
-  range: { min: r.min, max: r.max },
+  range: SECTION_MEMBERS[r.program]
+    ? sectionRange(...SECTION_MEMBERS[r.program]!)
+    : { min: r.min, max: r.max },
   maxPolyphony: r.poly,
   writtenTransposition: r.transpose,
   basis: r.basis,
@@ -228,6 +251,20 @@ export function gmSpec(program: number): GmInstrumentSpec | null {
  */
 export function gmRangeIsBinding(program: number): boolean {
   return gmSpec(program)?.basis === "measured";
+}
+
+/**
+ * The compass of a section patch: the union of the instruments in it.
+ *
+ * Derived rather than looked up, so a string section cannot end up narrower
+ * than the cello sitting inside it.
+ */
+function sectionRange(...programs: number[]): { min: number; max: number } {
+  const specs = programs.map((p) => ROWS[p]!);
+  return {
+    min: Math.min(...specs.map((r) => r.min)),
+    max: Math.max(...specs.map((r) => r.max)),
+  };
 }
 
 /** Guard: the families in program order, so a row cannot claim the wrong one. */
