@@ -8,34 +8,15 @@
  * score, which is why `gmInstrument` returns `null` rather than throwing.
  */
 
-export type GmFamily =
-  | "piano"
-  | "chromatic-percussion"
-  | "organ"
-  | "guitar"
-  | "bass"
-  | "strings"
-  | "ensemble"
-  | "brass"
-  | "reed"
-  | "pipe"
-  | "synth-lead"
-  | "synth-pad"
-  | "synth-effects"
-  | "ethnic"
-  | "percussive"
-  | "sound-effects";
-
-export type GmInstrument = {
-  /** 0-127, matching `Track.midiProgram`. */
-  program: number;
-  /** The General MIDI name, e.g. "Acoustic Grand Piano". */
-  name: string;
-  family: GmFamily;
-};
-
-/** In program order: family `i` covers programs `i*8 .. i*8+7`. */
-export const GM_FAMILIES: readonly GmFamily[] = [
+/**
+ * The sixteen General MIDI families, in program order: family `i` covers
+ * programs `i*8 .. i*8+7`.
+ *
+ * The list is the declaration and the type is read off it, so a family cannot
+ * be added to one and missed from the other — this was a union written above
+ * the array, which is the same fact stated twice.
+ */
+export const GM_FAMILIES = [
   "piano",
   "chromatic-percussion",
   "organ",
@@ -52,7 +33,16 @@ export const GM_FAMILIES: readonly GmFamily[] = [
   "ethnic",
   "percussive",
   "sound-effects",
-];
+] as const;
+export type GmFamily = (typeof GM_FAMILIES)[number];
+
+export type GmInstrument = {
+  /** 0-127, matching `Track.midiProgram`. */
+  program: number;
+  /** The General MIDI name, e.g. "Acoustic Grand Piano". */
+  name: string;
+  family: GmFamily;
+};
 
 export const GM_FAMILY_LABELS: Record<GmFamily, string> = {
   piano: "Piano",

@@ -22,6 +22,7 @@ import {
   BEAM_OVERRIDES,
   CLEFS,
   DYNAMICS,
+  GM_FAMILIES,
   HAIRPINS,
   ORNAMENTS,
   OTTAVAS,
@@ -38,6 +39,7 @@ const VOCABULARIES: Record<string, readonly (string | number)[]> = {
   BEAM_OVERRIDES,
   CLEFS,
   DYNAMICS,
+  GM_FAMILIES,
   HAIRPINS,
   ORNAMENTS,
   OTTAVAS,
@@ -77,7 +79,11 @@ describe("closed vocabularies have one declaration", () => {
   it("derives the type from the list rather than restating it", () => {
     // A union written beside the array is a second declaration by another
     // name, and the two only agree until someone edits one of them.
-    const source = readFileSync("src/model/score.ts", "utf8");
+    // Two files hold vocabularies now: the model's own, and the GM catalogue.
+    const source = [
+      readFileSync("src/model/score.ts", "utf8"),
+      readFileSync("src/domain/instruments/gm.ts", "utf8"),
+    ].join("\n");
     for (const type of [
       "Accidental",
       "Articulation",
@@ -85,6 +91,7 @@ describe("closed vocabularies have one declaration", () => {
       "BeamOverride",
       "Clef",
       "Dynamic",
+      "GmFamily",
       "Hairpin",
       "Ornament",
       "Ottava",
