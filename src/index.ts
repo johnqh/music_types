@@ -62,6 +62,7 @@ export * from "./domain/pitch/transpose.js";
 export * from "./domain/quantization/options.js";
 export * from "./domain/quantization/quantize.js";
 export * from "./domain/score/defaults.js";
+export * from "./domain/score/transport-state.js";
 export * from "./domain/score/factory.js";
 export * from "./domain/score/fragment.js";
 export * from "./domain/score/ids.js";

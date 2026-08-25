@@ -29,6 +29,7 @@ import {
   PITCH_STEPS,
   REPEAT_JUMPS,
   SYLLABICS,
+  TRANSPORT_STATES,
 } from "./../index.js";
 
 /** Every closed vocabulary that both the model and a validator need. */
@@ -46,6 +47,7 @@ const VOCABULARIES: Record<string, readonly (string | number)[]> = {
   PITCH_STEPS,
   REPEAT_JUMPS,
   SYLLABICS,
+  TRANSPORT_STATES,
 };
 
 describe("closed vocabularies have one declaration", () => {
@@ -83,6 +85,7 @@ describe("closed vocabularies have one declaration", () => {
     const source = [
       readFileSync("src/model/score.ts", "utf8"),
       readFileSync("src/domain/instruments/gm.ts", "utf8"),
+      readFileSync("src/domain/score/transport-state.ts", "utf8"),
     ].join("\n");
     for (const type of [
       "Accidental",
@@ -98,6 +101,7 @@ describe("closed vocabularies have one declaration", () => {
       "PitchStep",
       "RepeatJump",
       "Syllabic",
+      "TransportState",
     ]) {
       expect(source, `${type} should be derived from its list`).toMatch(
         new RegExp(`export type ${type} = \\(typeof [A-Z_]+\\)\\[number\\];`),
