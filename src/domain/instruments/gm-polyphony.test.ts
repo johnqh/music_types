@@ -42,7 +42,10 @@ describe("gmMaxPolyphony", () => {
   });
 
   it("handles the single-line players inside the ethnic family", () => {
-    expect(gmMaxPolyphony(105)).toBe(UNLIMITED_POLYPHONY); // Banjo
+    // The banjo is counted by its strings, as the guitar is: five is what it
+    // has, and "unlimited" was the ethnic family default rather than a fact
+    // about the instrument.
+    expect(gmMaxPolyphony(105)).toBe(5); // Banjo
     expect(gmMaxPolyphony(109)).toBe(1); // Bagpipe
     expect(gmMaxPolyphony(110)).toBe(2); // Fiddle
   });
