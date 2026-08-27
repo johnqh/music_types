@@ -128,6 +128,7 @@ export * from "./domain/score/extract-part.js";
 export * from "./domain/score/fermata-tempo.js";
 export * from "./domain/score/flatten.js";
 export * from "./domain/score/ottava.js";
+export * from "./domain/score/display-score.js";
 export * from "./domain/score/performance-timeline.js";
 export * from "./domain/score/rehearsal-marks.js";
 export * from "./domain/score/repeat-order.js";
