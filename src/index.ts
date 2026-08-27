@@ -142,3 +142,8 @@ export * from "./domain/time/duration-selection.js";
 export * from "./domain/time/tap-to-note.js";
 export * from "./domain/time/beams.js";
 export * from "./domain/time/tuplets.js";
+/**
+ * The notation glyphs as data, shared by the web and native toolbars.
+ * Generated; see the module header.
+ */
+export * from "./domain/notation/notation-icon-art.js";

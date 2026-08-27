@@ -139,6 +139,28 @@ export const REPEAT_JUMPS = [
 export type RepeatJump = (typeof REPEAT_JUMPS)[number];
 
 /**
+ * How each jump is written on a page.
+ *
+ * The same in every language: these are Italian abbreviations an engraver
+ * prints verbatim, and a reader looking for "D.S. al Coda" is looking for those
+ * letters — so they are data rather than translation keys.
+ *
+ * A `Record` keyed by the vocabulary, never a parallel array: adding a jump
+ * fails to compile until it is labelled, where an array would silently go on
+ * offering the old set. It lives here beside `REPEAT_JUMPS` because every app
+ * that offers a picker needs it, and a second copy would drift the moment one
+ * of them gained a jump.
+ */
+export const REPEAT_JUMP_LABEL: Record<RepeatJump, string> = {
+  'da-capo': 'D.C.',
+  'da-capo-al-fine': 'D.C. al Fine',
+  'da-capo-al-coda': 'D.C. al Coda',
+  'dal-segno': 'D.S.',
+  'dal-segno-al-fine': 'D.S. al Fine',
+  'dal-segno-al-coda': 'D.S. al Coda',
+};
+
+/**
  * A dynamic marking, from softest to loudest.
  *
  * Attached to the note it applies *from*, and in force until the next one on
