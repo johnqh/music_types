@@ -68,6 +68,23 @@ Everything exports from a single sectioned `src/index.ts`:
 - No domain logic here: tick math, factories, commands, validation logic all live in `@sudobility/music_lib`. This package must never depend on music_lib (music_api depends on this package and must not pull in UI/audio code).
 - `noteEventSchema`/`restEventSchema` are `.strict()` on purpose (a stray `pitch` key must not pass as a rest); other schemas strip unknown keys for forward compatibility.
 - Ticks are integers at 480 PPQ by convention; `startTick` is absolute.
+- **Saying a stored value the way a musician says it belongs here**
+  (`music-vocabulary.ts`). A score stores ticks, fifths and zero-based voice
+  indexes because those are the right things to compute with, and none of them
+  is the right thing to *show* — `Duration 480` and `Key (fifths) 2` state the
+  storage format. The conversions are facts about music rather than details of
+  a panel, and there are now **two** apps drawing the same panels, which is
+  what settles where they live: a display conversion transcribed into the
+  native app agrees with the web's copy right up until one of them is edited,
+  and nothing fails when they part. `panReadout` arrived exactly that way — it
+  was three lines in `music_app/src/features/tracks/pan-readout.ts` and three
+  identical lines in music_app_rn the moment the native property sheet gained a
+  pan row. A conversion qualifies for this file under the same four rules as
+  anything else here: it works on both sides, adds no dependency, has no hook
+  and no async in it. No user-facing prose, though — note values and key names
+  are terms of the domain, fixed across locales the way General MIDI's
+  instrument names are, but anything a translator would touch is the app's.
+
 - **A guard test enforces that this package runs on React Native** (`src/platform-free.test.ts`): no web-only global and no `import.meta`. This matters more here than anywhere else — these are the platform *interfaces* every other repo implements, so one DOM type in a signature spreads to all of them. That is why `FileExporter.save` takes `Uint8Array | string` rather than a `Blob`, and the codecs take `ArrayBuffer`. `tsconfig.json` still sets `lib: [..., "DOM"]` (for `AbortSignal`) and `eslint.config.js` still spreads `globals.browser`, so nothing else would object.
 
 ## Related Projects

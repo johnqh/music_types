@@ -228,3 +228,26 @@ export function pitchAtStavePosition(
 ): Pitch {
   return shiftDiatonic(TOP_LINE_PITCH[clef], -positionsBelowTopLine);
 }
+
+// ---- mixing ----------------------------------------------------------------
+
+/**
+ * A pan position, said the way a mixer says it: `C`, `L40`, `R25`.
+ *
+ * `Track.pan` runs -1 to 1 because that is the right thing to compute with, and
+ * it is the wrong thing to show — "0.4" tells a reader neither which side nor
+ * how far without knowing the convention. At the centre there is no side to
+ * name at all, hence `C` rather than `L0`.
+ *
+ * Here rather than in either app for the reason every other conversion in this
+ * file is: both apps draw the same mixer row, and two copies of this agree
+ * right up until one of them is edited. It lived in `music_app`'s
+ * `features/tracks/pan-readout.ts` and was transcribed into `music_app_rn` when
+ * the native property sheet gained the same control — which is exactly the
+ * moment to stop transcribing.
+ */
+export function panReadout(value: number): string {
+  const amount = Math.round(Math.abs(value) * 100);
+  if (amount === 0) return "C";
+  return `${value < 0 ? "L" : "R"}${amount}`;
+}

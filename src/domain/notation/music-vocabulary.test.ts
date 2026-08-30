@@ -6,6 +6,7 @@ import {
   durationLabel,
   keySignatureName,
   keySignatureOptions,
+  panReadout,
   pitchAtStavePosition,
   tickForBarBeat,
 } from "./music-vocabulary.js";
@@ -148,5 +149,29 @@ describe("pitchAtStavePosition", () => {
     for (let position = -6; position <= 16; position++) {
       expect(pitchAtStavePosition("alto", position).accidental).toBe(0);
     }
+  });
+});
+
+describe("panReadout", () => {
+  it("names the side and the distance, not a fraction", () => {
+    expect(panReadout(-0.4)).toBe("L40");
+    expect(panReadout(0.25)).toBe("R25");
+  });
+
+  it("says C at the centre, where there is no side to name", () => {
+    // "L0" would be a side, and a centred track is on neither.
+    expect(panReadout(0)).toBe("C");
+  });
+
+  it("reaches L100 and R100 at the extremes", () => {
+    expect(panReadout(-1)).toBe("L100");
+    expect(panReadout(1)).toBe("R100");
+  });
+
+  it("rounds rather than truncating, so a nudge off centre shows", () => {
+    // -0.004 is centred to the nearest percent; -0.006 is not, and a readout
+    // that truncated would call both C while the sound differed.
+    expect(panReadout(-0.004)).toBe("C");
+    expect(panReadout(-0.006)).toBe("L1");
   });
 });
