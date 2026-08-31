@@ -68,6 +68,31 @@ Everything exports from a single sectioned `src/index.ts`:
 - No domain logic here: tick math, factories, commands, validation logic all live in `@sudobility/music_lib`. This package must never depend on music_lib (music_api depends on this package and must not pull in UI/audio code).
 - `noteEventSchema`/`restEventSchema` are `.strict()` on purpose (a stray `pitch` key must not pass as a rest); other schemas strip unknown keys for forward compatibility.
 - Ticks are integers at 480 PPQ by convention; `startTick` is absolute.
+- **A picker's option list belongs beside the vocabulary it is built from**
+  (`picker-options.ts`). `ARTICULATION_OPTIONS` existed in music_app's
+  inspector, in music_app_rn's toolbar *and* in its Note tab, and the three
+  agreed only because nobody had added a fifth articulation yet — a hand-written
+  list goes on offering the old set in silence, which is the exact failure the
+  `Record<T, …>` rule next to this one exists to prevent. Each list is `map`ped
+  off the vocabulary, so a new member reaches every picker in both apps without
+  anybody remembering to. Two shapes are load-bearing. They carry an **i18n key,
+  never a translated string** — the words belong to the app, and a key is not
+  prose but the name of a fact. And "none" travels under the `NO_MARK`
+  sentinel, because a picker's value is a string and an empty one is
+  indistinguishable from "nothing chosen" (Radix refuses it outright; the native
+  `Select` behaves the same). The one thing that stays in each app is a
+  **drawing**: the toolbar attaches its own glyph to the shared value, since a
+  React component is the one thing a vocabulary cannot carry.
+
+- **`commonValue` is here because a property panel acts on a *selection*.** A
+  field that showed the first object's value would say "Staccato" for a
+  selection that is mostly not, and setting it would look like a no-op on
+  everything that already agreed. It compares by **structure, not identity** —
+  pitches, time and key signatures are small objects rebuilt on every read, so
+  `===` reports every multi-note selection as mixed. Written once per app before
+  this, which is how the two came to disagree about whether an empty selection
+  was `null` or mixed.
+
 - **Saying a stored value the way a musician says it belongs here**
   (`music-vocabulary.ts`). A score stores ticks, fifths and zero-based voice
   indexes because those are the right things to compute with, and none of them
