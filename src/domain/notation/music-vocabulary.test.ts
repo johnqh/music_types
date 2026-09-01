@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { twinkleScore } from "../../test/fixtures.js";
+import { barNumberAt } from "../score/bar-numbers.js";
+import type { Score } from "../../model/score.js";
 import {
   accidentalCountLabel,
   barBeatForTick,
@@ -173,5 +175,57 @@ describe("panReadout", () => {
     // that truncated would call both C while the sound differed.
     expect(panReadout(-0.004)).toBe("C");
     expect(panReadout(-0.006)).toBe("L1");
+  });
+});
+
+describe("barBeatForTick with a pickup", () => {
+  /*
+    The case that made a second implementation visible.
+
+    `measureBeatAt` in music_editing computed the bar as `measure.index + 1`
+    and the web transport used it, so on a score with an anacrusis the transport
+    said one bar while the inspector, the gutter and "go to bar N" — all of
+    which go through `barNumberAt` — said another. A pickup is not counted, so
+    every bar after one is a bar lower than its position.
+
+    That function is gone and this is the only implementation. These pin the
+    difference between the two, so a reintroduced `index + 1` fails here.
+  */
+  function withPickup(): Score {
+    const score = twinkleScore();
+    return {
+      ...score,
+      tracks: score.tracks.map((track) => ({
+        ...track,
+        measures: track.measures.map((measure, index) =>
+          index === 0 ? { ...measure, pickup: true } : measure,
+        ),
+      })),
+    };
+  }
+
+  it("gives the pickup no number of its own", () => {
+    // A player calls it "the pickup", not "bar 1"; 0 is what it reports when
+    // it has to report something.
+    const score = withPickup();
+    expect(barBeatForTick(score, 0)?.bar).toBe(0);
+  });
+
+  it("numbers the bar after a pickup as bar 1, not bar 2", () => {
+    const score = withPickup();
+    const second = score.tracks[0].measures[1];
+    expect(barBeatForTick(score, second.startTick)?.bar).toBe(1);
+    // And `index + 1` — what the deleted duplicate did — would have said 2.
+    expect(second.index + 1).toBe(2);
+  });
+
+  it("agrees with barNumberAt, which everything else reads", () => {
+    const score = withPickup();
+    const measures = score.tracks[0].measures;
+    for (const [index, measure] of measures.entries()) {
+      expect(barBeatForTick(score, measure.startTick)?.bar).toBe(
+        barNumberAt(measures, index) ?? 0,
+      );
+    }
   });
 });
