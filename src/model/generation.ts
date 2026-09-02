@@ -34,6 +34,36 @@ export type GenerateScoreRequestTrack = {
   maximumPolyphony?: number;
 };
 
+/**
+ * The generation backends a client may choose between.
+ *
+ * A closed vocabulary declared as an array with the type read off it, because a
+ * TypeScript union has no runtime form and the picker needs to enumerate these.
+ * The *names* are shared; which model each one resolves to is the server's
+ * business, and deliberately not stated here — that mapping changes with
+ * configuration, and a copy of it in the client would be wrong the first time
+ * it did.
+ *
+ * `default` is what every ordinary request uses. The others exist so the same
+ * brief can be run through two backends and compared by ear, which became worth
+ * doing once the provider was a configuration change rather than a code change.
+ */
+export const GENERATION_VARIANTS = ["default", "deepseek", "weak"] as const;
+export type GenerationVariant = (typeof GENERATION_VARIANTS)[number];
+
+/**
+ * What to call each one in a picker.
+ *
+ * A `Record` keyed by the vocabulary, never a parallel array: a record fails to
+ * compile when a variant is added, where an array would silently go on offering
+ * the old set.
+ */
+export const GENERATION_VARIANT_LABELS: Record<GenerationVariant, string> = {
+  default: "Default",
+  deepseek: "DeepSeek",
+  weak: "Cheap model",
+};
+
 export type GenerateScoreRequest = {
   prompt: string;
   title?: string;
@@ -45,6 +75,19 @@ export type GenerateScoreRequest = {
   keySignature?: KeySignature;
   tracks: GenerateScoreRequestTrack[];
   complexity?: "simple" | "moderate" | "complex";
+  /**
+   * Which generation backend to use, for comparing one against another.
+   *
+   * A *name*, not an address: the server maps it through its own allow-list to
+   * a model and endpoint, so a client can pick from what is offered and cannot
+   * point generation at anything else. An unknown or absent value means the
+   * default backend, which is what every ordinary request sends.
+   *
+   * This exists because the provider is now a configuration change rather than
+   * a code change, and the only honest way to choose between two of them is to
+   * run the same brief through both and listen.
+   */
+  variant?: string;
 };
 
 /** Never a rendered/notation payload and never raw MIDI: always a structured `Score`. */
@@ -186,6 +229,9 @@ export const generateScoreRequestSchema = z.object({
   keySignature: keySignatureSchema.optional(),
   tracks: z.array(generateScoreRequestTrackSchema),
   complexity: z.enum(["simple", "moderate", "complex"]).optional(),
+  // A free string on the wire, resolved against the server's allow-list rather
+  // than trusted: see `GenerateScoreRequest.variant`.
+  variant: z.string().optional(),
 });
 
 export const generateScoreResultSchema = z.object({
