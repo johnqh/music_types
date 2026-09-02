@@ -97,6 +97,7 @@ export * from "./domain/commands/relocate-commands.js";
 export * from "./domain/commands/ripple-commands.js";
 export * from "./domain/instruments/gm.js";
 export * from "./domain/instruments/gm-catalogue.js";
+export * from "./domain/instruments/arrangement-order.js";
 export * from "./domain/instruments/midi-protocol.js";
 export * from "./domain/instruments/gm-kit.js";
 export * from "./domain/instruments/gm-range.js";

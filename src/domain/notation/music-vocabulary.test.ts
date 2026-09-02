@@ -5,6 +5,8 @@ import type { Score } from "../../model/score.js";
 import {
   accidentalCountLabel,
   barBeatForTick,
+  formatBarBeat,
+  wholeBarBeat,
   durationLabel,
   keySignatureName,
   keySignatureOptions,
@@ -58,6 +60,47 @@ describe("keySignatureOptions", () => {
     expect(options.find((o) => o.fifths === 2)?.label).toBe(
       "D major — 2 sharps",
     );
+  });
+});
+
+/*
+ * The readout form, which is not the same as the position.
+ *
+ * `barBeatForTick` keeps a fraction on purpose — the inspector's position
+ * field is editable and a note can sit on beat 2.5. A transport readout must
+ * floor it, and when that flooring was left to each app to do inline, one of
+ * the two forgot: the web transport printed "1.1.3333333333333333" thirty
+ * times a second while React Native, which floored it, was fine.
+ */
+describe("wholeBarBeat / formatBarBeat", () => {
+  it("floors a position between beats to the beat a player counts", () => {
+    const score = twinkleScore();
+    const between = barBeatForTick(score, score.ppq / 3)!;
+    expect(between.beat).toBeGreaterThan(1);
+    expect(between.beat).toBeLessThan(2);
+    expect(wholeBarBeat(between)).toEqual({ bar: 1, beat: 1 });
+  });
+
+  it("leaves a position already on a beat alone", () => {
+    const score = twinkleScore();
+    expect(wholeBarBeat(barBeatForTick(score, score.ppq))).toEqual({
+      bar: 1,
+      beat: 2,
+    });
+  });
+
+  it("renders the readout without a fraction, at every offset in a beat", () => {
+    const score = twinkleScore();
+    // Every one of these used to render a different long string; a readout
+    // that changes on a sub-beat is the flicker this exists to stop.
+    for (const offset of [0, 1, 60, 120, 160, 239, 320, 479]) {
+      expect(formatBarBeat(barBeatForTick(score, offset))).toBe("1.1");
+    }
+  });
+
+  it("says so plainly when there is no position", () => {
+    expect(wholeBarBeat(null)).toBeNull();
+    expect(formatBarBeat(null)).toBe("-.-");
   });
 });
 

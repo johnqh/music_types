@@ -168,6 +168,43 @@ export function barBeatForTick(score: Score, tick: number): BarBeat | null {
 }
 
 /**
+ * The same position with the beat whole, which is how a player says it.
+ *
+ * `barBeatForTick` keeps the fraction because the inspector's position field
+ * needs it — a note can sit on beat 2.5, and that field is editable. A
+ * transport readout wants the opposite: nobody counts "beat 2.7333333333333",
+ * and during playback the fraction changes with every position report.
+ *
+ * That distinction was lost once, visibly. The transport readouts used to call
+ * a `measureBeatAt` that floored internally; replacing it with
+ * `barBeatForTick` — which was the right move, since the old one numbered bars
+ * `index + 1` and so miscounted every score with a pickup — silently handed
+ * them the raw fraction. The web readout renders `${bar}.${beat}`, so it began
+ * printing "1.1.3333333333333333" into a 40px box thirty times a second, and
+ * snapping back to "1.2" whenever the position happened to land on a beat.
+ * The React Native app had floored it inline and was unaffected, which is
+ * exactly the shape of bug two copies of one calculation produce.
+ *
+ * So the flooring lives here, once, and both transports call it.
+ */
+export function wholeBarBeat(at: BarBeat | null): BarBeat | null {
+  return at ? { bar: at.bar, beat: Math.floor(at.beat) } : null;
+}
+
+/**
+ * A transport readout: `"3.2"`, or `"-.-"` when there is no position.
+ *
+ * The placeholder is here rather than in each app for the reason the flooring
+ * is — it was written out separately in both, and a readout that disagrees
+ * about what "nothing to show" looks like is a readout somebody has to
+ * reconcile later.
+ */
+export function formatBarBeat(at: BarBeat | null): string {
+  const whole = wholeBarBeat(at);
+  return whole ? `${whole.bar}.${whole.beat}` : '-.-';
+}
+
+/**
  * The tick at `bar`/`beat`, both counted from 1. `null` when that bar does not
  * exist; a beat past the end of its bar is clamped into it, because a typed
  * "beat 9" in 4/4 means the end of the bar rather than an error.
