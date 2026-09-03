@@ -88,6 +88,19 @@ export type GenerateScoreRequest = {
    * run the same brief through both and listen.
    */
   variant?: string;
+
+  /**
+   * Whether the sung part comes back with words under it.
+   *
+   * Off by default, and deliberately not inferred from the roster: a score can
+   * carry a voice program as a wordless "ooh" pad, which is a different piece
+   * of music from a song with a lyric. Asking is the only way to tell.
+   *
+   * A boolean rather than a subject line, because `prompt` already says what
+   * the piece is about — a second field for the lyric's theme would be a place
+   * for the two to disagree.
+   */
+  lyrics?: boolean;
 };
 
 /** Never a rendered/notation payload and never raw MIDI: always a structured `Score`. */
@@ -232,6 +245,7 @@ export const generateScoreRequestSchema = z.object({
   // A free string on the wire, resolved against the server's allow-list rather
   // than trusted: see `GenerateScoreRequest.variant`.
   variant: z.string().optional(),
+  lyrics: z.boolean().optional(),
 });
 
 export const generateScoreResultSchema = z.object({

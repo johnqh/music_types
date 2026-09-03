@@ -3,6 +3,7 @@ import {
   rankTracksForGeneration,
   roleOf,
   roleOrderForStyle,
+  isVocalProgram,
 } from "./arrangement-order";
 
 const track = (midiProgram: number, clef?: string) => ({ midiProgram, clef });
@@ -103,5 +104,62 @@ describe("rankTracksForGeneration", () => {
 
   it("has nothing to say about an empty roster", () => {
     expect(rankTracksForGeneration([])).toEqual([]);
+  });
+});
+
+
+/*
+ * A sung part is the tune, not the filler behind it.
+ *
+ * GM files Choir Aahs, Voice Oohs and Synth Voice under `ensemble`, beside
+ * String Ensemble and Orchestra Hit — so they read as harmony, which had two
+ * consequences. The vocal line was written as filler around a tune chosen
+ * without it, and `mustBreathe` (which covers `lead` alone) never reached the
+ * one part that physically cannot sing sixteen unbroken bars.
+ */
+describe("a voice is a lead", () => {
+  it("treats the three GM voices as the part that carries the tune", () => {
+    for (const midiProgram of [52, 53, 54]) {
+      expect(roleOf({ midiProgram, clef: "treble" })).toBe("lead");
+      expect(isVocalProgram(midiProgram)).toBe(true);
+    }
+  });
+
+  /*
+   * The neighbours have to stay put: they share the family, and reclassifying
+   * the family instead of the three programs would make a string pad the tune.
+   */
+  it("leaves the rest of the ensemble family accompanying", () => {
+    for (const midiProgram of [48, 49, 50, 51, 55]) {
+      expect(roleOf({ midiProgram, clef: "treble" })).toBe("harmony");
+      expect(isVocalProgram(midiProgram)).toBe(false);
+    }
+  });
+
+  it("leaves a choir PAD a pad, since it says so in its name", () => {
+    expect(roleOf({ midiProgram: 91, clef: "treble" })).toBe("harmony");
+    expect(isVocalProgram(91)).toBe(false);
+  });
+
+  it("does not disturb a voice program on a drum kit", () => {
+    expect(roleOf({ midiProgram: 52, clef: "percussion" })).toBe("drums");
+  });
+
+  /*
+   * A singer is generated first, like any other tune — which is the whole point
+   * of the reclassification: the words and the melody are the song, and the
+   * parts behind them are written to fit.
+   */
+  it("ranks a vocal part ahead of the instruments backing it", () => {
+    const order = rankTracksForGeneration(
+      [
+        { name: "Guitar", midiProgram: 27, clef: "treble" },
+        { name: "Lead Vocal", midiProgram: 53, clef: "treble" },
+        { name: "Kit", midiProgram: 0, clef: "percussion" },
+      ],
+      "pop ballad",
+    );
+    expect(order[0]).toBe(1);
+    expect(order[order.length - 1]).toBe(2);
   });
 });

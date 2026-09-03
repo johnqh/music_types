@@ -10,6 +10,7 @@ import {
   durationLabel,
   keySignatureName,
   keySignatureOptions,
+  measuresForSeconds,
   panReadout,
   pitchAtStavePosition,
   tickForBarBeat,
@@ -270,5 +271,66 @@ describe("barBeatForTick with a pickup", () => {
         barNumberAt(measures, index) ?? 0,
       );
     }
+  });
+});
+
+/*
+ * A bar is not a unit of time, and treating it as one made a "song" 1:31 long.
+ *
+ * 32 bars of 4 beats at 84bpm is 91 seconds; the same 32 bars of metal at 152
+ * is 50. A bar count fixed across styles produces a different piece of music
+ * every time the tempo moves, which is why length is declared in seconds and
+ * the bars derived from it.
+ */
+describe("measuresForSeconds", () => {
+  it("gives each tempo the bars it needs for the same duration", () => {
+    expect(measuresForSeconds(210, 84, 4)).toBe(72);
+    expect(measuresForSeconds(210, 152, 4)).toBe(132);
+  });
+
+  it("accounts for the meter, not just the tempo", () => {
+    expect(measuresForSeconds(60, 180, 3)).toBe(60);
+    expect(measuresForSeconds(60, 180, 4)).toBe(44);
+  });
+
+  /*
+   * Whole four-bar groups, because form is built in fours: a 63-bar song has a
+   * bar of nowhere in it, and every section boundary after it lands off the
+   * phrase.
+   */
+  it("rounds to whole four-bar groups", () => {
+    for (const seconds of [100, 150, 200, 250]) {
+      expect(measuresForSeconds(seconds, 120, 4) % 4).toBe(0);
+    }
+  });
+
+  it("still gives a very slow piece a phrase to work with", () => {
+    expect(measuresForSeconds(10, 40, 4)).toBe(4);
+  });
+
+  it("agrees with the arithmetic that exposed the problem", () => {
+    // The 32-bar song measured 1:31, so ~91 seconds asks for 32 bars back.
+    expect(measuresForSeconds(91, 84, 4)).toBe(32);
+  });
+});
+
+/*
+ * Some genres ARE a length. A blues is twelve bars and a rag sixteen, so a
+ * blues rounded to fours comes out at 76 — six choruses and a third of one,
+ * which is not a blues.
+ */
+describe("measuresForSeconds and the genre's own form", () => {
+  it("rounds to whole choruses of a twelve-bar form", () => {
+    const bars = measuresForSeconds(210, 88, 4, 12);
+    expect(bars % 12).toBe(0);
+    expect(bars).toBe(72);
+  });
+
+  it("rounds to whole sixteens for a rag", () => {
+    expect(measuresForSeconds(210, 96, 2, 16) % 16).toBe(0);
+  });
+
+  it("still gives a whole form when the duration is short", () => {
+    expect(measuresForSeconds(5, 88, 4, 12)).toBe(12);
   });
 });

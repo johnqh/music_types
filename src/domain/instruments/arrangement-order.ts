@@ -47,8 +47,43 @@ const HARMONY_FAMILIES: ReadonlySet<GmFamily> = new Set<GmFamily>([
   "organ",
 ]);
 
+/**
+ * The three General MIDI programs that are a human voice.
+ *
+ * GM files them under `ensemble`, beside String Ensemble and Orchestra Hit --
+ * which is a fair description of Choir Aahs used as a wash, and the wrong one
+ * for the part carrying the song. Named here rather than moved to another
+ * family because the family is GM's and is right about everything else in it.
+ *
+ * `Pad 4 (choir)` (91) is deliberately absent: it says pad in its name and is
+ * one. `Lead 6 (voice)` (85) is absent too, already reaching `lead` through
+ * `synth-lead`.
+ */
+const VOICE_PROGRAMS: ReadonlySet<number> = new Set([
+  52, // Choir Aahs
+  53, // Voice Oohs
+  54, // Synth Voice
+]);
+
+/** Whether this program is a sung part rather than an instrument. */
+export function isVocalProgram(midiProgram: number): boolean {
+  return VOICE_PROGRAMS.has(midiProgram);
+}
+
+/**
+ * A voice carries the tune, and the ambiguity is resolved in its favour.
+ *
+ * Choir Aahs held under a chorus is genuinely harmony, and nothing in a program
+ * number can tell that from a sung melody -- so this is a judgement about which
+ * mistake costs more. Read as harmony, a vocal part is written as filler around
+ * a tune chosen without it, and -- worse -- `mustBreathe` covers `lead` alone,
+ * so the one part that physically CANNOT run sixteen unbroken bars was the one
+ * part never asked to rest. Read as lead, a choir pad collects a finding asking
+ * it to breathe, which costs one retry and is not even wrong.
+ */
 export function roleOf(track: RankableTrack): ArrangementRole {
   if (track.clef === "percussion") return "drums";
+  if (isVocalProgram(track.midiProgram)) return "lead";
   const family = gmFamilyOf(track.midiProgram);
   if (family === "bass") return "bass";
   if (HARMONY_FAMILIES.has(family)) return "harmony";
@@ -137,8 +172,20 @@ export function rankTracksForGeneration(
     // answers -1, and -1 in front of "lead" would silently promote it.
     return index === -1 ? order.length : index;
   };
+  /*
+    Among leads, the singer goes first.
+
+    Two parts can both be leads — a vocal and a guitar — and then role alone
+    leaves the order to however the roster happened to be typed. In a song the
+    answer is not arbitrary: the words and the tune ARE the song, and the parts
+    behind them are written to fit. Ranked by index instead, a guitar listed
+    first got composed with no melody to sit under, and the singer then had to
+    bend around it.
+  */
+  const voiceFirst = (track: RankableTrack): number =>
+    isVocalProgram(track.midiProgram) && track.clef !== "percussion" ? 0 : 1;
   return tracks
-    .map((track, index) => ({ index, rank: rankOf(track) }))
-    .sort((a, b) => a.rank - b.rank || a.index - b.index)
+    .map((track, index) => ({ index, rank: rankOf(track), voice: voiceFirst(track) }))
+    .sort((a, b) => a.rank - b.rank || a.voice - b.voice || a.index - b.index)
     .map((entry) => entry.index);
 }

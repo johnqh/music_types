@@ -288,3 +288,50 @@ export function panReadout(value: number): string {
   if (amount === 0) return "C";
   return `${value < 0 ? "L" : "R"}${amount}`;
 }
+
+/**
+ * How long a song should be, in seconds.
+ *
+ * A generated piece was 16 bars — about thirty seconds at an ordinary tempo,
+ * and a fragment rather than a song. These are the lengths a listener expects
+ * of one: under three minutes reads as a demo, over five outstays a verse-chorus
+ * form unless something else is happening.
+ *
+ * Stated in SECONDS rather than bars because a bar is not a unit of time: 16
+ * bars is 31 seconds of metal at 152bpm and 46 seconds of ballad at 84, so a
+ * bar count fixed across styles produces a different piece of music every time
+ * the tempo changes. The bar count is derived — see `measuresForSeconds`.
+ */
+export const SONG_SECONDS = {
+  min: 180,
+  typical: 210,
+  max: 300,
+} as const;
+
+/**
+ * Bars needed to fill `seconds` at this tempo and meter.
+ *
+ * The inverse of the arithmetic that made a 32-bar "song" last 1:31 — 32 bars
+ * of 4 beats at 84bpm. Rounded to a whole number of FOUR-bar groups, because
+ * musical form is built in fours and a 63-bar song has a bar of nowhere in it;
+ * and never less than one group, so a very slow piece still gets a phrase.
+ */
+export function measuresForSeconds(
+  seconds: number,
+  bpm: number,
+  beatsPerBar: number,
+  /**
+   * The genre's form, in bars, that the length must be a whole number of.
+   *
+   * Four by default, because musical form is built in fours and a 63-bar song
+   * has a bar of nowhere in it. Some genres ARE a length: a blues is twelve
+   * bars and a rag sixteen, so a blues rounded to fours comes out at 76 — six
+   * choruses and a third of one, which is not a blues.
+   */
+  groupBars = 4,
+): number {
+  const group = Math.max(1, Math.floor(groupBars));
+  const beats = (seconds * bpm) / 60;
+  const bars = beats / Math.max(1, beatsPerBar);
+  return Math.max(group, Math.round(bars / group) * group);
+}
