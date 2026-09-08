@@ -157,6 +157,9 @@ export function emptyScoreForRequest(request: GenerateScoreRequest): Score {
     tracks: request.tracks.map((t) => ({
       name: t.name,
       instrumentName: t.instrumentName,
+      // `createTrack` defaults this to 0, so leaving it off made every
+      // placeholder an all-piano score whatever ensemble was asked for.
+      midiProgram: t.midiProgram,
       clef: t.clef,
     })),
     ...(request.timeSignature ? { timeSignature: request.timeSignature } : {}),

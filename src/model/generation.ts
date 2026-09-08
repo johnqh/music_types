@@ -48,7 +48,12 @@ export type GenerateScoreRequestTrack = {
  * brief can be run through two backends and compared by ear, which became worth
  * doing once the provider was a configuration change rather than a code change.
  */
-export const GENERATION_VARIANTS = ["default", "deepseek", "weak"] as const;
+export const GENERATION_VARIANTS = [
+  "default",
+  "deepseek",
+  "weak",
+  "local",
+] as const;
 export type GenerationVariant = (typeof GENERATION_VARIANTS)[number];
 
 /**
@@ -62,7 +67,35 @@ export const GENERATION_VARIANT_LABELS: Record<GenerationVariant, string> = {
   default: "Default",
   deepseek: "DeepSeek",
   weak: "Cheap model",
+  /*
+    A model running on the machine, served by LM Studio through ShapeShyft.
+
+    Reachable only from a ShapeShyft instance on that same machine: the hosted
+    one cannot open a socket to somebody's laptop, so this variant works
+    against a local `SHAPESHYFT_API_URL` and nowhere else.
+  */
+  local: "Local (LM Studio)",
 };
+
+/**
+ * A request tagged with the generation backend to use, when it is not the default.
+ *
+ * Generic over the request rather than written twice, because whole-score
+ * generation and region replacement carry the same field for the same reason
+ * and a rule copied into two call sites is a rule that eventually disagrees
+ * with itself.
+ *
+ * The default is expressed by sending **no field at all**, so an ordinary
+ * request is byte-for-byte what it was before backends could be chosen. That
+ * matters on the wire: a field present on every request is a field the server
+ * has to reason about on every request.
+ */
+export function withGenerationVariant<T extends { variant?: string }>(
+  request: T,
+  variant: string | undefined,
+): T {
+  return variant && variant !== "default" ? { ...request, variant } : request;
+}
 
 export type GenerateScoreRequest = {
   prompt: string;
@@ -136,6 +169,17 @@ export type RegenerateRegionRequest = {
   followingContext: ScoreFragment;
   constraints: RegenerationConstraints;
   candidateCount: number;
+  /**
+   * Which backend writes the replacement. See `GenerateScoreRequest.variant`.
+   *
+   * Regeneration used to have no say in this: the transport read the variant
+   * off the whole-score request alone, so a "Replace Track" always went to the
+   * default backend however the piece around it had been written. Choosing the
+   * model for a whole score and not for a bar of it is an odd place to draw
+   * the line, and it makes an A/B comparison impossible on the very operation
+   * that is cheapest to compare.
+   */
+  variant?: string;
   /**
    * Who is playing each track of `selectedFragment`, in the same order.
    *
@@ -274,6 +318,9 @@ export const regenerateRegionRequestSchema = z.object({
   followingContext: scoreFragmentSchema,
   constraints: regenerationConstraintsSchema,
   candidateCount: z.number().int().positive(),
+  // A free string on the wire, resolved against the server's allow-list rather
+  // than trusted: see `GenerateScoreRequest.variant`.
+  variant: z.string().optional(),
   tracks: z.array(generateScoreRequestTrackSchema).optional(),
   accompaniment: z
     .object({

@@ -35,7 +35,7 @@ Everything exports from a single sectioned `src/index.ts`:
 8. Zod schemas for the project API
 9. Response envelope (`ApiResponse<T>`, `successResponse`, `errorResponse`, `API_ERROR_CODES`)
 
-`src/test-helpers.ts` is a test-only factory stand-in (excluded from the published build); the real factories live in `@sudobility/music_lib`.
+`src/test-helpers.ts` is a test-only fixture helper (excluded from the published build); shared score factories live in this package under `domain/score/`.
 
 ## Gotchas
 
@@ -65,7 +65,11 @@ Everything exports from a single sectioned `src/index.ts`:
   `PlaybackObserver` and `AuditionVoice` did move, because that package is the
   only thing that implements or calls them.
 
-- No domain logic here: tick math, factories, commands, validation logic all live in `@sudobility/music_lib`. This package must never depend on music_lib (music_api depends on this package and must not pull in UI/audio code).
+- Pure shared domain logic belongs here when both frontend and backend need it:
+  tick math, factories, commands, validation, instrument knowledge, generation
+  presets and prompt-facing shared data. This package must never depend on
+  `music_lib`, and `music_api` must never pull in frontend UI/audio code just
+  to reach a shared rule.
 - `noteEventSchema`/`restEventSchema` are `.strict()` on purpose (a stray `pitch` key must not pass as a rest); other schemas strip unknown keys for forward compatibility.
 - Ticks are integers at 480 PPQ by convention; `startTick` is absolute.
 - **A picker's option list belongs beside the vocabulary it is built from**
@@ -116,7 +120,7 @@ Everything exports from a single sectioned `src/index.ts`:
 
 - `music_api` — backend (Hono/Drizzle/OpenAI proxy), consumes schemas for validation
 - `music_client` — typed network client + React Query hooks
-- `music_lib` — domain logic, adapters, store
+- `music_lib` — frontend app logic, adapters, store
 - `music_app` — web app (UI/routing only)
 
 ## Git Workflow

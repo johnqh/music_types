@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 import type { NoteEvent, Score, ScoreSelection } from "../../index.js";
 import { isNoteEvent } from "../../index.js";
 import { twoTrackScore } from "../../test/fixtures.js";
-import { replacementRegion } from "./replacement-region.js";
+import {
+  emptyScoreForRequest,
+  replacementRegion,
+} from "./replacement-region.js";
 
 /** Notes of one track, in tick order — the fixture's treble track is four quarters per measure. */
 function notesOfTrack(score: Score, trackIndex: number): NoteEvent[] {
@@ -223,5 +226,34 @@ describe("replacementRegion — track", () => {
     expect(
       replacementRegion(twoTrackScore(), emptySelection(), "gone", "track"),
     ).toBeNull();
+  });
+});
+
+describe("emptyScoreForRequest", () => {
+  it("keeps each track's instrument, so a placeholder is not four pianos", () => {
+    // `createTrack` defaults midiProgram to 0. Dropping it here made every
+    // generating project's placeholder an all-piano score whatever was asked
+    // for — invisible, because the job's result overwrites it minutes later.
+    const score = emptyScoreForRequest({
+      prompt: "A quartet",
+      durationMeasures: 4,
+      tracks: [
+        {
+          name: "Violin I",
+          instrumentName: "Violin",
+          midiProgram: 40,
+          clef: "treble",
+        },
+        {
+          name: "Cello",
+          instrumentName: "Cello",
+          midiProgram: 42,
+          clef: "bass",
+        },
+      ],
+    });
+
+    expect(score.tracks.map((t) => t.midiProgram)).toEqual([40, 42]);
+    expect(score.tracks.map((t) => t.clef)).toEqual(["treble", "bass"]);
   });
 });

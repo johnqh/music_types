@@ -49,6 +49,11 @@ describe("roleOrderForStyle", () => {
       "funk with a tight horn section",
       "deep house",
       "boom-bap hip hop",
+      "trap with 808 bass and hat rolls",
+      "techno — machine-like four-on-the-floor",
+      "trance — offbeat bass and long builds",
+      "edm — build, drop and breakdown",
+      "electronic dance music",
     ]) {
       expect(roleOrderForStyle(style)[0]).toBe("bass");
     }
@@ -85,6 +90,28 @@ describe("rankTracksForGeneration", () => {
 
   it("puts the bass first in a groove-led style", () => {
     expect(rankTracksForGeneration(roster, "reggae")).toEqual([2, 3, 1, 0]);
+  });
+
+  it("puts the rhythm section first in newly selectable electronic groove styles", () => {
+    const electronicPreset = [
+      track(81), // 0 saw lead
+      track(38), // 1 synth bass
+      track(89), // 2 warm pad
+      track(0, "percussion"), // 3 kit
+    ];
+    const trapPreset = [
+      track(38), // 0 synth bass / 808
+      track(11), // 1 vibraphone lead
+      track(89), // 2 warm pad
+      track(0, "percussion"), // 3 kit
+    ];
+
+    for (const style of ["techno", "trance", "edm"]) {
+      expect(rankTracksForGeneration(electronicPreset, style), style).toEqual([
+        1, 3, 2, 0,
+      ]);
+    }
+    expect(rankTracksForGeneration(trapPreset, "trap")).toEqual([0, 3, 2, 1]);
   });
 
   /*

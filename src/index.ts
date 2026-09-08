@@ -87,6 +87,7 @@ export * from "./domain/commands/types.js";
 export * from "./domain/commands/reflow.js";
 export * from "./domain/commands/snapshot.js";
 export * from "./domain/commands/structure-commands.js";
+export * from "./domain/commands/clipboard-commands.js";
 export * from "./domain/commands/track-commands.js";
 export * from "./domain/commands/region-commands.js";
 export * from "./domain/commands/note-commands.js";
@@ -104,6 +105,7 @@ export * from "./domain/instruments/gm-range.js";
 export * from "./domain/instruments/gm-polyphony.js";
 export * from "./domain/instruments/gm-transposition.js";
 export * from "./domain/instruments/gm-percussion.js";
+export * from "./domain/generation/style-presets.js";
 export * from "./domain/selection/selection.js";
 export * from "./services/regeneration/controller.js";
 

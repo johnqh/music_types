@@ -113,9 +113,9 @@ const DEFAULT_ORDER: readonly ArrangementRole[] = [
  *
  * In reggae the bassline *is* the tune — the "riddim" is named and reused
  * across songs while melodies come and go — and the same is true of funk, hip
- * hop, house and disco, where the groove is the material and the melody
- * decorates it. Writing a melody first in those styles produces a bass that is
- * following a tune instead of stating the hook.
+ * hop, trap, house, techno, trance, EDM and disco, where the groove is the
+ * material and the melody decorates it. Writing a melody first in those styles
+ * produces a bass that is following a tune instead of stating the hook.
  */
 const GROOVE_FIRST: readonly ArrangementRole[] = [
   "bass",
@@ -125,7 +125,7 @@ const GROOVE_FIRST: readonly ArrangementRole[] = [
 ];
 
 const GROOVE_LED =
-  /\b(reggae|ska|dub|funk|disco|house|hip hop|hip-hop|lofi|lo-fi|soul|samba|salsa|bossa|tango|afrobeat)\b/i;
+  /\b(reggae|ska|dub|funk|disco|house|techno|trance|edm|electronic dance|hip hop|hip-hop|trap|lofi|lo-fi|soul|samba|salsa|bossa|tango|afrobeat)\b/i;
 
 /**
  * Genres built on a riff, where the riff is a lead part and goes first anyway —
