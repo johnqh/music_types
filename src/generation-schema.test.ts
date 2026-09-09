@@ -388,3 +388,37 @@ describe("regenerationConstraintsSchema preserveMeasureCount", () => {
     ).toBe(false);
   });
 });
+
+describe("the lyric's subject", () => {
+  const base = {
+    prompt: "a slow waltz",
+    durationMeasures: 8,
+    tracks: [
+      { name: "Voice", instrumentName: "Voice Oohs", midiProgram: 53, clef: "treble" },
+    ],
+  };
+
+  it("travels as its own field when the words are about something particular", () => {
+    const parsed = generateScoreRequestSchema.safeParse({
+      ...base,
+      lyrics: true,
+      lyricsTheme: "a love song about coming home",
+    });
+    expect(parsed.success).toBe(true);
+    expect(parsed.success && parsed.data.lyricsTheme).toBe(
+      "a love song about coming home",
+    );
+  });
+
+  it("is optional, so a request that says nothing about it is unchanged", () => {
+    const parsed = generateScoreRequestSchema.safeParse({ ...base, lyrics: true });
+    expect(parsed.success).toBe(true);
+    expect(parsed.success && "lyricsTheme" in parsed.data).toBe(false);
+  });
+
+  it("is a string, not a second boolean", () => {
+    expect(
+      generateScoreRequestSchema.safeParse({ ...base, lyricsTheme: true }).success,
+    ).toBe(false);
+  });
+});

@@ -107,6 +107,7 @@ export * from "./domain/instruments/gm-transposition.js";
 export * from "./domain/instruments/gm-percussion.js";
 export * from "./domain/generation/style-presets.js";
 export * from "./domain/generation/option-order.js";
+export * from "./domain/generation/score-presets.js";
 export * from "./domain/selection/selection.js";
 export * from "./services/regeneration/controller.js";
 

@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { GenerateScoreRequest, RegenerateRegionRequest } from "./generation.js";
-import { withGenerationVariant } from "./generation.js";
+import {
+  GENERATION_VARIANTS,
+  GENERATION_VARIANT_LABELS,
+  withGenerationVariant,
+} from "./generation.js";
 
 /**
  * The generation backend rides on the request, and only when it is not the
@@ -22,7 +26,7 @@ describe("withGenerationVariant", () => {
 
   it("tags the request with any other backend", () => {
     expect(withGenerationVariant(base, "deepseek").variant).toBe("deepseek");
-    expect(withGenerationVariant(base, "weak").variant).toBe("weak");
+    expect(withGenerationVariant(base, "local").variant).toBe("local");
   });
 
   it("leaves the rest of the request alone", () => {
@@ -45,5 +49,23 @@ describe("withGenerationVariant", () => {
     expect(withGenerationVariant(region, "default")).not.toHaveProperty(
       "variant",
     );
+  });
+});
+
+describe("the backends on offer", () => {
+  it("names the ordinary one after the provider it reaches", () => {
+    // "Default" said only that it was the default, which is a fact about the
+    // picker rather than about what will write the music.
+    expect(GENERATION_VARIANT_LABELS.default).toBe("Open AI");
+  });
+
+  it("labels every backend it offers", () => {
+    for (const variant of GENERATION_VARIANTS) {
+      expect(GENERATION_VARIANT_LABELS[variant]).toBeTruthy();
+    }
+  });
+
+  it("no longer offers the cheap model", () => {
+    expect(GENERATION_VARIANTS).not.toContain("weak");
   });
 });

@@ -48,12 +48,7 @@ export type GenerateScoreRequestTrack = {
  * brief can be run through two backends and compared by ear, which became worth
  * doing once the provider was a configuration change rather than a code change.
  */
-export const GENERATION_VARIANTS = [
-  "default",
-  "deepseek",
-  "weak",
-  "local",
-] as const;
+export const GENERATION_VARIANTS = ["default", "deepseek", "local"] as const;
 export type GenerationVariant = (typeof GENERATION_VARIANTS)[number];
 
 /**
@@ -64,9 +59,15 @@ export type GenerationVariant = (typeof GENERATION_VARIANTS)[number];
  * the old set.
  */
 export const GENERATION_VARIANT_LABELS: Record<GenerationVariant, string> = {
-  default: "Default",
+  /*
+    Named after the provider it reaches, not after its position in the list.
+
+    "Default" told a reader only that it was the one already selected, which is
+    a fact about the picker; what they are choosing between is which company's
+    model writes the music.
+  */
+  default: "Open AI",
   deepseek: "DeepSeek",
-  weak: "Cheap model",
   /*
     A model running on the machine, served by LM Studio through ShapeShyft.
 
@@ -134,6 +135,27 @@ export type GenerateScoreRequest = {
    * for the two to disagree.
    */
   lyrics?: boolean;
+
+  /**
+   * What the words are about, when that is not simply what the piece is about.
+   *
+   * This field once did not exist on the grounds that `prompt` already says
+   * what the piece is, and a second subject line is a place for the two to
+   * disagree. What it missed is that they are genuinely different questions:
+   * "a slow waltz in D minor" describes the music, and the words over it can be
+   * about coming home without the music brief being about coming home.
+   *
+   * The disagreement is avoided by **replacing rather than adding**: the server
+   * has exactly one "the words are about" clause, and this fills it when it is
+   * present. Absent or blank, that clause falls back to `prompt` and the lyric
+   * is what it always was. `prompt` still reaches the model in its own right, so
+   * narrowing the words' subject never hides the piece's brief.
+   *
+   * Never sent without `lyrics`: `buildGenerateScoreRequest` drops it in the
+   * same breath it drops `lyrics` for a roster with nobody to sing, so a theme
+   * for a lyric that was not asked for cannot reach the wire.
+   */
+  lyricsTheme?: string;
 };
 
 /** Never a rendered/notation payload and never raw MIDI: always a structured `Score`. */
@@ -290,6 +312,7 @@ export const generateScoreRequestSchema = z.object({
   // than trusted: see `GenerateScoreRequest.variant`.
   variant: z.string().optional(),
   lyrics: z.boolean().optional(),
+  lyricsTheme: z.string().optional(),
 });
 
 export const generateScoreResultSchema = z.object({
