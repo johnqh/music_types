@@ -26,6 +26,7 @@ import {
   gmInstrumentsByFamily,
 } from "./gm.js";
 import { GM_KITS, gmKit, gmKitAt } from "./gm-kit.js";
+import { VOICE_PROGRAMS, isVocalProgram } from "./arrangement-order.js";
 
 /** What a caller needs to write an instrument onto a track, or request one. */
 export type InstrumentChoice = {
@@ -47,6 +48,16 @@ const KIT_PREFIX = "kit:";
 export const DEFAULT_INSTRUMENT_VALUE = "0";
 
 /**
+ * The voice a song is carried by, when one is added for the reader.
+ *
+ * `Voice Oohs` rather than `Choir Aahs`: a lead vocal is one person, and the
+ * choir patch is what a *backing* line sounds like. This is the only place the
+ * distinction between the three voice programs is stated — everywhere else
+ * they are simply "a voice" — so it is stated once, here.
+ */
+export const DEFAULT_VOCAL_INSTRUMENT_VALUE = "53";
+
+/**
  * The `KIT_OPTIONS` value for a program.
  *
  * Through `gmKitAt`, so a track sitting at an address no kit is at still
@@ -61,6 +72,42 @@ export const KIT_OPTIONS: InstrumentOption[] = GM_KITS.map((kit) => ({
   value: `${KIT_PREFIX}${kit.program}`,
   label: kit.name,
 }));
+
+/**
+ * The three programs that are a human voice, as a group of their own.
+ *
+ * GM files them under `ensemble`, between String Ensemble and Orchestra Hit,
+ * which is where nobody setting out to write a song looks for a singer — so in
+ * practice a generated score never had one. The group is *derived* from the set
+ * the arranger reads (`VOICE_PROGRAMS`) rather than restating three numbers,
+ * because a picker offering a voice the arranger does not recognise as one is
+ * exactly the drift that costs a vocal-led arrangement.
+ *
+ * The default lead goes first and the rest follow in catalogue order: the first
+ * entry of a group is the one a reader takes as its ordinary answer, and here
+ * that answer is the solo voice.
+ */
+export const VOICE_OPTIONS: InstrumentOption[] = [
+  Number(DEFAULT_VOCAL_INSTRUMENT_VALUE),
+  ...[...VOICE_PROGRAMS].filter(
+    (program) => program !== Number(DEFAULT_VOCAL_INSTRUMENT_VALUE),
+  ),
+].map((program) => ({
+  value: String(program),
+  label: gmInstrument(program)?.name ?? "Voice",
+}));
+
+/**
+ * Whether a picker value is a sung part.
+ *
+ * Through the value rather than the program, because `kit:52` addresses a drum
+ * kit and a bare number check would read it as a choir — the same confusion
+ * `KIT_PREFIX` exists to prevent everywhere else.
+ */
+export function isVocalInstrumentValue(value: string): boolean {
+  if (value.startsWith(KIT_PREFIX)) return false;
+  return isVocalProgram(Number(value));
+}
 
 /**
  * Every melodic program, grouped by GM family.
@@ -78,11 +125,22 @@ export const INSTRUMENT_OPTIONS: InstrumentOption[] = GM_FAMILIES.flatMap(
 );
 
 /** The same catalogue as nested groups, for a picker that draws its own headings. */
+/**
+ * The same catalogue as nested groups, for a picker that draws its own headings.
+ *
+ * **The voices are not in it**: they are offered as `VOICE_OPTIONS` above, and
+ * a program appearing in two groups of one menu is an entry whose selection is
+ * ambiguous — the control shows whichever heading it matched first and the
+ * reader cannot tell the two apart. `INSTRUMENT_OPTIONS` keeps all 128, because
+ * that one is the catalogue rather than a menu.
+ */
 export const FAMILY_GROUPS = GM_FAMILIES.map((family) => ({
   key: family,
   label: GM_FAMILY_LABELS[family],
-  instruments: gmInstrumentsByFamily(family),
-}));
+  instruments: gmInstrumentsByFamily(family).filter(
+    (instrument) => !isVocalProgram(instrument.program),
+  ),
+})).filter((group) => group.instruments.length > 0);
 
 /**
  * The clef a melodic program is written on.

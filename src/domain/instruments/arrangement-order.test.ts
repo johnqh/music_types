@@ -190,3 +190,52 @@ describe("a voice is a lead", () => {
     expect(order[order.length - 1]).toBe(2);
   });
 });
+
+describe("a singer is written first, in every genre", () => {
+  const VOICE = { midiProgram: 53 };
+  const BASS = { midiProgram: 33 };
+  const KIT = { midiProgram: 0, clef: "percussion" };
+  const PAD = { midiProgram: 89 };
+  const GUITAR = { midiProgram: 27 };
+
+  it("puts the voice first in a groove-led style, where the lead is written last", () => {
+    // Hip hop is `GROOVE_FIRST`: bass, drums, harmony, lead. Without this the
+    // singer is composed against a finished backing track instead of the
+    // backing track being composed against the singer.
+    const tracks = [BASS, KIT, PAD, VOICE];
+    expect(rankTracksForGeneration(tracks, "hip hop")[0]).toBe(3);
+  });
+
+  it("puts the voice first in a riff-led style too", () => {
+    expect(rankTracksForGeneration([GUITAR, KIT, VOICE], "heavy metal")[0]).toBe(
+      2,
+    );
+  });
+
+  it("keeps the voice first in the default order, as it already was", () => {
+    expect(rankTracksForGeneration([GUITAR, VOICE, BASS, KIT], "pop")).toEqual([
+      1, 0, 2, 3,
+    ]);
+  });
+
+  it("leaves a roster with no voice exactly as it was arranged before", () => {
+    expect(rankTracksForGeneration([GUITAR, BASS, KIT, PAD], "hip hop")).toEqual(
+      [1, 2, 3, 0],
+    );
+  });
+
+  it("does not promote a percussion track that happens to sit on a voice program", () => {
+    // Kit program 53 is not a kit GM defines, but a score can arrive at one —
+    // and it is a drum part, not a singer.
+    const drumsOnAVoiceProgram = { midiProgram: 53, clef: "percussion" };
+    expect(
+      rankTracksForGeneration([BASS, drumsOnAVoiceProgram], "hip hop")[0],
+    ).toBe(0);
+  });
+
+  it("keeps roster order between two singers", () => {
+    expect(
+      rankTracksForGeneration([BASS, { midiProgram: 52 }, VOICE], "funk"),
+    ).toEqual([1, 2, 0]);
+  });
+});

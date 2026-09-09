@@ -55,11 +55,15 @@ const HARMONY_FAMILIES: ReadonlySet<GmFamily> = new Set<GmFamily>([
  * for the part carrying the song. Named here rather than moved to another
  * family because the family is GM's and is right about everything else in it.
  *
+ * Exported because the instrument picker offers these three as a group of
+ * their own, and a picker that restated the numbers would be a second list to
+ * keep in step with this one.
+ *
  * `Pad 4 (choir)` (91) is deliberately absent: it says pad in its name and is
  * one. `Lead 6 (voice)` (85) is absent too, already reaching `lead` through
  * `synth-lead`.
  */
-const VOICE_PROGRAMS: ReadonlySet<number> = new Set([
+export const VOICE_PROGRAMS: ReadonlySet<number> = new Set([
   52, // Choir Aahs
   53, // Voice Oohs
   54, // Synth Voice
@@ -173,7 +177,7 @@ export function rankTracksForGeneration(
     return index === -1 ? order.length : index;
   };
   /*
-    Among leads, the singer goes first.
+    The singer goes first, ahead of the role order rather than inside it.
 
     Two parts can both be leads — a vocal and a guitar — and then role alone
     leaves the order to however the roster happened to be typed. In a song the
@@ -181,11 +185,23 @@ export function rankTracksForGeneration(
     behind them are written to fit. Ranked by index instead, a guitar listed
     first got composed with no melody to sit under, and the singer then had to
     bend around it.
+
+    This outranks the genre order, and that is the correction rather than an
+    oversight. `GROOVE_FIRST` writes the lead LAST — in reggae the bassline is
+    the material and the melody decorates it, which is true of an instrumental
+    and inverts the moment somebody is singing over it. In those eleven genres
+    every backing part was composed before the voice existed, so the rule that
+    tells a part to accompany the singer (`vocalSupportRule` in music_api) had
+    no singer to point at and never fired: the arrangement was finished and the
+    vocal was bent to fit it, which is exactly backwards.
+
+    A percussion track is never promoted, whatever its program addresses: on
+    the drum channel program 53 is a kit, not a voice.
   */
   const voiceFirst = (track: RankableTrack): number =>
     isVocalProgram(track.midiProgram) && track.clef !== "percussion" ? 0 : 1;
   return tracks
     .map((track, index) => ({ index, rank: rankOf(track), voice: voiceFirst(track) }))
-    .sort((a, b) => a.rank - b.rank || a.voice - b.voice || a.index - b.index)
+    .sort((a, b) => a.voice - b.voice || a.rank - b.rank || a.index - b.index)
     .map((entry) => entry.index);
 }
