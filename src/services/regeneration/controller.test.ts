@@ -433,9 +433,18 @@ describe("the request says who is playing", () => {
     expect(request.tracks?.[0].instrumentName).toBe("Power Kit");
   });
 
-  it("gives the kit its own compass, not the compass of program 16", () => {
-    // Program 16 is a drawbar organ on a pitched track and the Power kit on a
-    // drum one, so a range read from the program alone is wrong for the kit.
+  /*
+   * The compass is not on the wire at all any more.
+   *
+   * It is a fact about the program, so the server derives it from
+   * `gm-catalogue.ts` rather than trusting each caller to send the same
+   * answer — and a caller that forgets leaves the model writing against no
+   * compass at all, which is exactly what the new-score path did. The property
+   * this test used to guard (a kit answers about its kit rather than about
+   * program 16's drawbar organ) belongs to `trackKeyboardRange`, and is tested
+   * where that lives.
+   */
+  it("sends no compass, because the server derives it", () => {
     const score = createEmptyScore({
       title: "S",
       measures: 2,
@@ -447,8 +456,7 @@ describe("the request says who is playing", () => {
       "busier",
     );
 
-    const range = request.tracks?.[0].range;
-    expect(range).toEqual({ lowestMidi: 35, highestMidi: 81 });
+    expect(request.tracks?.[0]).not.toHaveProperty("range");
   });
 });
 

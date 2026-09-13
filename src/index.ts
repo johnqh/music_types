@@ -102,6 +102,7 @@ export * from "./domain/instruments/arrangement-order.js";
 export * from "./domain/instruments/midi-protocol.js";
 export * from "./domain/instruments/gm-kit.js";
 export * from "./domain/instruments/gm-range.js";
+export * from "./domain/instruments/range-fit.js";
 export * from "./domain/instruments/gm-polyphony.js";
 export * from "./domain/instruments/gm-transposition.js";
 export * from "./domain/instruments/gm-percussion.js";

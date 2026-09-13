@@ -156,17 +156,21 @@ export function scoreWithResolvedKits(score: Score): Score {
  * the pitches are drum numbers rather than notes, and the result was a part
  * that treated the kick as a metronome.
  *
- * Range and polyphony come from the track's own program through
- * `trackKeyboardRange`/`trackMaxPolyphony`, so a drum track answers about its
- * kit rather than about whatever melodic instrument shares its program number.
+ * Polyphony comes from the track's own program through `trackMaxPolyphony`, so
+ * a drum track answers about its kit rather than about whatever melodic
+ * instrument shares its program number.
+ *
+ * The compass is deliberately NOT sent. It is a fact about the program, which
+ * the server derives for itself from `gm-catalogue.ts` — so there is one answer
+ * rather than one per caller, and a caller that forgets to send it cannot leave
+ * the model writing against no compass at all. That is what used to happen on
+ * the new-score path, which builds its roster from a picker and never called
+ * this function: measured on one generated score, a timpani came back with 482
+ * of its 1,067 notes below its lowest drum.
  */
 export function describeTrackForGeneration(
   track: Track,
 ): GenerateScoreRequestTrack {
-  // `MidiRange` is {min,max} and the wire's `range` is
-  // {lowestMidi,highestMidi} — the same fact under two names, mapped here
-  // rather than left for each call site to get right.
-  const range = trackKeyboardRange(track);
   const polyphony = trackMaxPolyphony(track);
   return {
     name: track.name,
@@ -178,7 +182,6 @@ export function describeTrackForGeneration(
     instrumentName: trackInstrumentLabel(track),
     midiProgram: track.midiProgram,
     clef: track.clef,
-    range: { lowestMidi: range.min, highestMidi: range.max },
     // A keyboard's ceiling is `UNLIMITED_POLYPHONY` (Infinity), which is not a
     // number the wire can carry; omitting it says the same thing.
     ...(Number.isFinite(polyphony) ? { maximumPolyphony: polyphony } : {}),

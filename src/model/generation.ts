@@ -25,12 +25,22 @@ import type {
 // 5. AI generation contracts
 // ---------------------------------------------------------------------------
 
+/**
+ * A part to write, as the request names it.
+ *
+ * There is deliberately no `range` here. An instrument's compass is a fact
+ * about its GM program, which `gm-catalogue.ts` already states and
+ * `trackKeyboardRange` already answers — so the server derives it and no client
+ * has to agree with it. It used to be an optional field that no client in the
+ * family ever filled, which meant the generation prompt stated no compass at
+ * all: measured on one generated score, a timpani came back with 482 of its
+ * 1,067 notes below its lowest drum.
+ */
 export type GenerateScoreRequestTrack = {
   name: string;
   instrumentName: string;
   midiProgram: number;
   clef: Track["clef"];
-  range?: { lowestMidi: number; highestMidi: number };
   maximumPolyphony?: number;
 };
 
@@ -293,7 +303,6 @@ export const generateScoreRequestTrackSchema = z.object({
   instrumentName: z.string(),
   midiProgram: z.number().int().min(0).max(127),
   clef: clefSchema,
-  range: midiRangeSchema.optional(),
   maximumPolyphony: z.number().int().positive().optional(),
 });
 

@@ -64,6 +64,21 @@ export type GenerateScoreStylePreset = {
   seconds?: number;
   /** The genre's form in bars, where it has one. */
   formBars?: number;
+  /**
+   * The keys this genre is actually played in, as key-signature `fifths`.
+   *
+   * Read with `mode` below, so a minor-mode genre's list is minor tonics: 0 is
+   * A minor there and C major elsewhere. One is chosen per generation rather
+   * than fixed, for the reason `styleInstrumentsWithGuest` picks a guest —
+   * two goes at one genre are otherwise the same piece twice.
+   *
+   * Why the list is short and per-genre rather than "any of the twelve": a key
+   * is not neutral. Horn music lives in flat keys because that is where the
+   * instruments are comfortable, guitar music in E and A because that is where
+   * the open strings are, and a big band asked for E major is a big band
+   * playing badly.
+   */
+  keys?: readonly number[];
   /** A key of the app's generate-score time signature options. */
   timeSignature: string;
   /** The mode the genre usually sits in; absent where it is not typical. */
@@ -80,6 +95,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       'waltz — a lilting three-four with the weight on beat one and a light "oom-pah-pah" accompaniment',
     instruments: ["0", "48", "43"],
     tempo: 160,
+    keys: [0, 1, -1, 2],
     timeSignature: "3/4",
   },
   jazz: {
@@ -87,6 +103,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       "jazz — swung eighth notes, walking bass, extended chords, and a melody that phrases across the barline rather than sitting on the beat",
     instruments: ["66", "0", "32", KIT],
     tempo: 132,
+    keys: [-2, -3, -1, 0, 1],
     timeSignature: "4/4",
   },
   pop: {
@@ -94,6 +111,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       "pop — a clear singable hook, four-bar phrases, a backbeat on two and four, and space between the phrases",
     instruments: ["0", "27", "33", KIT],
     tempo: 120,
+    keys: [0, 1, 2, -1, 3],
     timeSignature: "4/4",
   },
   cinematic: {
@@ -101,6 +119,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       "cinematic orchestral — long sustained lines that build, a rising dynamic arc, and rhythm that serves the swell rather than a groove",
     instruments: ["48", "40", "42", "60", "47"],
     tempo: 90,
+    keys: [-1, 0, 1, -2],
     timeSignature: "4/4",
     mode: "minor",
   },
@@ -109,6 +128,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       "ambient — slow evolving pads, very long note values, no strong pulse, and silence used as a voice",
     instruments: ["89", "0", "48"],
     tempo: 70,
+    keys: [0, -1, 1, 2],
     timeSignature: "4/4",
   },
   battle: {
@@ -116,6 +136,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       "driving battle music — insistent ostinato, hard accents, brass stabs against a relentless low pulse",
     instruments: ["61", "48", "47", KIT],
     tempo: 150,
+    keys: [-1, 0, 1, -2],
     timeSignature: "4/4",
     mode: "minor",
   },
@@ -124,6 +145,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       "rock — a hard backbeat on two and four, power-chord riffing, and a bass locked to the kick",
     instruments: ["29", "27", "33", KIT],
     tempo: 128,
+    keys: [4, 3, 1, 2, 0],
     timeSignature: "4/4",
   },
   punk: {
@@ -131,6 +153,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       "punk — fast straight eighths on downstrokes, three chords, no ornament, and a snare driving every backbeat. The guitar figure repeats unchanged through a section; the energy comes from the tempo and the drive, never from varying the part.",
     instruments: ["30", "29", "34", KIT],
     tempo: 180,
+    keys: [4, 3, 1, 2],
     timeSignature: "4/4",
   },
   heavyMetal: {
@@ -138,6 +161,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       "heavy metal — built on ONE palm-muted galloping low riff, repeated bar after bar through a section rather than rewritten each bar; minor and modal, double-kick drive underneath, and long held high notes over the top. The riff is the song: keep it the same and let the drums and the held lead supply the variation. ONE riff means one FIGURE, not one note - the riff moves between several pitches (root, flat-7, flat-6 and back is the classic shape), and a bar of the same pitch struck eight times is a pedal, not a riff.",
     instruments: ["30", "29", "34", KIT],
     tempo: 152,
+    keys: [1, -1, 0, 2],
     timeSignature: "4/4",
     mode: "minor",
   },
@@ -147,6 +171,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       "twelve-bar blues — shuffle feel, blue notes and bends, call-and-response between a voice-like melody and answering fills, dominant seventh chords",
     instruments: ["27", "22", "33", KIT],
     tempo: 88,
+    keys: [4, 3, 1, -2, 0],
     timeSignature: "4/4",
   },
   country: {
@@ -154,6 +179,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       'country — a two-beat "boom-chick" bass and guitar, bright major harmony, fiddle and steel fills answering the melody',
     instruments: ["25", "110", "27", "32", KIT],
     tempo: 118,
+    keys: [1, 2, 3, 0, -1],
     timeSignature: "4/4",
   },
   bluegrass: {
@@ -161,6 +187,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       "bluegrass — fast acoustic picking, banjo rolls in constant eighths under a syncopated fiddle melody, driving upright bass on one and three",
     instruments: ["105", "110", "25", "32"],
     tempo: 160,
+    keys: [1, 2, 3, 0],
     timeSignature: "4/4",
   },
   funk: {
@@ -168,6 +195,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       "funk — heavily syncopated sixteenth-note groove, everything locked to a hard downbeat on the one, staccato stabs and plenty of rests",
     instruments: ["36", "28", "61", "4", KIT],
     tempo: 104,
+    keys: [-1, -2, 0, 1],
     timeSignature: "4/4",
   },
   soul: {
@@ -175,6 +203,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       "soul — a laid-back backbeat sitting slightly behind the beat, gospel-tinged chords, horn stabs answering a vocal-style melody",
     instruments: ["16", "4", "33", "61", KIT],
     tempo: 96,
+    keys: [-1, -2, -3, 0, 1],
     timeSignature: "4/4",
   },
   ragtime: {
@@ -183,6 +212,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       "ragtime — a syncopated right-hand melody against a steady striding left-hand bass in two, cheerful and precise",
     instruments: ["0"],
     tempo: 96,
+    keys: [-1, -2, 0, 1],
     timeSignature: "2/4",
   },
   swing: {
@@ -190,6 +220,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       "big-band swing — swung eighth notes, brass and reed sections trading riffs, walking bass, ride-cymbal pulse with accents on two and four",
     instruments: ["56", "66", "57", "0", "32", KIT],
     tempo: 168,
+    keys: [-2, -3, -1, 0],
     timeSignature: "4/4",
   },
   bossaNova: {
@@ -197,6 +228,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       "bossa nova — a gentle syncopated guitar pattern, soft brushed drums, a lyrical melody sitting behind the beat, rich seventh and ninth chords",
     instruments: ["24", "0", "32", KIT],
     tempo: 132,
+    keys: [-1, -2, 0, 1],
     timeSignature: "4/4",
   },
   samba: {
@@ -204,20 +236,34 @@ const STYLE_PRESET_SOURCE: Readonly<
       "samba — fast two-beat percussion-driven groove, heavy syncopation on the offbeats, surdo pulse landing on beat two",
     instruments: ["24", "61", "32", KIT],
     tempo: 100,
+    keys: [0, 1, -1, -2],
     timeSignature: "2/4",
   },
   salsa: {
     prompt:
-      "salsa — clave-driven, a montuno piano ostinato, syncopated brass hits, busy percussion, bass playing the tumbao rather than the downbeat",
+      "salsa — clave-driven and minor-mode, a montuno piano ostinato, syncopated brass hits, busy percussion, bass playing the tumbao rather than the downbeat",
     instruments: ["0", "56", "57", "32", KIT],
     tempo: 190,
+    /*
+      Minor, and the keys below are minor tonics: -1 is D minor here.
+
+      Salsa was a major-mode preset, which put it in the same tonality as the
+      big-band styles it already shares most of a horn section with — a salsa
+      and a swing generated side by side came back in C major with six of
+      their seven instruments the same, and sounded like each other whatever
+      their rhythms did. Son montuno lives in minor; this is the same
+      correction electro swing already carries, for the same reason.
+    */
+    keys: [-1, -3, 0, -2],
     timeSignature: "4/4",
+    mode: "minor",
   },
   tango: {
     prompt:
       "tango — sharp dotted rhythms and dramatic accents, minor key, sudden stops and rubato pulls against a strict pulse",
     instruments: ["23", "40", "0", "43"],
     tempo: 120,
+    keys: [0, -1, 1, -2],
     timeSignature: "4/4",
     mode: "minor",
   },
@@ -226,6 +272,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       "reggae — one-drop: the kick lands on beat three, not one; guitar and organ chop the offbeat eighths; bass plays a heavy melodic line, low and sparse",
     instruments: ["28", "18", "33", KIT],
     tempo: 78,
+    keys: [0, 1, -1, 2],
     timeSignature: "4/4",
   },
   hipHop: {
@@ -233,6 +280,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       "hip-hop — a hard boom-bap drum pattern with swung sixteenths, a deep sustained sub bass, sparse looping keys, and space left for a vocal",
     instruments: ["39", "4", "48", KIT],
     tempo: 90,
+    keys: [0, -1, -2, -3, 1],
     timeSignature: "4/4",
     mode: "minor",
   },
@@ -241,6 +289,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       "trap — half-time: the snare lands on beat three alone, an 808 sub bass slides between long tuned notes, and hi-hats roll in fast subdivisions over large gaps",
     instruments: ["38", "11", "89", KIT],
     tempo: 140,
+    keys: [-4, -3, -2, 0],
     timeSignature: "4/4",
     mode: "minor",
   },
@@ -249,6 +298,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       "lo-fi hip-hop — slow swung drums slightly off the grid, warm jazzy minor seventh chords, a sparse melody, unhurried and repetitive",
     instruments: ["4", "33", "89", KIT],
     tempo: 74,
+    keys: [-1, 0, -2, -3],
     timeSignature: "4/4",
     mode: "minor",
   },
@@ -257,6 +307,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       "house — four-on-the-floor kick, offbeat open hats, a repetitive synth riff, and a bassline locked to the eighths between the kicks",
     instruments: ["81", "38", "89", KIT],
     tempo: 126,
+    keys: [0, -1, 1, -2],
     timeSignature: "4/4",
   },
   techno: {
@@ -264,6 +315,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       "techno — machine-like and loop-based: four-on-the-floor kick, sixteenth-note hats, one short synth-bass cell repeated, and timbre rather than chord changes carrying the track",
     instruments: ["38", "81", "89", KIT],
     tempo: 132,
+    keys: [0, -1, -2, 1],
     timeSignature: "4/4",
     mode: "minor",
   },
@@ -272,6 +324,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       "trance — four-on-the-floor with an offbeat synth bass after every kick, supersaw arpeggios, and long builds and releases in sixteen-bar blocks",
     instruments: ["81", "38", "89", KIT],
     tempo: 138,
+    keys: [0, -1, 1, -3],
     timeSignature: "4/4",
     mode: "minor",
   },
@@ -280,6 +333,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       "edm — electronic dance built on a clear build, drop and breakdown in eight-bar blocks, four-on-the-floor underneath and a big repeated lead hook through the drop",
     instruments: ["81", "38", "89", KIT],
     tempo: 128,
+    keys: [0, -1, -3, -4],
     timeSignature: "4/4",
     mode: "minor",
   },
@@ -288,6 +342,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       "electro swing — vintage swing horns over a modern four-on-the-floor electronic beat, minor and bluesy in a gypsy-jazz vein; hard-swung eighths, syncopated and playful, with clarinet and trumpet riffs answering each other",
     instruments: ["56", "71", "38", KIT],
     tempo: 122,
+    keys: [-1, 0, -2, 1],
     timeSignature: "4/4",
     mode: "minor",
   },
@@ -296,6 +351,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       "disco — four-on-the-floor kick, offbeat hi-hats, an octave-jumping bassline, and string and guitar figures on the sixteenths",
     instruments: ["48", "28", "33", KIT],
     tempo: 120,
+    keys: [0, -1, 1, -2],
     timeSignature: "4/4",
   },
   classical: {
@@ -303,6 +359,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       "classical — balanced four-bar phrases answering each other, an Alberti or broken-chord accompaniment under a clear diatonic melody, and a cadence every four or eight bars",
     instruments: ["0", "40", "42"],
     tempo: 108,
+    keys: [0, 1, -1, 2, -2],
     timeSignature: "4/4",
   },
   baroque: {
@@ -310,6 +367,7 @@ const STYLE_PRESET_SOURCE: Readonly<
       "baroque — a steady walking bass, contrapuntal interweaving voices, sequences and ornamented melodic lines, terraced dynamics",
     instruments: ["6", "40", "42"],
     tempo: 100,
+    keys: [1, -1, 0, 2, -2],
     timeSignature: "4/4",
   },
   march: {
@@ -317,9 +375,35 @@ const STYLE_PRESET_SOURCE: Readonly<
       "march — a firm two-beat pulse, dotted fanfare rhythms, a brass melody over a low oom-pah, crisp snare figures",
     instruments: ["56", "57", "58", KIT],
     tempo: 116,
+    keys: [-2, -3, -1, 0],
     timeSignature: "2/4",
   },
 };
+
+/**
+ * How far either side of a style's nominal tempo a generation may land, as a
+ * fraction of it.
+ *
+ * A rule rather than a number per genre, because `tempo` already documents
+ * itself as "in the middle of the range the genre is played at" — the spread is
+ * the other half of that sentence, and 33 hand-written pairs would be 33
+ * chances to disagree with the one number beside them.
+ *
+ * Six percent is a bar or two of drift at either end: salsa 179-201, punk
+ * 169-191, ambient 66-74. Wide enough that two generations of one genre are
+ * not the same piece at the same speed, narrow enough that every one of them
+ * is still that genre — a 40% swing would make a "slow blues" out of a shuffle
+ * and nobody asked it to.
+ */
+export const TEMPO_SPREAD = 0.06;
+
+/** The bpm range a style may be generated at, rounded to whole beats. */
+export function styleTempoRange(style: string): readonly [number, number] | null {
+  const preset = GENERATE_SCORE_STYLE_PRESETS[style];
+  if (!preset) return null;
+  const spread = Math.round(preset.tempo * TEMPO_SPREAD);
+  return [preset.tempo - spread, preset.tempo + spread];
+}
 
 /**
  * The styles, each with the bars its own tempo and meter need for a song.
