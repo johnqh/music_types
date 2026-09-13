@@ -5,7 +5,7 @@
  * two cannot drift as long as both import from here.
  */
 import { z } from "zod";
-import type { ProjectStatus } from "./generation.js";
+import type { GenerationRecord, ProjectStatus } from "./generation.js";
 import type { Score, UUID } from "./score.js";
 import { scoreSchema } from "./schemas.js";
 // ---------------------------------------------------------------------------
@@ -38,6 +38,12 @@ export type ProjectSummary = {
   status: ProjectStatus;
   /** Why the last generation failed, or null. Survives navigating away, which the job row does not. */
   lastGenerationError: string | null;
+  /**
+   * The last whole-score generation: its request and the choices it was built
+   * from. Absent for a project that was never generated, and on rows written
+   * before this existed.
+   */
+  lastGeneration?: GenerationRecord | null;
 };
 
 export type ProjectRecord = ProjectSummary & {

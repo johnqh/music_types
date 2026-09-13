@@ -108,6 +108,40 @@ export function withGenerationVariant<T extends { variant?: string }>(
   return variant && variant !== "default" ? { ...request, variant } : request;
 }
 
+/**
+ * The creative choices a generation was built from.
+ *
+ * The server rolls each of these per piece — the shape of the form, the chord
+ * cycle, the hook's gesture, the rhythm section's groove, who opens the piece
+ * and how it builds, its signature moment, which instrument carries the tune,
+ * and how the words are written — so that two generations of one request are
+ * two different pieces. They are NAMES, as the server's own tables spell them,
+ * and they are returned and stored so a piece can be understood, regenerated in
+ * part without switching groove halfway through, or generated again with some
+ * choices kept and the rest re-rolled.
+ *
+ * A null means the style had nothing to choose between for that dimension.
+ */
+export type GenerationChoices = {
+  formShape: string;
+  cycle: string | null;
+  hook: string;
+  groove: string | null;
+  arcEntry: string;
+  arcIntensity: string;
+  moment: string | null;
+  /** Index into the request's tracks, and that track's name for display. */
+  carrier: number | null;
+  carrierName: string | null;
+  lyric: string | null;
+};
+
+/** A generation as it was asked for and as it came out: enough to run it again. */
+export type GenerationRecord = {
+  request: GenerateScoreRequest;
+  choices: GenerationChoices;
+};
+
 export type GenerateScoreRequest = {
   prompt: string;
   title?: string;
@@ -166,10 +200,25 @@ export type GenerateScoreRequest = {
    * for a lyric that was not asked for cannot reach the wire.
    */
   lyricsTheme?: string;
+
+  /**
+   * Choices to KEEP, by name, from an earlier generation.
+   *
+   * Every dimension named here is used as given where it is still valid for
+   * this request's style, key and form; every dimension left out is rolled as
+   * usual. This is how "keep the groove, try different chords" works: send the
+   * earlier generation's request with `choices: { groove }`.
+   */
+  choices?: Partial<GenerationChoices>;
 };
 
 /** Never a rendered/notation payload and never raw MIDI: always a structured `Score`. */
-export type GenerateScoreResult = { score: Score; warnings: string[] };
+export type GenerateScoreResult = {
+  score: Score;
+  warnings: string[];
+  /** The choices this score was built from, where the server made any. */
+  choices?: GenerationChoices;
+};
 
 export type RegenerationConstraints = {
   /**
@@ -194,6 +243,16 @@ export type RegenerationConstraints = {
 
 export type RegenerateRegionRequest = {
   scoreId: string;
+  /**
+   * The choices of the generation this region belongs to, filled in
+   * by the server from the project it is regenerating.
+   *
+   * A regenerated region used to roll its own groove, so replacing eight bars
+   * of a songo could put a tumbao in the middle of it. With these the region is
+   * written in the groove, and to the lyric approach, the piece already has.
+   * The groove is looked up within this request's own `style`.
+   */
+  choices?: Partial<GenerationChoices>;
   instruction: string;
   range: ScoreRange;
   precedingContext: ScoreFragment;
@@ -322,11 +381,31 @@ export const generateScoreRequestSchema = z.object({
   variant: z.string().optional(),
   lyrics: z.boolean().optional(),
   lyricsTheme: z.string().optional(),
+  choices: z.lazy(() => generationChoicesSchema.partial()).optional(),
+});
+
+export const generationChoicesSchema = z.object({
+  formShape: z.string(),
+  cycle: z.string().nullable(),
+  hook: z.string(),
+  groove: z.string().nullable(),
+  arcEntry: z.string(),
+  arcIntensity: z.string(),
+  moment: z.string().nullable(),
+  carrier: z.number().int().nonnegative().nullable(),
+  carrierName: z.string().nullable(),
+  lyric: z.string().nullable(),
+});
+
+export const generationRecordSchema = z.object({
+  request: generateScoreRequestSchema,
+  choices: generationChoicesSchema,
 });
 
 export const generateScoreResultSchema = z.object({
   score: scoreSchema,
   warnings: z.array(z.string()),
+  choices: generationChoicesSchema.optional(),
 });
 
 export const regenerationConstraintsSchema = z.object({
@@ -353,6 +432,7 @@ export const regenerateRegionRequestSchema = z.object({
   // A free string on the wire, resolved against the server's allow-list rather
   // than trusted: see `GenerateScoreRequest.variant`.
   variant: z.string().optional(),
+  choices: z.lazy(() => generationChoicesSchema.partial()).optional(),
   tracks: z.array(generateScoreRequestTrackSchema).optional(),
   accompaniment: z
     .object({
