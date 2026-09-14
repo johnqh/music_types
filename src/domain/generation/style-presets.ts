@@ -1,5 +1,9 @@
 import type { KeySignature } from "../../model/score.js";
 import {
+  DEFAULT_VOCAL_INSTRUMENT_VALUE,
+  isVocalInstrumentValue,
+} from "../instruments/instrument-options.js";
+import {
   measuresForSeconds,
   SONG_SECONDS,
 } from "../notation/music-vocabulary.js";
@@ -54,8 +58,27 @@ export const GENERATE_SCORE_STYLE_OPTIONS: readonly string[] =
 export type GenerateScoreStylePreset = {
   /** What the model is told the style is. */
   prompt: string;
-  /** Picker values, in ensemble order. */
+  /**
+   * The style's core instruments as picker values: `essential` then
+   * `preferred`, without the singer. Derived; see the three tiers below.
+   */
   instruments: readonly string[];
+  /**
+   * Always in the roster and not removable while generating: the kit in a
+   * style whose rhythm is the kit, the bass where the groove is the bass, the
+   * instrument that defines the sound (a reggae guitar chop, a tango bandoneon).
+   */
+  essential: readonly string[];
+  /**
+   * Added automatically and removable. The singer is one of these in a song
+   * style, and is only added when the model writes the music.
+   */
+  preferred: readonly string[];
+  /**
+   * The style's colour instruments. A couple are picked at random each time
+   * the style is chosen, so two pieces of one style are not the same band.
+   */
+  optional: readonly string[];
   /** Beats per minute, in the middle of the range the genre is played at. */
   tempo: number;
   /** Bars the piece runs for, derived from the preset's tempo and meter. */
@@ -69,7 +92,7 @@ export type GenerateScoreStylePreset = {
    *
    * Read with `mode` below, so a minor-mode genre's list is minor tonics: 0 is
    * A minor there and C major elsewhere. One is chosen per generation rather
-   * than fixed, for the reason `styleInstrumentsWithGuest` picks a guest —
+   * than fixed, for the reason `styleRoster` picks optional instruments —
    * two goes at one genre are otherwise the same piece twice.
    *
    * Why the list is short and per-genre rather than "any of the twelve": a key
@@ -86,14 +109,18 @@ export type GenerateScoreStylePreset = {
 };
 
 const KIT = "kit:0";
+/** The singer, as a picker value. Only ever preferred or optional, never essential. */
+const VOICE = DEFAULT_VOCAL_INSTRUMENT_VALUE;
 
 const STYLE_PRESET_SOURCE: Readonly<
-  Record<GenerateScoreStyle, Omit<GenerateScoreStylePreset, "measures">>
+  Record<GenerateScoreStyle, Omit<GenerateScoreStylePreset, "measures" | "instruments">>
 > = {
   waltz: {
     prompt:
       'waltz — a lilting three-four with the weight on beat one and a light "oom-pah-pah" accompaniment',
-    instruments: ["0", "48", "43"],
+    essential: ["0"],
+    preferred: ["48", "43"],
+    optional: ["40", "73", "21", "46"],
     tempo: 160,
     keys: [0, 1, -1, 2],
     timeSignature: "3/4",
@@ -101,7 +128,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   jazz: {
     prompt:
       "jazz — swung eighth notes, walking bass, extended chords, and a melody that phrases across the barline rather than sitting on the beat",
-    instruments: ["66", "0", "32", KIT],
+    essential: ["32", KIT],
+    preferred: ["66", "0"],
+    optional: ["56", "11", "26", VOICE],
     tempo: 132,
     keys: [-2, -3, -1, 0, 1],
     timeSignature: "4/4",
@@ -109,7 +138,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   pop: {
     prompt:
       "pop — a clear singable hook, four-bar phrases, a backbeat on two and four, and space between the phrases",
-    instruments: ["0", "27", "33", KIT],
+    essential: [KIT, "33"],
+    preferred: [VOICE, "0", "27"],
+    optional: ["89", "48", "25", "61"],
     tempo: 120,
     keys: [0, 1, 2, -1, 3],
     timeSignature: "4/4",
@@ -117,7 +148,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   cinematic: {
     prompt:
       "cinematic orchestral — long sustained lines that build, a rising dynamic arc, and rhythm that serves the swell rather than a groove",
-    instruments: ["48", "40", "42", "60", "47"],
+    essential: ["48", "47"],
+    preferred: ["60", "42", "40"],
+    optional: ["46", "52", "0", "73"],
     tempo: 90,
     keys: [-1, 0, 1, -2],
     timeSignature: "4/4",
@@ -126,7 +159,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   ambient: {
     prompt:
       "ambient — slow evolving pads, very long note values, no strong pulse, and silence used as a voice",
-    instruments: ["89", "0", "48"],
+    essential: ["89"],
+    preferred: ["0", "48"],
+    optional: ["46", "11", "52", "73"],
     tempo: 70,
     keys: [0, -1, 1, 2],
     timeSignature: "4/4",
@@ -134,7 +169,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   battle: {
     prompt:
       "driving battle music — insistent ostinato, hard accents, brass stabs against a relentless low pulse",
-    instruments: ["61", "48", "47", KIT],
+    essential: ["61", "48", "47"],
+    preferred: [KIT],
+    optional: ["52", "60", "57"],
     tempo: 150,
     keys: [-1, 0, 1, -2],
     timeSignature: "4/4",
@@ -143,7 +180,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   rock: {
     prompt:
       "rock — a hard backbeat on two and four, power-chord riffing, and a bass locked to the kick",
-    instruments: ["29", "27", "33", KIT],
+    essential: [KIT, "33", "29"],
+    preferred: [VOICE, "27"],
+    optional: ["18", "0", "30"],
     tempo: 128,
     keys: [4, 3, 1, 2, 0],
     timeSignature: "4/4",
@@ -151,7 +190,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   punk: {
     prompt:
       "punk — fast straight eighths on downstrokes, three chords, no ornament, and a snare driving every backbeat. The guitar figure repeats unchanged through a section; the energy comes from the tempo and the drive, never from varying the part.",
-    instruments: ["30", "29", "34", KIT],
+    essential: [KIT, "34", "30"],
+    preferred: [VOICE, "29"],
+    optional: ["18"],
     tempo: 180,
     keys: [4, 3, 1, 2],
     timeSignature: "4/4",
@@ -159,7 +200,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   heavyMetal: {
     prompt:
       "heavy metal — built on ONE palm-muted galloping low riff, repeated bar after bar through a section rather than rewritten each bar; minor and modal, double-kick drive underneath, and long held high notes over the top. The riff is the song: keep it the same and let the drums and the held lead supply the variation. ONE riff means one FIGURE, not one note - the riff moves between several pitches (root, flat-7, flat-6 and back is the classic shape), and a bar of the same pitch struck eight times is a pedal, not a riff.",
-    instruments: ["30", "29", "34", KIT],
+    essential: [KIT, "34", "30"],
+    preferred: [VOICE, "29"],
+    optional: ["48", "18", "52"],
     tempo: 152,
     keys: [1, -1, 0, 2],
     timeSignature: "4/4",
@@ -169,7 +212,9 @@ const STYLE_PRESET_SOURCE: Readonly<
     formBars: 12,
     prompt:
       "twelve-bar blues — shuffle feel, blue notes and bends, call-and-response between a voice-like melody and answering fills, dominant seventh chords",
-    instruments: ["27", "22", "33", KIT],
+    essential: [KIT, "33", "27"],
+    preferred: [VOICE, "22"],
+    optional: ["0", "16", "66"],
     tempo: 88,
     keys: [4, 3, 1, -2, 0],
     timeSignature: "4/4",
@@ -177,7 +222,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   country: {
     prompt:
       'country — a two-beat "boom-chick" bass and guitar, bright major harmony, fiddle and steel fills answering the melody',
-    instruments: ["25", "110", "27", "32", KIT],
+    essential: [KIT, "32", "25"],
+    preferred: [VOICE, "110"],
+    optional: ["27", "105", "22", "0"],
     tempo: 118,
     keys: [1, 2, 3, 0, -1],
     timeSignature: "4/4",
@@ -185,7 +232,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   bluegrass: {
     prompt:
       "bluegrass — fast acoustic picking, banjo rolls in constant eighths under a syncopated fiddle melody, driving upright bass on one and three",
-    instruments: ["105", "110", "25", "32"],
+    essential: ["105", "25", "32"],
+    preferred: [VOICE, "110"],
+    optional: ["22", "15"],
     tempo: 160,
     keys: [1, 2, 3, 0],
     timeSignature: "4/4",
@@ -193,7 +242,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   funk: {
     prompt:
       "funk — heavily syncopated sixteenth-note groove, everything locked to a hard downbeat on the one, staccato stabs and plenty of rests",
-    instruments: ["36", "28", "61", "4", KIT],
+    essential: [KIT, "36", "28"],
+    preferred: [VOICE, "61", "4"],
+    optional: ["16", "65", "81"],
     tempo: 104,
     keys: [-1, -2, 0, 1],
     timeSignature: "4/4",
@@ -201,7 +252,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   soul: {
     prompt:
       "soul — a laid-back backbeat sitting slightly behind the beat, gospel-tinged chords, horn stabs answering a vocal-style melody",
-    instruments: ["16", "4", "33", "61", KIT],
+    essential: [KIT, "33", "16"],
+    preferred: [VOICE, "4", "61"],
+    optional: ["48", "66", "27"],
     tempo: 96,
     keys: [-1, -2, -3, 0, 1],
     timeSignature: "4/4",
@@ -210,7 +263,9 @@ const STYLE_PRESET_SOURCE: Readonly<
     formBars: 16,
     prompt:
       "ragtime — a syncopated right-hand melody against a steady striding left-hand bass in two, cheerful and precise",
-    instruments: ["0"],
+    essential: ["0"],
+    preferred: [],
+    optional: ["105", "71", "56"],
     tempo: 96,
     keys: [-1, -2, 0, 1],
     timeSignature: "2/4",
@@ -218,7 +273,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   swing: {
     prompt:
       "big-band swing — swung eighth notes, brass and reed sections trading riffs, walking bass, ride-cymbal pulse with accents on two and four",
-    instruments: ["56", "66", "57", "0", "32", KIT],
+    essential: [KIT, "32"],
+    preferred: [VOICE, "56", "66", "57", "0"],
+    optional: ["71", "26", "11"],
     tempo: 168,
     keys: [-2, -3, -1, 0],
     timeSignature: "4/4",
@@ -226,7 +283,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   bossaNova: {
     prompt:
       "bossa nova — a gentle syncopated guitar pattern, soft brushed drums, a lyrical melody sitting behind the beat, rich seventh and ninth chords",
-    instruments: ["24", "0", "32", KIT],
+    essential: ["24", "32"],
+    preferred: [VOICE, KIT, "0"],
+    optional: ["73", "66", "48"],
     tempo: 132,
     keys: [-1, -2, 0, 1],
     timeSignature: "4/4",
@@ -234,7 +293,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   samba: {
     prompt:
       "samba — fast two-beat percussion-driven groove, heavy syncopation on the offbeats, surdo pulse landing on beat two",
-    instruments: ["24", "61", "32", KIT],
+    essential: [KIT, "32", "24"],
+    preferred: [VOICE, "61"],
+    optional: ["73", "0", "21"],
     tempo: 100,
     keys: [0, 1, -1, -2],
     timeSignature: "2/4",
@@ -242,7 +303,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   salsa: {
     prompt:
       "salsa — clave-driven and minor-mode, a montuno piano ostinato, syncopated brass hits, busy percussion, bass playing the tumbao rather than the downbeat",
-    instruments: ["0", "56", "57", "32", KIT],
+    essential: [KIT, "32", "0"],
+    preferred: [VOICE, "56", "57"],
+    optional: ["73", "66", "11"],
     tempo: 190,
     /*
       Minor, and the keys below are minor tonics: -1 is D minor here.
@@ -261,7 +324,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   tango: {
     prompt:
       "tango — sharp dotted rhythms and dramatic accents, minor key, sudden stops and rubato pulls against a strict pulse",
-    instruments: ["23", "40", "0", "43"],
+    essential: ["23", "43"],
+    preferred: ["40", "0", VOICE],
+    optional: ["42", "24"],
     tempo: 120,
     keys: [0, -1, 1, -2],
     timeSignature: "4/4",
@@ -270,7 +335,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   reggae: {
     prompt:
       "reggae — one-drop: the kick lands on beat three, not one; guitar and organ chop the offbeat eighths; bass plays a heavy melodic line, low and sparse",
-    instruments: ["28", "18", "33", KIT],
+    essential: [KIT, "33", "28"],
+    preferred: [VOICE, "18"],
+    optional: ["0", "61", "22", "57"],
     tempo: 78,
     keys: [0, 1, -1, 2],
     timeSignature: "4/4",
@@ -278,7 +345,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   hipHop: {
     prompt:
       "hip-hop — a hard boom-bap drum pattern with swung sixteenths, a deep sustained sub bass, sparse looping keys, and space left for a vocal",
-    instruments: ["39", "4", "48", KIT],
+    essential: [KIT, "39"],
+    preferred: [VOICE, "4"],
+    optional: ["48", "11", "89"],
     tempo: 90,
     keys: [0, -1, -2, -3, 1],
     timeSignature: "4/4",
@@ -287,7 +356,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   trap: {
     prompt:
       "trap — half-time: the snare lands on beat three alone, an 808 sub bass slides between long tuned notes, and hi-hats roll in fast subdivisions over large gaps",
-    instruments: ["38", "11", "89", KIT],
+    essential: [KIT, "38"],
+    preferred: [VOICE, "89"],
+    optional: ["11", "81", "10"],
     tempo: 140,
     keys: [-4, -3, -2, 0],
     timeSignature: "4/4",
@@ -296,7 +367,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   lofi: {
     prompt:
       "lo-fi hip-hop — slow swung drums slightly off the grid, warm jazzy minor seventh chords, a sparse melody, unhurried and repetitive",
-    instruments: ["4", "33", "89", KIT],
+    essential: [KIT, "4"],
+    preferred: ["33", "89"],
+    optional: ["27", "11", VOICE],
     tempo: 74,
     keys: [-1, 0, -2, -3],
     timeSignature: "4/4",
@@ -305,7 +378,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   house: {
     prompt:
       "house — four-on-the-floor kick, offbeat open hats, a repetitive synth riff, and a bassline locked to the eighths between the kicks",
-    instruments: ["81", "38", "89", KIT],
+    essential: [KIT, "38"],
+    preferred: ["81", "89", VOICE],
+    optional: ["0", "48", "62"],
     tempo: 126,
     keys: [0, -1, 1, -2],
     timeSignature: "4/4",
@@ -313,7 +388,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   techno: {
     prompt:
       "techno — machine-like and loop-based: four-on-the-floor kick, sixteenth-note hats, one short synth-bass cell repeated, and timbre rather than chord changes carrying the track",
-    instruments: ["38", "81", "89", KIT],
+    essential: [KIT, "38"],
+    preferred: ["81", "89"],
+    optional: ["0", "48", "62"],
     tempo: 132,
     keys: [0, -1, -2, 1],
     timeSignature: "4/4",
@@ -322,7 +399,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   trance: {
     prompt:
       "trance — four-on-the-floor with an offbeat synth bass after every kick, supersaw arpeggios, and long builds and releases in sixteen-bar blocks",
-    instruments: ["81", "38", "89", KIT],
+    essential: [KIT, "38"],
+    preferred: ["81", "89", VOICE],
+    optional: ["0", "48", "62"],
     tempo: 138,
     keys: [0, -1, 1, -3],
     timeSignature: "4/4",
@@ -331,7 +410,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   edm: {
     prompt:
       "edm — electronic dance built on a clear build, drop and breakdown in eight-bar blocks, four-on-the-floor underneath and a big repeated lead hook through the drop",
-    instruments: ["81", "38", "89", KIT],
+    essential: [KIT, "38"],
+    preferred: ["81", "89", VOICE],
+    optional: ["0", "48", "62"],
     tempo: 128,
     keys: [0, -1, -3, -4],
     timeSignature: "4/4",
@@ -340,7 +421,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   electroSwing: {
     prompt:
       "electro swing — vintage swing horns over a modern four-on-the-floor electronic beat, minor and bluesy in a gypsy-jazz vein; hard-swung eighths, syncopated and playful, with clarinet and trumpet riffs answering each other",
-    instruments: ["56", "71", "38", KIT],
+    essential: [KIT, "38"],
+    preferred: [VOICE, "56", "71"],
+    optional: ["0", "57", "28"],
     tempo: 122,
     keys: [-1, 0, -2, 1],
     timeSignature: "4/4",
@@ -349,7 +432,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   disco: {
     prompt:
       "disco — four-on-the-floor kick, offbeat hi-hats, an octave-jumping bassline, and string and guitar figures on the sixteenths",
-    instruments: ["48", "28", "33", KIT],
+    essential: [KIT, "33"],
+    preferred: [VOICE, "48", "28"],
+    optional: ["61", "4", "89"],
     tempo: 120,
     keys: [0, -1, 1, -2],
     timeSignature: "4/4",
@@ -357,7 +442,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   classical: {
     prompt:
       "classical — balanced four-bar phrases answering each other, an Alberti or broken-chord accompaniment under a clear diatonic melody, and a cadence every four or eight bars",
-    instruments: ["0", "40", "42"],
+    essential: ["40", "42"],
+    preferred: ["0"],
+    optional: ["41", "73", "68", "71", "60"],
     tempo: 108,
     keys: [0, 1, -1, 2, -2],
     timeSignature: "4/4",
@@ -365,7 +452,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   baroque: {
     prompt:
       "baroque — a steady walking bass, contrapuntal interweaving voices, sequences and ornamented melodic lines, terraced dynamics",
-    instruments: ["6", "40", "42"],
+    essential: ["6"],
+    preferred: ["40", "42"],
+    optional: ["68", "73", "56", "70"],
     tempo: 100,
     keys: [1, -1, 0, 2, -2],
     timeSignature: "4/4",
@@ -373,7 +462,9 @@ const STYLE_PRESET_SOURCE: Readonly<
   march: {
     prompt:
       "march — a firm two-beat pulse, dotted fanfare rhythms, a brass melody over a low oom-pah, crisp snare figures",
-    instruments: ["56", "57", "58", KIT],
+    essential: [KIT, "58"],
+    preferred: ["56", "57"],
+    optional: ["71", "73", "60", "9"],
     tempo: 116,
     keys: [-2, -3, -1, 0],
     timeSignature: "2/4",
@@ -415,6 +506,9 @@ export const GENERATE_SCORE_STYLE_PRESETS: Readonly<
     style,
     {
       ...preset,
+      instruments: [...preset.essential, ...preset.preferred].filter(
+        (value) => !isVocalInstrumentValue(value),
+      ),
       measures: measuresForSeconds(
         preset.seconds ?? SONG_SECONDS.typical,
         preset.tempo,
