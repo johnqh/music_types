@@ -25,6 +25,7 @@ import type {
 import { DURATIONS, beatDurationTicks } from "../time/ticks.js";
 import { barNumberAt, indexOfBarNumber } from "../score/bar-numbers.js";
 import { shiftDiatonic } from "../pitch/transpose.js";
+import { clampVolume } from "./field-values.js";
 
 // ---- durations -------------------------------------------------------------
 
@@ -111,11 +112,33 @@ export function keySignatureName(key: KeySignature): string {
   return tonic ? `${tonic} ${key.mode}` : `${key.fifths} fifths`;
 }
 
-/** Every key a picker should offer, from seven flats to seven sharps. */
-export function keySignatureOptions(mode: KeySignature["mode"]): Array<{
+/** One entry of the key picker. */
+export type KeySignatureOption = {
   fifths: number;
+  /**
+   * The English label, `D major — 2 sharps`. Kept for callers that have not
+   * moved to the parts below; an app that translates should not show it.
+   */
   label: string;
-}> {
+  /** The tonic as written, `F♯` — a note name, the same in every locale. */
+  tonic: string;
+  /** How many sharps or flats, without the sign. */
+  accidentalCount: number;
+  /** Which of the two, or `none` for C major / A minor. */
+  accidentalKind: "sharp" | "flat" | "none";
+};
+
+/**
+ * Every key a picker should offer, from seven flats to seven sharps.
+ *
+ * The tonic and the count come apart as well as together: `major`, `minor`
+ * and "2 sharps" are words a translator owns, so an app builds its own label
+ * from `tonic`, `KEY_MODE_OPTIONS`' key and the count — the web inspector used
+ * to print the English label straight into a Chinese build.
+ */
+export function keySignatureOptions(
+  mode: KeySignature["mode"],
+): KeySignatureOption[] {
   const table = mode === "minor" ? MINOR_KEYS : MAJOR_KEYS;
   return Object.keys(table)
     .map(Number)
@@ -123,6 +146,9 @@ export function keySignatureOptions(mode: KeySignature["mode"]): Array<{
     .map((fifths) => ({
       fifths,
       label: `${table[fifths]} ${mode} — ${accidentalCountLabel(fifths)}`,
+      tonic: table[fifths] as string,
+      accidentalCount: Math.abs(fifths),
+      accidentalKind: fifths > 0 ? "sharp" : fifths < 0 ? "flat" : "none",
     }));
 }
 
@@ -287,6 +313,16 @@ export function panReadout(value: number): string {
   const amount = Math.round(Math.abs(value) * 100);
   if (amount === 0) return "C";
   return `${value < 0 ? "L" : "R"}${amount}`;
+}
+
+/**
+ * A volume level as a percentage, `80%`, clamped to the fader's 0-1 range.
+ *
+ * Beside `panReadout` for the same reason: both apps print this beside the
+ * same volume row, and each had written `Math.round(clamped * 100)` inline.
+ */
+export function volumeReadout(value: number): string {
+  return `${Math.round(clampVolume(value) * 100)}%`;
 }
 
 /**

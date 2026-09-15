@@ -17,12 +17,20 @@
  * "nothing chosen" (Radix refuses it outright, and the native `Select` behaves
  * the same way).
  */
-import { ACCIDENTALS, ARTICULATIONS, DYNAMICS, ORNAMENTS } from "../../index.js";
+import {
+  ACCIDENTALS,
+  ARTICULATIONS,
+  BARLINE_STYLES,
+  DYNAMICS,
+  ORNAMENTS,
+} from "../../index.js";
 import type {
   Accidental,
   Articulation,
+  BarlineStyle,
   DurationName,
   Dynamic,
+  KeySignature,
   Ornament,
 } from "../../index.js";
 
@@ -103,3 +111,66 @@ export const MIDI_GRID_OPTIONS: ReadonlyArray<
   { value: "sixteenth", labelKey: "importMidi.gridSixteenth" },
   { value: "thirtysecond", labelKey: "importMidi.gridThirtySecond" },
 ];
+
+// ---- sentinels for the measure and note fields -----------------------------
+//
+// Each of these stands for an *absence* the model stores as a missing field.
+// They live here, beside `NO_MARK`, because both apps' inspectors write the
+// same pickers and had each declared their own copy — agreeing only because
+// nobody had yet changed one. A picker's value is a string and an empty one is
+// indistinguishable from "nothing chosen", so every absence needs a value of
+// its own. `NO_MARK` serves the dynamic picker as well: "no dynamic" is not a
+// different absence from "no articulation", and `DYNAMIC_OPTIONS` already
+// uses it, so there is deliberately no `NO_DYNAMIC`.
+
+/**
+ * A length no single note value spells — a tie join or an import can leave
+ * one. Shown so the duration picker states what the note actually is rather
+ * than relabelling it as the nearest name, and inert when chosen.
+ */
+export const CUSTOM_DURATION = "__custom__";
+
+/** "Carry on with the clef in force": the bar stores no clef change. */
+export const INHERIT_CLEF = "inherit";
+
+/** "This score opens without a pickup." */
+export const NO_PICKUP = "none";
+
+/** The ordinary barline, which is the absence of a `BarlineStyle`. */
+export const SINGLE_BARLINE = "single";
+
+/** "This bar carries no jump instruction." */
+export const NO_JUMP = "none";
+
+/** A record, so a new barline style fails to compile until it has a key. */
+const BARLINE_LABEL_KEY: Record<BarlineStyle, string> = {
+  double: "inspector.barlineDouble",
+  final: "inspector.barlineFinal",
+};
+
+/**
+ * The barline picker: the ordinary single line first, then every style.
+ *
+ * Mapped off `BARLINE_STYLES`, so a style added to the model reaches both
+ * apps' pickers rather than going quietly unoffered.
+ */
+export const BARLINE_OPTIONS: ReadonlyArray<
+  PickerOption<BarlineStyle | typeof SINGLE_BARLINE>
+> = [
+  { value: SINGLE_BARLINE, labelKey: "inspector.barlineSingle" },
+  ...BARLINE_STYLES.map((value) => ({
+    value,
+    labelKey: BARLINE_LABEL_KEY[value],
+  })),
+];
+
+/**
+ * Major and minor, keyed `key.major`/`key.minor` — the keys both apps already
+ * carry. The web inspector wrote the bare English words into this picker,
+ * which is how a Chinese reader came to choose a mode in English.
+ */
+export const KEY_MODE_OPTIONS: ReadonlyArray<PickerOption<KeySignature["mode"]>> =
+  (["major", "minor"] as const).map((value) => ({
+    value,
+    labelKey: `key.${value}`,
+  }));

@@ -5,7 +5,16 @@ import {
   DYNAMICS,
   ORNAMENTS,
 } from "../../index.js";
+import { BARLINE_STYLES, CLEFS, REPEAT_JUMPS } from "../../index.js";
+import { DURATIONS } from "../time/ticks.js";
 import {
+  BARLINE_OPTIONS,
+  CUSTOM_DURATION,
+  INHERIT_CLEF,
+  KEY_MODE_OPTIONS,
+  NO_JUMP,
+  NO_PICKUP,
+  SINGLE_BARLINE,
   ACCIDENTAL_OPTIONS,
   ARTICULATION_OPTIONS,
   DYNAMIC_OPTIONS,
@@ -69,5 +78,51 @@ describe("picker options follow their vocabulary", () => {
     for (const option of MIDI_GRID_OPTIONS) {
       expect(String(option.value)).not.toMatch(/dotted|triplet/);
     }
+  });
+});
+
+describe("picker sentinels and measure pickers", () => {
+  it("gives each absence a non-empty value a picker can hold", () => {
+    for (const sentinel of [
+      CUSTOM_DURATION,
+      INHERIT_CLEF,
+      NO_PICKUP,
+      SINGLE_BARLINE,
+      NO_JUMP,
+    ]) {
+      expect(sentinel.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("keeps a custom length apart from every duration name", () => {
+    expect(Object.keys(DURATIONS)).not.toContain(CUSTOM_DURATION);
+  });
+
+  it("keeps the inherit and single sentinels apart from the vocabularies", () => {
+    expect(CLEFS as readonly string[]).not.toContain(INHERIT_CLEF);
+    expect(BARLINE_STYLES as readonly string[]).not.toContain(SINGLE_BARLINE);
+    expect(REPEAT_JUMPS as readonly string[]).not.toContain(NO_JUMP);
+  });
+
+  it("offers the single barline first, then every style", () => {
+    expect(BARLINE_OPTIONS[0]).toEqual({
+      value: SINGLE_BARLINE,
+      labelKey: "inspector.barlineSingle",
+    });
+    expect(BARLINE_OPTIONS.slice(1).map((o) => o.value)).toEqual([
+      ...BARLINE_STYLES,
+    ]);
+    expect(BARLINE_OPTIONS.map((o) => o.labelKey)).toEqual([
+      "inspector.barlineSingle",
+      "inspector.barlineDouble",
+      "inspector.barlineFinal",
+    ]);
+  });
+
+  it("offers both key modes under the shared key.* keys", () => {
+    expect(KEY_MODE_OPTIONS).toEqual([
+      { value: "major", labelKey: "key.major" },
+      { value: "minor", labelKey: "key.minor" },
+    ]);
   });
 });

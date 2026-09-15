@@ -12,6 +12,7 @@ import {
   keySignatureOptions,
   measuresForSeconds,
   panReadout,
+  volumeReadout,
   pitchAtStavePosition,
   tickForBarBeat,
 } from "./music-vocabulary.js";
@@ -61,6 +62,23 @@ describe("keySignatureOptions", () => {
     expect(options.find((o) => o.fifths === 2)?.label).toBe(
       "D major — 2 sharps",
     );
+  });
+
+  it("gives the tonic and the accidental count apart, so an app can translate", () => {
+    const minor = keySignatureOptions("minor");
+    expect(minor.find((o) => o.fifths === -3)).toMatchObject({
+      tonic: "C",
+      accidentalCount: 3,
+      accidentalKind: "flat",
+    });
+    expect(minor.find((o) => o.fifths === 0)).toMatchObject({
+      tonic: "A",
+      accidentalCount: 0,
+      accidentalKind: "none",
+    });
+    expect(
+      keySignatureOptions("major").find((o) => o.fifths === 6),
+    ).toMatchObject({ tonic: "F♯", accidentalCount: 6, accidentalKind: "sharp" });
   });
 });
 
@@ -332,5 +350,17 @@ describe("measuresForSeconds and the genre's own form", () => {
 
   it("still gives a whole form when the duration is short", () => {
     expect(measuresForSeconds(5, 88, 4, 12)).toBe(12);
+  });
+});
+
+describe("volumeReadout", () => {
+  it("says a level as a whole percentage", () => {
+    expect(volumeReadout(0.8)).toBe("80%");
+    expect(volumeReadout(0.456)).toBe("46%");
+  });
+
+  it("clamps what it shows to the fader's range", () => {
+    expect(volumeReadout(1.5)).toBe("100%");
+    expect(volumeReadout(-1)).toBe("0%");
   });
 });

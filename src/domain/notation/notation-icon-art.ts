@@ -721,33 +721,35 @@ export const NOTATION_ICONS: Record<NotationIconName, readonly NotationIconShape
   "PianoKeysIcon": [
     {
       "kind": "rect",
-      "x": 3.6,
+      "x": 3,
       "y": 5,
-      "width": 5.2,
+      "width": 18,
       "height": 14,
-      "rx": 0.9,
+      "rx": 1,
       "fill": "none",
       "stroke": "currentColor",
       "strokeWidth": 1.6
     },
     {
-      "kind": "rect",
-      "x": 9.4,
-      "y": 5,
-      "width": 5.2,
-      "height": 14,
-      "rx": 0.9
+      "kind": "path",
+      "d": "M9 14.33 V19 M15 14.33 V19",
+      "fill": "none",
+      "stroke": "currentColor",
+      "strokeWidth": 1.4
     },
     {
       "kind": "rect",
-      "x": 15.2,
+      "x": 7.2,
       "y": 5,
-      "width": 5.2,
-      "height": 14,
-      "rx": 0.9,
-      "fill": "none",
-      "stroke": "currentColor",
-      "strokeWidth": 1.6
+      "width": 3.6,
+      "height": 9.33
+    },
+    {
+      "kind": "rect",
+      "x": 13.2,
+      "y": 5,
+      "width": 3.6,
+      "height": 9.33
     }
   ],
   "PreviousMeasureIcon": [
