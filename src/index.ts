@@ -130,7 +130,6 @@ export * from "./domain/notation/toolbar-icons.js";
 export * from "./domain/score/transport-readouts.js";
 export * from "./domain/instruments/instrument-menus.js";
 export * from "./domain/instruments/instrument-reference.js";
-export * from "./domain/generation/credits.js";
 export * from "./domain/score/articulation.js";
 export * from "./domain/score/bar-numbers.js";
 export * from "./domain/score/collapse-rests.js";
