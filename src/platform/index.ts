@@ -8,3 +8,5 @@ export * from "./playback.js";
 export * from "./xml.js";
 export * from "./file.js";
 export * from "./midi-input.js";
+export * from "./score-files.js";
+export * from "./storage.js";

@@ -17,22 +17,35 @@
  * "nothing chosen" (Radix refuses it outright, and the native `Select` behaves
  * the same way).
  */
+/*
+ * Imported from `model/score.js`, which declares them, and deliberately NOT
+ * from the package barrel. A module that reads a *value* out of `index.js`
+ * joins a cycle with everything the barrel re-exports — and the option lists
+ * below are built while this module loads, so the read happens at
+ * module-evaluation time, which is where such a cycle throws. That is what made
+ * `music-vocabulary.js` unimportable as an entry point: it reaches this module,
+ * this module pulled in the whole barrel, and `style-presets.js` then built its
+ * table from a `SONG_SECONDS` that `music-vocabulary` had not defined yet.
+ * Import the declaring module, never the barrel.
+ */
 import {
   ACCIDENTALS,
   ARTICULATIONS,
   BARLINE_STYLES,
+  CLEFS,
   DYNAMICS,
   ORNAMENTS,
-} from "../../index.js";
+} from "../../model/score.js";
 import type {
   Accidental,
   Articulation,
   BarlineStyle,
+  Clef,
   DurationName,
   Dynamic,
   KeySignature,
   Ornament,
-} from "../../index.js";
+} from "../../model/score.js";
 
 /** "No marking here", distinct from a marking that happens to be quiet. */
 export const NO_MARK = "none";
@@ -81,12 +94,26 @@ export const ORNAMENT_OPTIONS: ReadonlyArray<
 export const ACCIDENTAL_OPTIONS: ReadonlyArray<PickerOption<Accidental>> =
   ACCIDENTALS.map((value) => ({ value, labelKey: `accidental.${value}` }));
 
+/**
+ * An entry in the dynamic picker.
+ *
+ * Only "no dynamic" carries a key. A marking is its own label — `pp` is `pp`
+ * in every language, the way a note name or a General MIDI program name is —
+ * so both apps print the value itself. The list used to hand every marking a
+ * `dynamic.<member>` key regardless, which neither app defined and neither
+ * could usefully fill: a translator has nothing to write for `mf`, and a
+ * published key nobody answers is a key some future picker prints raw. Leaving
+ * it off the type makes "label a marking by its value" something the compiler
+ * says rather than something each host has to know.
+ */
+export type DynamicOption =
+  | { value: typeof NO_MARK; labelKey: string }
+  | { value: Dynamic };
+
 /** Dynamics, with "no dynamic" first. A level is not a loudness of zero. */
-export const DYNAMIC_OPTIONS: ReadonlyArray<
-  PickerOption<Dynamic | typeof NO_MARK>
-> = [
+export const DYNAMIC_OPTIONS: ReadonlyArray<DynamicOption> = [
   { value: NO_MARK, labelKey: "inspector.noDynamic" },
-  ...DYNAMICS.map((value) => ({ value, labelKey: `dynamic.${value}` })),
+  ...DYNAMICS.map((value) => ({ value })),
 ];
 
 /**
@@ -174,3 +201,35 @@ export const KEY_MODE_OPTIONS: ReadonlyArray<PickerOption<KeySignature["mode"]>>
     value,
     labelKey: `key.${value}`,
   }));
+
+/**
+ * The word for each clef.
+ *
+ * Every clef picker used to print the model's own token — `treble`, `bass` — so
+ * a reader chose a clef in lower-case English whatever their language. Both
+ * apps then fixed that the same way and each kept its own copy of this table,
+ * which is exactly the drift this file exists to prevent: a `Record`, so a
+ * sixth clef fails to compile here rather than printing its token in somebody's
+ * picker.
+ *
+ * Published as the record *and* as the options below, because both shapes are
+ * in use: the Bar tab names the clef *in force* ("carry on with Treble"), which
+ * is one lookup rather than a list.
+ */
+export const CLEF_LABEL_KEY: Record<Clef, string> = {
+  treble: "clef.treble",
+  bass: "clef.bass",
+  alto: "clef.alto",
+  tenor: "clef.tenor",
+  percussion: "clef.percussion",
+};
+
+/**
+ * Every clef, in the model's order.
+ *
+ * There is no "none" here: a stave always has a clef, so the absence a *bar*
+ * can express is `INHERIT_CLEF`, which the Bar tab prepends itself.
+ */
+export const CLEF_OPTIONS: ReadonlyArray<PickerOption<Clef>> = CLEFS.map(
+  (value) => ({ value, labelKey: CLEF_LABEL_KEY[value] }),
+);

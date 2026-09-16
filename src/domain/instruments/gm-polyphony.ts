@@ -14,10 +14,16 @@
  * deliberately does NOT describe what a synthesizer patch can do — polyphony
  * there is a setting, not a limit — so every synth family is unlimited.
  */
-import { gmSpec } from "./gm-catalogue.js";
+import { gmSpec, UNLIMITED_POLYPHONY } from "./gm-catalogue.js";
 
-/** No physical limit: keyboards, plucked strings, sections, synths, drums. */
-export const UNLIMITED_POLYPHONY = Number.POSITIVE_INFINITY;
+/**
+ * `UNLIMITED_POLYPHONY` is declared in `gm-catalogue.ts` and re-exported here,
+ * so `./gm-polyphony.js` stays the module it is imported from. It was declared
+ * here, and the catalogue's rows read it while building — a cycle that threw
+ * `Cannot access 'UNLIMITED_POLYPHONY' before initialization` on any runtime
+ * that reached this module first.
+ */
+export { UNLIMITED_POLYPHONY };
 
 /**
  * The most notes `program` can sound simultaneously.

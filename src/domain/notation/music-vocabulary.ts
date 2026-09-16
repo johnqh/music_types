@@ -25,7 +25,7 @@ import type {
 import { DURATIONS, beatDurationTicks } from "../time/ticks.js";
 import { barNumberAt, indexOfBarNumber } from "../score/bar-numbers.js";
 import { shiftDiatonic } from "../pitch/transpose.js";
-import { clampVolume } from "./field-values.js";
+import { clampVolume, parseNumericDraft } from "./field-values.js";
 
 // ---- durations -------------------------------------------------------------
 
@@ -254,6 +254,35 @@ export function tickForBarBeat(
   );
   const offset = Math.max(0, (beat - 1) * beatTicks);
   return measure.startTick + Math.min(offset, measure.durationTicks - 1);
+}
+
+/**
+ * What a bar/beat field should commit when it is left: a tick, or `null` for
+ * "nothing to do".
+ *
+ * A position is said in two numbers and typed into two boxes, so every rule
+ * about leaving them is about the pair: a cleared box is "no change" and never
+ * bar 0 (`Number("")` is 0), a bar the score does not have is nothing to
+ * commit, and the tick the note already sits on is not a move. Both inspectors
+ * had that sequence written out — two `parseNumericDraft`s, `tickForBarBeat`,
+ * and the same "unchanged?" comparison — and it is arithmetic about a score
+ * rather than about either panel.
+ *
+ * A beat past the end of its bar is clamped by `tickForBarBeat` rather than
+ * refused, which is why this can answer the note's own tick: typing "beat 9" in
+ * 4/4 on a note already at the end of the bar commits nothing.
+ */
+export function barBeatCommitTick(
+  score: Score,
+  barText: string,
+  beatText: string,
+  currentTick: number,
+): number | null {
+  const bar = parseNumericDraft(barText);
+  const beat = parseNumericDraft(beatText);
+  if (bar === null || beat === null) return null;
+  const tick = tickForBarBeat(score, bar, beat);
+  return tick === null || tick === currentTick ? null : tick;
 }
 
 // ---- staff positions -------------------------------------------------------

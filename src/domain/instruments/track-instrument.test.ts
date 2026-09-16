@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Score, Track } from "../../index.js";
 import {
+  auditionVoiceFor,
   scoreWithResolvedKits,
   trackInstrumentLabel,
   trackKeyboardRange,
@@ -95,5 +96,38 @@ describe("scoreWithResolvedKits", () => {
   it("does not touch a pitched track at a non-kit program", () => {
     const before = scoreOf([track({ clef: "treble", midiProgram: 45 })]);
     expect(scoreWithResolvedKits(before)).toBe(before);
+  });
+});
+
+describe("auditionVoiceFor", () => {
+  it("auditions an instrument track as its own program", () => {
+    expect(auditionVoiceFor(track({ midiProgram: 40 }))).toEqual({
+      program: 40,
+      isPercussion: false,
+    });
+  });
+
+  it("auditions a drum track as its kit, on the drum channel", () => {
+    // Program 40 on a percussion track is Brush, not Violin: the flag is what
+    // sends it to the drum channel, and without it the key sounds a violin.
+    expect(
+      auditionVoiceFor(track({ clef: "percussion", midiProgram: 40 })),
+    ).toEqual({ program: 40, isPercussion: true });
+  });
+
+  it("resolves a kit address GM defines no kit at to the kit containing it", () => {
+    // 41 is inside Brush's region; the plan plays it as Brush, so the
+    // audition must too, or the key and the playback disagree.
+    expect(
+      auditionVoiceFor(track({ clef: "percussion", midiProgram: 41 })),
+    ).toEqual({ program: 40, isPercussion: true });
+  });
+
+  it("auditions a piano when there is no track to ask", () => {
+    expect(auditionVoiceFor(null)).toEqual({ program: 0, isPercussion: false });
+    expect(auditionVoiceFor(undefined)).toEqual({
+      program: 0,
+      isPercussion: false,
+    });
   });
 });

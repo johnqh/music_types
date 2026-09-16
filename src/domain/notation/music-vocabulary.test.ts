@@ -4,6 +4,7 @@ import { barNumberAt } from "../score/bar-numbers.js";
 import type { Score } from "../../model/score.js";
 import {
   accidentalCountLabel,
+  barBeatCommitTick,
   barBeatForTick,
   formatBarBeat,
   wholeBarBeat,
@@ -158,6 +159,46 @@ describe("barBeatForTick / tickForBarBeat", () => {
       barBeatForTick(score, last.startTick + last.durationTicks),
     ).toBeNull();
     expect(tickForBarBeat(score, 999, 1)).toBeNull();
+  });
+});
+
+describe("barBeatCommitTick", () => {
+  /*
+    The whole sequence a bar/beat field runs when it is left, which both
+    inspectors had written out inline: parse both boxes, ask for the tick, and
+    decide whether that is a move at all.
+  */
+  it("answers the tick for a position the score has", () => {
+    const score = twinkleScore();
+    expect(barBeatCommitTick(score, "2", "1", 0)).toBe(score.ppq * 4);
+  });
+
+  it("answers null for a cleared box, never bar 0", () => {
+    // `Number('')` is 0, which is how an emptied field would move a note to
+    // the very start of the score.
+    const score = twinkleScore();
+    expect(barBeatCommitTick(score, "", "1", score.ppq * 4)).toBeNull();
+    expect(barBeatCommitTick(score, "2", "", score.ppq * 4)).toBeNull();
+    expect(barBeatCommitTick(score, "  ", " ", 0)).toBeNull();
+  });
+
+  it("answers null for text that is not a number", () => {
+    const score = twinkleScore();
+    expect(barBeatCommitTick(score, "two", "1", 0)).toBeNull();
+  });
+
+  it("answers null for a bar the score does not have", () => {
+    const score = twinkleScore();
+    expect(barBeatCommitTick(score, "999", "1", 0)).toBeNull();
+  });
+
+  it("answers null for the tick the note already sits on", () => {
+    // Not a move: nothing to dispatch, and no undo entry to make.
+    const score = twinkleScore();
+    expect(barBeatCommitTick(score, "1", "1", 0)).toBeNull();
+    // A beat clamped back onto where the note already is says so too.
+    const end = tickForBarBeat(score, 1, 9)!;
+    expect(barBeatCommitTick(score, "1", "9", end)).toBeNull();
   });
 });
 

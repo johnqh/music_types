@@ -39,6 +39,34 @@ export function isPercussionTrack(track: Pick<Track, "clef">): boolean {
 }
 
 /**
+ * What pressing a key on `track`'s keyboard should sound: a program, and
+ * whether it goes to the drum channel.
+ *
+ * Both keyboards built this inline — `track?.midiProgram ?? 0` beside
+ * `track?.clef === 'percussion'` — and both halves are needed, because on a
+ * percussion track `midiProgram` names a kit: program 40 is Brush there and
+ * Violin anywhere else, and only the flag tells a player which. Two call sites
+ * spelling the same pair agree right up until one of them learns a rule the
+ * other has not. A percussion address GM defines no kit at is resolved to the
+ * kit whose region contains it (`gmKitAt`), which is what playback does, so a
+ * key and the part it belongs to cannot sound like different kits.
+ *
+ * No track — an empty score, or a keyboard shown before a part is chosen —
+ * auditions a piano, program 0, which is what both keyboards fell back to.
+ * The instrument's *name* is deliberately not here: the player resolves that
+ * from the program itself, and a name read off the track would be the one
+ * field free to disagree with it.
+ */
+export function auditionVoiceFor(
+  track: Pick<Track, "clef" | "midiProgram"> | null | undefined,
+): { program: number; isPercussion: boolean } {
+  if (!track) return { program: 0, isPercussion: false };
+  if (isPercussionTrack(track))
+    return { program: gmKitAt(track.midiProgram).program, isPercussion: true };
+  return { program: track.midiProgram, isPercussion: false };
+}
+
+/**
  * The notes worth showing for `track` — General MIDI's drum range on a
  * percussion track, the instrument's compass otherwise.
  */

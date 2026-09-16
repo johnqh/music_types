@@ -108,6 +108,7 @@ export * from "./domain/instruments/gm-transposition.js";
 export * from "./domain/instruments/gm-percussion.js";
 export * from "./domain/generation/style-presets.js";
 export * from "./domain/generation/option-order.js";
+export * from "./domain/documents/project-file.js";
 export * from "./domain/generation/score-presets.js";
 export * from "./domain/selection/selection.js";
 export * from "./services/regeneration/controller.js";
@@ -162,3 +163,33 @@ export * from "./domain/time/tuplets.js";
  * Generated; see the module header.
  */
 export * from "./domain/notation/notation-icon-art.js";
+
+// ---------------------------------------------------------------------------
+// Frontend vocabulary: the closed lists, option tables and shapes both apps
+// and the frontend libraries name. Types and data only — the rules over them
+// live in music_editing, music_drawing and music_lib, which import them from
+// here rather than declaring a second copy.
+// ---------------------------------------------------------------------------
+export * from "./domain/instruments/out-of-range.js";
+export * from "./domain/documents/document-state.js";
+export * from "./domain/documents/export-formats.js";
+export * from "./domain/documents/formats.js";
+export * from "./domain/documents/publish.js";
+export * from "./domain/documents/templates.js";
+export * from "./domain/generation/request-drafts.js";
+export * from "./domain/generation/replace-drafts.js";
+export * from "./domain/score/transport-settings.js";
+export * from "./domain/editor/app-errors.js";
+export * from "./domain/editor/context-menu.js";
+export * from "./domain/editor/device-prefs.js";
+export * from "./domain/editor/docs.js";
+export * from "./domain/editor/edit-mode.js";
+export * from "./domain/editor/editing-copy.js";
+export * from "./domain/editor/inspector.js";
+export * from "./domain/editor/labelled-option.js";
+export * from "./domain/editor/library-copy.js";
+export * from "./domain/editor/print.js";
+export * from "./domain/editor/score-input.js";
+export * from "./domain/editor/toast.js";
+export * from "./domain/editor/toolbar.js";
+export * from "./domain/editor/view-settings.js";

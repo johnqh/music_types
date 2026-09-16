@@ -6,9 +6,16 @@ import {
   ORNAMENTS,
 } from "../../index.js";
 import { BARLINE_STYLES, CLEFS, REPEAT_JUMPS } from "../../index.js";
+import {
+  THEME_MODES,
+  THEME_MODE_LABEL_KEY,
+  THEME_MODE_OPTIONS,
+} from "../editor/device-prefs.js";
 import { DURATIONS } from "../time/ticks.js";
 import {
   BARLINE_OPTIONS,
+  CLEF_LABEL_KEY,
+  CLEF_OPTIONS,
   CUSTOM_DURATION,
   INHERIT_CLEF,
   KEY_MODE_OPTIONS,
@@ -51,6 +58,17 @@ describe("picker options follow their vocabulary", () => {
 
   it("offers every dynamic, plus none", () => {
     expect(DYNAMIC_OPTIONS).toHaveLength(DYNAMICS.length + 1);
+  });
+
+  it("names only the absence of a dynamic; a marking is its own label", () => {
+    /*
+      `pp` is `pp` in every language, and both apps print the value itself.
+      The list used to ask for `dynamic.<member>` keys anyway, which neither
+      app defined and neither could usefully fill.
+    */
+    const [none, ...markings] = DYNAMIC_OPTIONS;
+    expect(none).toEqual({ value: NO_MARK, labelKey: "inspector.noDynamic" });
+    for (const option of markings) expect(option).not.toHaveProperty("labelKey");
   });
 
   it("keys the inverted mordent camelCase, not kebab", () => {
@@ -123,6 +141,44 @@ describe("picker sentinels and measure pickers", () => {
     expect(KEY_MODE_OPTIONS).toEqual([
       { value: "major", labelKey: "key.major" },
       { value: "minor", labelKey: "key.minor" },
+    ]);
+  });
+});
+
+describe("the vocabularies both apps' pickers label", () => {
+  /*
+    Each of these was an identical table in music_app and music_app_rn, in step
+    only because nobody had yet added a clef or a theme mode. The keys are the
+    ones both apps already carried, so publishing them changed no copy.
+  */
+  it("names every clef, under clef.<member>", () => {
+    expect(Object.keys(CLEF_LABEL_KEY).sort()).toEqual([...CLEFS].sort());
+    for (const clef of CLEFS) {
+      expect(CLEF_LABEL_KEY[clef]).toBe(`clef.${clef}`);
+    }
+  });
+
+  it("offers every clef and no none — a stave always has one", () => {
+    expect(CLEF_OPTIONS.map((o) => o.value)).toEqual([...CLEFS]);
+    expect(CLEF_OPTIONS.map((o) => o.labelKey)).toEqual(
+      CLEFS.map((clef) => CLEF_LABEL_KEY[clef]),
+    );
+    expect(CLEF_OPTIONS.some((o) => String(o.value) === INHERIT_CLEF)).toBe(
+      false,
+    );
+  });
+
+  it("names every theme mode, `system` included", () => {
+    // `system` is an option a reader picks rather than the absence of one, so
+    // it is labelled like the other two rather than left to a placeholder.
+    expect(Object.keys(THEME_MODE_LABEL_KEY).sort()).toEqual(
+      [...THEME_MODES].sort(),
+    );
+    expect(THEME_MODE_OPTIONS.map((o) => o.value)).toEqual([...THEME_MODES]);
+    expect(THEME_MODE_OPTIONS.map((o) => o.labelKey)).toEqual([
+      "settings.themeLight",
+      "settings.themeDark",
+      "settings.themeSystem",
     ]);
   });
 });

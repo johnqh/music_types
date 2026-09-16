@@ -6,12 +6,17 @@
  * programs inherited a compass nobody had chosen for them — see that module's
  * doc for what that hid.
  */
-export type MidiRange = { min: number; max: number };
+import { FULL_KEYBOARD, gmSpec, type MidiRange } from "./gm-catalogue.js";
 
-/** A0 to C8 — the 88-key piano, and the widest range anything here returns. */
-export const FULL_KEYBOARD: MidiRange = { min: 21, max: 108 };
-
-import { gmSpec } from "./gm-catalogue.js";
+/**
+ * `MidiRange` and `FULL_KEYBOARD` are declared in `gm-catalogue.ts` and
+ * re-exported here, so `./gm-range.js` stays the module they are imported from.
+ * They were declared here, and the rows over there read `FULL_KEYBOARD` while
+ * building — a cycle that threw a TDZ `ReferenceError` on whichever of the two
+ * a runtime happened to enter first. Declaring them beside the table they
+ * describe is what points the arrows one way.
+ */
+export { FULL_KEYBOARD, type MidiRange };
 
 /**
  * The practical range for `program`, or the full keyboard for an unknown one —

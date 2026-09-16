@@ -35,8 +35,34 @@
  */
 import { GM_FAMILIES } from "./gm.js";
 import type { GmFamily } from "./gm.js";
-import { FULL_KEYBOARD, type MidiRange } from "./gm-range.js";
-import { UNLIMITED_POLYPHONY } from "./gm-polyphony.js";
+
+/**
+ * A row's column types and sentinels live here, with the table itself.
+ *
+ * They used to live in `gm-range.ts` and `gm-polyphony.ts` — the accessors that
+ * read this table — which made those two modules and this one an import cycle.
+ * Entering the graph through `gm-polyphony.js` first (plain Node ESM, which is
+ * how `music_api` consumes this package server-side) threw
+ * `ReferenceError: Cannot access 'UNLIMITED_POLYPHONY' before initialization`:
+ * the rows below read the sentinel while building, and in a cycle the module
+ * declaring it had not run yet. A bundler that happened to evaluate this module
+ * first hid that in the apps.
+ *
+ * The rule is the family's own — a closed vocabulary and the table keyed by it
+ * live together — applied one level down: a sentinel a column can hold belongs
+ * with the column. `gm-range.ts` and `gm-polyphony.ts` re-export them, so every
+ * import site still resolves, and the arrows now point one way: accessors read
+ * the table, the table reads nobody.
+ */
+
+/** An instrument's compass, inclusive, as MIDI note numbers. */
+export type MidiRange = { min: number; max: number };
+
+/** A0 to C8 — the 88-key piano, and the widest range anything here returns. */
+export const FULL_KEYBOARD: MidiRange = { min: 21, max: 108 };
+
+/** No physical limit: keyboards, plucked strings, sections, synths, drums. */
+export const UNLIMITED_POLYPHONY = Number.POSITIVE_INFINITY;
 
 /** How much to trust a row's numbers. See the module doc. */
 export const INSTRUMENT_BASES = [
@@ -273,5 +299,3 @@ export function gmFamilyForProgram(program: number): GmFamily {
   if (!family) throw new RangeError(`no General MIDI family for ${program}`);
   return family;
 }
-
-export { FULL_KEYBOARD, UNLIMITED_POLYPHONY };
