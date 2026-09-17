@@ -192,6 +192,8 @@ export type NewProjectFormDraft = {
   autoVocalId: number | null;
   measuresText: string;
   tempoText: string;
+  /** Which length field the user edited most recently. */
+  lengthSource: "bars" | "duration";
   /** A key of `GENERATE_SCORE_TIME_SIGNATURE_OPTIONS`. */
   meter: string;
   keySignature: KeySignature;

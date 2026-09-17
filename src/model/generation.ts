@@ -542,12 +542,15 @@ export type TokenUsage = {
   promptTokens: number;
   completionTokens: number;
   model: string;
+  /** ShapeShyft's provider pricing estimate, in US cents. */
+  estimatedCostCents?: number;
 };
 
 export const tokenUsageSchema = z.object({
   promptTokens: z.number().int().nonnegative(),
   completionTokens: z.number().int().nonnegative(),
   model: z.string().min(1),
+  estimatedCostCents: z.number().nonnegative().optional(),
 });
 
 export const generationJobSchema = z.object({
