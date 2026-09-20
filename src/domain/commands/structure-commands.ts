@@ -37,6 +37,31 @@ export function addMeasureCommand(label: string): ScoreCommand {
   return transformCommand(label, (score) => appendMeasure(score));
 }
 
+/** Inserts fully-rested bars before `atIndex` in every track. */
+export function insertBlankMeasuresCommand(
+  atIndex: number,
+  count: number,
+  label: string,
+): ScoreCommand {
+  return transformCommand(label, (score) => {
+    const amount = Math.max(0, Math.floor(count));
+    if (amount === 0 || score.tracks.length === 0) return score;
+    const safeIndex = Math.max(0, Math.min(atIndex, score.tracks[0]!.measures.length));
+    const tracks = score.tracks.map((track) => {
+      const template =
+        track.measures[safeIndex] ?? track.measures[track.measures.length - 1];
+      if (!template) return track;
+      const added = Array.from({ length: amount }, () =>
+        restMeasureLike(template, track.id),
+      );
+      const measures = [...track.measures];
+      measures.splice(Math.min(safeIndex, measures.length), 0, ...added);
+      return { ...track, measures };
+    });
+    return rebuildMeasureTicks(withTracks(score, tracks));
+  });
+}
+
 function deleteMeasure(score: Score, measureIndex: number): Score {
   const tracks = score.tracks.map((track) => {
     const filtered = track.measures.filter((m) => m.index !== measureIndex);
@@ -597,9 +622,21 @@ function changeTrackProps(
   trackId: UUID,
   patch: TrackPropsPatch,
 ): Score {
-  const tracks = score.tracks.map((t) =>
-    t.id === trackId ? { ...t, ...patch } : t,
-  );
+  const soloOn = patch.solo === true;
+  const muteOn = patch.muted === true && !soloOn;
+  const targetPatch: TrackPropsPatch = {
+    ...patch,
+    // Mute and solo are mutually exclusive on the edited track. If a caller
+    // sends both flags at once, solo is the explicit higher-priority action.
+    ...(soloOn ? { muted: false } : {}),
+    ...(muteOn ? { solo: false } : {}),
+  };
+  const tracks = score.tracks.map((track) => {
+    if (track.id === trackId) return { ...track, ...targetPatch };
+    // Turning solo on selects exactly one solo track. Turning it off has no
+    // effect on any other track.
+    return soloOn && track.solo ? { ...track, solo: false } : track;
+  });
   return withTracks(score, tracks);
 }
 

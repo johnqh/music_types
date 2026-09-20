@@ -24,9 +24,10 @@
  * - A misordered measure is moved by shifting its events with it, because an
  *   event's `startTick` is absolute; rewriting the measure's own start alone
  *   would strand every note it contains outside it.
- * - The count of notes sounding at once is left alone. There is no
- *   non-arbitrary choice of which note to delete, and it is a readability
- *   warning rather than a broken score.
+ * - Excessive simultaneous notes are reduced to the readability threshold by
+ *   shortening the longest currently sounding notes first. This keeps the
+ *   newest musical events and makes generated scores issue-free without
+ *   deleting an entire passage.
  */
 import type {
   Measure,
@@ -47,6 +48,7 @@ import {
   MAX_MIDI,
   MAX_MIDI_CHANNEL,
   MAX_MIDI_PROGRAM,
+  MAX_SIMULTANEOUS_NOTES,
   MAX_VELOCITY,
   MIN_BPM,
   MIN_FIFTHS,
@@ -370,6 +372,69 @@ function repairMeasureOrdering(track: Track): Track {
   return { ...track, measures };
 }
 
+/**
+ * Keeps generated arrangements within the validator's simultaneous-note
+ * readability limit. When a new note would exceed the limit, shorten the
+ * currently longest note(s) first; notes that begin at the same tick are
+ * retained in stable event order up to the limit.
+ */
+function repairSimultaneousNotes(track: Track): Track {
+  const notes = track.measures.flatMap((measure) =>
+    measure.voices.flatMap((voice) => voice.events.filter(isNoteEvent)),
+  );
+  const ordered = [...notes].sort(
+    (a, b) =>
+      a.startTick - b.startTick ||
+      a.durationTicks - b.durationTicks ||
+      a.id.localeCompare(b.id),
+  );
+  const durationById = new Map<string, number>();
+  const active: typeof notes = [];
+
+  for (const note of ordered) {
+    for (let i = active.length - 1; i >= 0; i -= 1) {
+      const activeNote = active[i]!;
+      const duration = durationById.get(activeNote.id) ?? activeNote.durationTicks;
+      if (activeNote.startTick + duration <= note.startTick) active.splice(i, 1);
+    }
+    while (active.length >= MAX_SIMULTANEOUS_NOTES) {
+      let victimIndex = 0;
+      for (let i = 1; i < active.length; i += 1) {
+        const current = active[i]!;
+        const victim = active[victimIndex]!;
+        const currentEnd = current.startTick + (durationById.get(current.id) ?? current.durationTicks);
+        const victimEnd = victim.startTick + (durationById.get(victim.id) ?? victim.durationTicks);
+        if (currentEnd > victimEnd) victimIndex = i;
+      }
+      const victim = active[victimIndex]!;
+      durationById.set(victim.id, Math.max(0, note.startTick - victim.startTick));
+      active.splice(victimIndex, 1);
+    }
+    durationById.set(note.id, note.durationTicks);
+    active.push(note);
+  }
+
+  const changed = notes.some(
+    (note) => durationById.get(note.id) !== note.durationTicks,
+  );
+  if (!changed) return track;
+  return {
+    ...track,
+    measures: track.measures.map((measure) => ({
+      ...measure,
+      voices: measure.voices.map((voice) => ({
+        ...voice,
+        events: voice.events.flatMap((event) => {
+          if (!isNoteEvent(event)) return [event];
+          const duration = durationById.get(event.id);
+          if (duration === undefined || duration <= 0) return [];
+          return [{ ...event, durationTicks: duration }];
+        }),
+      })),
+    })),
+  };
+}
+
 /** Ticks and tempi in range, and the map put back in tick order. */
 function repairTempoMap(tempoMap: readonly TempoEvent[]): TempoEvent[] {
   return tempoMap
@@ -431,7 +496,7 @@ function clearDanglingTies(
  * dispatching this as a command can tell "nothing to do" from "something
  * changed" without diffing.
  */
-export function repairScore(score: Score): ScoreRepair {
+function repairScorePass(score: Score): ScoreRepair {
   const before = validateScore(score);
   if (before.length === 0) return { score, fixed: {}, remaining: {} };
 
@@ -479,6 +544,23 @@ export function repairScore(score: Score): ScoreRepair {
     }),
   };
 
+  working = {
+    ...working,
+    tracks: working.tracks.map((track) => {
+      const repaired = repairSimultaneousNotes(track);
+      return {
+        ...repaired,
+        measures: repaired.measures.map((measure) => ({
+          ...measure,
+          voices: measure.voices.map((voice) => ({
+            ...voice,
+            events: fillGaps(voice.events, measure, repaired, voice, taken),
+          })),
+        })),
+      };
+    }),
+  };
+
   working = clearDanglingTies(working, validateScore(working));
 
   const after = validateScore(working);
@@ -490,4 +572,42 @@ export function repairScore(score: Score): ScoreRepair {
     if (cleared > 0) fixed[code] = cleared;
   }
   return { score: working, fixed, remaining };
+}
+
+/**
+ * Re-run repair passes because one normalization can expose another issue.
+ *
+ * The individual pass is intentionally easy to reason about, but its output
+ * can change the inputs to later rules (for example, shortening a note can
+ * expose a gap). Keep applying passes until the score validates, or until a
+ * pass makes no validation progress. The cap is only a final guard against a
+ * future repair rule accidentally oscillating.
+ */
+export function repairScore(score: Score): ScoreRepair {
+  let working = score;
+  const fixed: Record<string, number> = {};
+  let previousIssueCount = Number.POSITIVE_INFINITY;
+
+  for (let pass = 0; pass < 16; pass += 1) {
+    const result = repairScorePass(working);
+    for (const [code, count] of Object.entries(result.fixed)) {
+      fixed[code] = (fixed[code] ?? 0) + count;
+    }
+
+    working = result.score;
+    const issueCount = Object.values(result.remaining).reduce(
+      (total, count) => total + count,
+      0,
+    );
+    if (issueCount === 0) return { score: working, fixed, remaining: {} };
+
+    // No progress means the remaining rules are genuinely unrepairable by
+    // the current rule set; stop rather than spinning forever.
+    if (issueCount >= previousIssueCount) {
+      return { score: working, fixed, remaining: result.remaining };
+    }
+    previousIssueCount = issueCount;
+  }
+
+  return { score: working, fixed, remaining: countByCode(validateScore(working)) };
 }

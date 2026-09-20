@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createEmptyScore } from "../score/factory.js";
 import { validateScore } from "../validation/validator.js";
+import { isNoteEvent } from "../../index.js";
 import { twinkleScore, twoTrackScore } from "../../test/fixtures.js";
 import {
   addMeasureCommand,
@@ -13,6 +14,7 @@ import {
   removeTempoCommand,
   changeTimeSignatureCommand,
   changeTrackPropsCommand,
+  insertBlankMeasuresCommand,
   deleteMeasureCommand,
   deleteTrackCommand,
 } from "./structure-commands.js";
@@ -34,6 +36,17 @@ describe("addMeasureCommand", () => {
     expect(next.tracks[0].measures).toHaveLength(3);
     expect(validateScore(next)).toEqual([]);
     expect(cmd.undo(next)).toEqual(score);
+  });
+});
+
+describe("insertBlankMeasuresCommand", () => {
+  it("inserts rested bars at the requested index across every track", () => {
+    const score = twoTrackScore();
+    const next = insertBlankMeasuresCommand(1, 2, "Insert bars").execute(score);
+    expect(next.tracks.map(track => track.measures.length)).toEqual([6, 6]);
+    expect(next.tracks[0]!.measures[1]!.voices[0]!.events).toHaveLength(1);
+    expect(isNoteEvent(next.tracks[0]!.measures[1]!.voices[0]!.events[0]!)).toBe(false);
+    expect(next.tracks[0]!.measures[5]!.index).toBe(5);
   });
 });
 
@@ -320,6 +333,53 @@ describe("changeTrackPropsCommand", () => {
     expect(next.tracks[0].muted).toBe(true);
     expect(next.tracks[0].measures).toEqual(score.tracks[0].measures);
     expect(cmd.undo(next)).toEqual(score);
+  });
+
+  it("keeps mute and solo exclusive and allows only one solo track", () => {
+    const score = twoTrackScore();
+    const [first] = score.tracks;
+
+    const soloed = changeTrackPropsCommand(
+      first.id,
+      { solo: true },
+      "Solo",
+    ).execute({
+      ...score,
+      tracks: score.tracks.map((track) =>
+        track.id === first.id
+          ? { ...track, muted: true }
+          : { ...track, solo: true },
+      ),
+    });
+
+    expect(soloed.tracks[0].solo).toBe(true);
+    expect(soloed.tracks[0].muted).toBe(false);
+    expect(soloed.tracks[1].solo).toBe(false);
+
+    const muted = changeTrackPropsCommand(
+      first.id,
+      { muted: true },
+      "Mute",
+    ).execute(soloed);
+    expect(muted.tracks[0].muted).toBe(true);
+    expect(muted.tracks[0].solo).toBe(false);
+    expect(muted.tracks[1].solo).toBe(false);
+  });
+
+  it("turning solo off has no effect on other tracks", () => {
+    const score = twoTrackScore();
+    const [first, second] = score.tracks;
+    const next = changeTrackPropsCommand(
+      first.id,
+      { solo: false },
+      "Unsolo",
+    ).execute({
+      ...score,
+      tracks: score.tracks.map((track) => ({ ...track, solo: true })),
+    });
+
+    expect(next.tracks.map((track) => track.solo)).toEqual([false, true]);
+    expect(second.id).toBe(next.tracks[1].id);
   });
 });
 

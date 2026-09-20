@@ -21,6 +21,7 @@
 export const COMMAND_LABEL_KEYS = [
   "addNote",
   "addMeasure",
+  "insertBars",
   "addTrack",
   "changeAccidental",
   "changeArticulation",
