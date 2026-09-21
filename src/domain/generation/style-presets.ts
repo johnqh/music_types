@@ -107,6 +107,23 @@ export type GenerateScoreStylePreset = {
   timeSignature: string;
   /** The mode the genre usually sits in; absent where it is not typical. */
   mode?: KeySignature["mode"];
+  /**
+   * Whether `mode` REFUSES the other one, rather than merely preferring it.
+   *
+   * These are two different facts and they were one field. `mode` is
+   * documented above as what a genre "usually" sits in — a default, which
+   * `styleKey` uses to pick the key the dialog opens on — and
+   * `generateScoreStyleSettings` then published it as a constraint the API
+   * rejects requests against. A preference became a prohibition on the way
+   * out of this file, and the styles that are genuinely written both ways
+   * lost the mode they are less often in.
+   *
+   * Absent means fixed, so the ten styles that want the restriction keep it by
+   * saying nothing. A style written in both modes sets this to `false`: its
+   * `mode` still supplies the default, and a reader who asks for the other one
+   * is no longer refused.
+   */
+  modeFixed?: boolean;
 };
 
 const KIT = "kit:0";
@@ -156,6 +173,13 @@ const STYLE_PRESET_SOURCE: Readonly<
     keys: [-1, 0, 1, -2],
     timeSignature: "4/4",
     mode: "minor",
+    /*
+      Minor suits dread and most trailer work, so it stays the default. It is
+      not the whole idiom: the lydian sharp-4 over a major tonic is the sound
+      of wonder in this repertoire, and a score that can never be written in
+      major cannot do awe, discovery or a love theme.
+    */
+    modeFixed: false,
   },
   ambient: {
     prompt:
@@ -208,6 +232,8 @@ const STYLE_PRESET_SOURCE: Readonly<
     keys: [1, -1, 0, 2],
     timeSignature: "4/4",
     mode: "minor",
+    /* Minor and modal is the default and the bulk of the genre, but power and melodic metal are written in major; the mode is a preference, not the definition. */
+    modeFixed: false,
   },
   blues: {
     formBars: 12,
@@ -321,6 +347,14 @@ const STYLE_PRESET_SOURCE: Readonly<
     keys: [-1, -3, 0, -2],
     timeSignature: "4/4",
     mode: "minor",
+    /*
+      Minor by default, but not exclusively: son and mambo are constantly in
+      major, and "Oye Como Va" is a minor vamp while "El Manisero" is not. The
+      collision above was between salsa's DEFAULT and swing's, and the default
+      still fixes it — a reader who deliberately asks for a major salsa is
+      asking for something the repertoire is full of.
+    */
+    modeFixed: false,
   },
   tango: {
     prompt:
@@ -332,6 +366,8 @@ const STYLE_PRESET_SOURCE: Readonly<
     keys: [0, -1, 1, -2],
     timeSignature: "4/4",
     mode: "minor",
+    /* Minor dominates, though major tangos are common — "Por una Cabeza" is in major — and Piazzolla widened the language further. */
+    modeFixed: false,
   },
   reggae: {
     prompt:
@@ -353,6 +389,8 @@ const STYLE_PRESET_SOURCE: Readonly<
     keys: [0, -1, -2, -3, 1],
     timeSignature: "4/4",
     mode: "minor",
+    /* Major-key hip-hop is common wherever the sample is — much of the West Coast and jazz-rap canon sits in major. */
+    modeFixed: false,
   },
   trap: {
     prompt:
@@ -364,6 +402,8 @@ const STYLE_PRESET_SOURCE: Readonly<
     keys: [-4, -3, -2, 0],
     timeSignature: "4/4",
     mode: "minor",
+    /* The brighter plugg and melodic-trap end is written in major; minor merely dominates. */
+    modeFixed: false,
   },
   lofi: {
     prompt:
@@ -375,6 +415,8 @@ const STYLE_PRESET_SOURCE: Readonly<
     keys: [-1, 0, -2, -3],
     timeSignature: "4/4",
     mode: "minor",
+    /* Major-key lo-fi is where the genre's brighter, more nostalgic end lives; the jazz vocabulary is the same either way. */
+    modeFixed: false,
   },
   house: {
     prompt:
@@ -407,6 +449,8 @@ const STYLE_PRESET_SOURCE: Readonly<
     keys: [0, -1, 1, -3],
     timeSignature: "4/4",
     mode: "minor",
+    /* Uplifting trance resolves into major for its breakdowns and much of the canon is major throughout; minor is the default, not the genre. */
+    modeFixed: false,
   },
   edm: {
     prompt:
@@ -418,6 +462,8 @@ const STYLE_PRESET_SOURCE: Readonly<
     keys: [0, -1, -3, -4],
     timeSignature: "4/4",
     mode: "minor",
+    /* Future bass is characteristically major, and major-key drops are common across the umbrella; minor is only the commonest choice. */
+    modeFixed: false,
   },
   electroSwing: {
     prompt:
@@ -512,7 +558,13 @@ export type GenerateScoreStyleSetting = {
   timeSignature: string;
   /** Key-signature fifths the style offers. */
   keys: readonly number[];
-  /** Fixed mode for styles that document one; absent means major or minor. */
+    /**
+   * A mode the style refuses to leave, for the styles that have one.
+   *
+   * Absent means the caller may choose either — including for a style whose
+   * preset states a usual mode, which is a default for the form rather than
+   * a limit on the request.
+   */
   mode?: KeySignature["mode"];
 };
 
@@ -550,7 +602,11 @@ export function generateScoreStyleSettings(): GenerateScoreStyleSettings {
       maxBpm,
       timeSignature: preset.timeSignature,
       keys: [...(preset.keys ?? [])],
-      ...(preset.mode ? { mode: preset.mode } : {}),
+      // Only a mode the style REFUSES to leave. A default belongs to
+      // `styleKey`, which reads the preset directly.
+      ...(preset.mode && preset.modeFixed !== false
+        ? { mode: preset.mode }
+        : {}),
     };
   }
   return settings;
