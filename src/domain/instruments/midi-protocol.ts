@@ -15,6 +15,9 @@
 /** Channel volume (coarse). */
 export const CC_VOLUME = 7;
 
+/** Channel expression (fine), used for playback's patch loudness trim. */
+export const CC_EXPRESSION = 11;
+
 /** Channel pan (coarse), 0 hard left, 64 centre, 127 hard right. */
 export const CC_PAN = 10;
 
