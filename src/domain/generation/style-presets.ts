@@ -1,3 +1,4 @@
+import { z } from "zod";
 import type { KeySignature } from "../../model/score.js";
 import {
   DEFAULT_VOCAL_INSTRUMENT_VALUE,
@@ -494,6 +495,79 @@ export function styleTempoRange(style: string): readonly [number, number] | null
   if (!preset) return null;
   const spread = Math.round(preset.tempo * TEMPO_SPREAD);
   return [preset.tempo - spread, preset.tempo + spread];
+}
+
+/**
+ * The small, public subset of a style preset that a generation form needs.
+ *
+ * The full preset remains local product data because it includes prompt text
+ * and instrument values. These settings are safe to serve from the backend so
+ * clients can constrain their controls without copying the style table.
+ */
+export type GenerateScoreStyleSetting = {
+  tempo: number;
+  minBpm: number;
+  maxBpm: number;
+  /** The only meter offered by this style. */
+  timeSignature: string;
+  /** Key-signature fifths the style offers. */
+  keys: readonly number[];
+  /** Fixed mode for styles that document one; absent means major or minor. */
+  mode?: KeySignature["mode"];
+};
+
+export type GenerateScoreStyleSettings = Readonly<
+  Record<string, GenerateScoreStyleSetting>
+>;
+
+export const generateScoreStyleSettingSchema = z.object({
+  tempo: z.number().int().positive(),
+  minBpm: z.number().int().positive(),
+  maxBpm: z.number().int().positive(),
+  timeSignature: z.string().min(1),
+  keys: z.array(z.number().int()).readonly(),
+  mode: z.enum(["major", "minor"]).optional(),
+});
+
+export const generateScoreStyleSettingsResponseSchema = z.object({
+  styles: z.record(z.string(), generateScoreStyleSettingSchema),
+});
+
+export type GenerateScoreStyleSettingsResponse = z.infer<
+  typeof generateScoreStyleSettingsResponseSchema
+>;
+
+/** Builds the backend-owned settings payload without exposing prompt text. */
+export function generateScoreStyleSettings(): GenerateScoreStyleSettings {
+  const settings: Record<string, GenerateScoreStyleSetting> = {};
+  for (const [style, preset] of Object.entries(GENERATE_SCORE_STYLE_PRESETS)) {
+    const range = styleTempoRange(style);
+    if (!range) continue;
+    const [minBpm, maxBpm] = range;
+    settings[style] = {
+      tempo: preset.tempo,
+      minBpm,
+      maxBpm,
+      timeSignature: preset.timeSignature,
+      keys: [...(preset.keys ?? [])],
+      ...(preset.mode ? { mode: preset.mode } : {}),
+    };
+  }
+  return settings;
+}
+
+/** Resolves either a style token or the expanded style phrase on the wire. */
+export function generateScoreStyleSettingFor(
+  style: string | undefined
+): GenerateScoreStyleSetting | null {
+  if (!style) return null;
+  const token =
+    Object.prototype.hasOwnProperty.call(GENERATE_SCORE_STYLE_PRESETS, style)
+      ? style
+      : Object.entries(GENERATE_SCORE_STYLE_PRESETS).find(
+          ([, preset]) => preset.prompt === style
+        )?.[0];
+  return token ? generateScoreStyleSettings()[token] ?? null : null;
 }
 
 /**

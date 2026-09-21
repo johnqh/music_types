@@ -278,6 +278,7 @@ export const projectListQuerySchema = z.object({
 // ---------------------------------------------------------------------------
 
 export const API_ERROR_CODES = {
+  INVALID_REQUEST: "INVALID_REQUEST",
   QUOTA_EXCEEDED: "QUOTA_EXCEEDED",
   AI_GENERATION_FAILED: "AI_GENERATION_FAILED",
   AI_OUTPUT_INVALID: "AI_OUTPUT_INVALID",

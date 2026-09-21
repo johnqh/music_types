@@ -124,6 +124,8 @@ export type NewProjectDraft = {
   timeSignature?: TimeSignature;
   keySignature?: KeySignature;
   tempoText?: string;
+  /** Style token used for shared style-setting validation. */
+  style?: string;
 };
 
 /**
