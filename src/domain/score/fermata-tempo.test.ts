@@ -4,12 +4,12 @@
  * written ticks so nothing downstream of the score tick moves.
  */
 import { describe, expect, it } from "vitest";
-import type { NoteEvent, Score } from "../../index.js";
-import { isNoteEvent } from "../../index.js";
-import { twinkleScore } from "../../test/fixtures.js";
-import { TempoMap } from "../time/tempo-map.js";
-import { fermataTempoMap } from "./fermata-tempo.js";
-import { flattenScoreNotes } from "./flatten.js";
+import type { NoteEvent, Score } from "../../index";
+import { isNoteEvent } from "../../index";
+import { twinkleScore } from "../../test/fixtures";
+import { TempoMap } from "../time/tempo-map";
+import { fermataTempoMap } from "./fermata-tempo";
+import { flattenScoreNotes } from "./flatten";
 
 /** Marks the note at `noteIndex` of the first track with a fermata. */
 function held(noteIndex: number, score: Score = twinkleScore()): Score {

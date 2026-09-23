@@ -13,8 +13,8 @@
  * durations themselves. Deriving it means a group that no longer sums to a
  * plain note value simply stops being drawn as one, which is the truth.
  */
-import type { MusicalEvent } from "../../index.js";
-import { durationNameForTicks } from "./ticks.js";
+import type { MusicalEvent } from "../../index";
+import { durationNameForTicks } from "./ticks";
 
 /** A run of events forming one tuplet, as indices into the voice's event list. */
 export type TupletGroup = {

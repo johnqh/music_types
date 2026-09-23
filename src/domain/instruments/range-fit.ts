@@ -20,10 +20,10 @@
  * is written, the validator warns, the notation marks the note, and note entry
  * refuses it outright.
  */
-import type { Track } from "../../index.js";
-import { gmRangeIsBinding } from "./gm-catalogue.js";
-import type { MidiRange } from "./gm-range.js";
-import { isPercussionTrack } from "./track-instrument.js";
+import type { Track } from "../../index";
+import { gmRangeIsBinding } from "./gm-catalogue";
+import type { MidiRange } from "./gm-range";
+import { isPercussionTrack } from "./track-instrument";
 
 /** Whether `midi` is inside `range`, which is inclusive at both ends. */
 export function midiIsInRange(midi: number, range: MidiRange): boolean {

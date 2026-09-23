@@ -41,11 +41,11 @@
  * colours by id, so "which notes" survives a transposition that changes what
  * those notes look like. `out-of-range.test.ts` pins that with a clarinet.
  */
-import { isNoteEvent, type Score } from "../../model/score.js";
-import { pitchToMidi } from "../pitch/pitch.js";
-import type { MidiRange } from "./gm-range.js";
-import { midiIsInRange, trackRangeIsBinding } from "./range-fit.js";
-import { isPercussionTrack, trackKeyboardRange } from "./track-instrument.js";
+import { isNoteEvent, type Score } from "../../model/score";
+import { pitchToMidi } from "../pitch/pitch";
+import type { MidiRange } from "./gm-range";
+import { midiIsInRange, trackRangeIsBinding } from "./range-fit";
+import { isPercussionTrack, trackKeyboardRange } from "./track-instrument";
 
 export type OutOfRangeTrack = {
   trackId: string;

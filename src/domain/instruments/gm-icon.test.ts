@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { GM_INSTRUMENTS } from "./gm.js";
-import { gmInstrumentIcon } from "./gm-icon.js";
-import { parseIconPath } from "./icon-art.js";
+import { GM_INSTRUMENTS } from "./gm";
+import { gmInstrumentIcon } from "./gm-icon";
+import { parseIconPath } from "./icon-art";
 
 describe("gmInstrumentIcon", () => {
   it("gives every one of the 128 programs art with at least one shape", () => {

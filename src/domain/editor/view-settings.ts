@@ -2,7 +2,7 @@
  * How a score is looked at, as vocabulary: its layout, and the grids a
  * quantize offers.
  */
-import type { DurationName } from "../../model/score.js";
+import type { DurationName } from "../../model/score";
 
 /**
  * How the notation is laid out: `page` wraps systems to fit the width,

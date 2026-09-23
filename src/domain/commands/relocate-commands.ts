@@ -7,17 +7,17 @@
  * from two dispatches would make undo step back through the middle of a
  * gesture the user experienced as one.
  */
-import { isNoteEvent } from "../../index.js";
-import type { NoteEvent, Score, Track, UUID } from "../../index.js";
-import { transformCommand } from "./snapshot.js";
-import type { ScoreCommand } from "./types.js";
+import { isNoteEvent } from "../../index";
+import type { NoteEvent, Score, Track, UUID } from "../../index";
+import { transformCommand } from "./snapshot";
+import type { ScoreCommand } from "./types";
 import {
   clearDanglingTies,
   insertNoteIntoTrack,
   removeNotesFromTrack,
   withTracks,
-} from "./reflow.js";
-import { makeRoom } from "./ripple-commands.js";
+} from "./reflow";
+import { makeRoom } from "./ripple-commands";
 
 /** What happens to music already at the destination. Mirrors the editor's edit mode. */
 export type CollisionMode = "stack" | "replace" | "ripple";

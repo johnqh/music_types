@@ -6,7 +6,7 @@
  * sentence per key — so it is declared here, where both the importer and the
  * hosts that satisfy it can name it without either depending on the other.
  */
-import type { Score } from "../model/score.js";
+import type { Score } from "../model/score";
 
 /**
  * Every warning the MusicXML importer can raise, in the caller's words.

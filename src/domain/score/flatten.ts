@@ -16,17 +16,17 @@
  * tracks' notes, while playback keeps them and lets the engine mix live — the
  * whole reason `applyMix` exists.
  */
-import { isNoteEvent } from "../../index.js";
-import { articulatedDuration, articulatedVelocity } from "./articulation.js";
+import { isNoteEvent } from "../../index";
+import { articulatedDuration, articulatedVelocity } from "./articulation";
 import {
   DEFAULT_VELOCITY,
   dynamicsInForce,
   effectiveVelocity,
   hairpinVelocities,
-} from "./dynamics.js";
-import type { MusicalEvent, Score, Track } from "../../index.js";
-import { pitchToMidi } from "../pitch/pitch.js";
-import { joinTiedNotes } from "./ties.js";
+} from "./dynamics";
+import type { MusicalEvent, Score, Track } from "../../index";
+import { pitchToMidi } from "../pitch/pitch";
+import { joinTiedNotes } from "./ties";
 
 /**
  * One sounding note, in score ticks, with the ids it came from.

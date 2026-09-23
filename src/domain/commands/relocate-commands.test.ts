@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { createEmptyScore } from "../score/factory.js";
-import { addNoteCommand } from "./note-commands.js";
-import { relocateNotesCommand } from "./relocate-commands.js";
-import { allNotes } from "../score/queries.js";
-import { pitchToMidi } from "../pitch/pitch.js";
-import type { Pitch, Score } from "../../index.js";
+import { createEmptyScore } from "../score/factory";
+import { addNoteCommand } from "./note-commands";
+import { relocateNotesCommand } from "./relocate-commands";
+import { allNotes } from "../score/queries";
+import { pitchToMidi } from "../pitch/pitch";
+import type { Pitch, Score } from "../../index";
 
 const pitch = (step: string, octave = 4): Pitch =>
   ({ step, accidental: 0, octave }) as unknown as Pitch;

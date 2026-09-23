@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { shiftDiatonic } from "./transpose.js";
+import { shiftDiatonic } from "./transpose";
 import type { Pitch } from "@sudobility/music_types";
 
 const c4: Pitch = { step: "C", accidental: 0, octave: 4 };

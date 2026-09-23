@@ -30,7 +30,7 @@ import {
   REPEAT_JUMPS,
   SYLLABICS,
   TRANSPORT_STATES,
-} from "./../index.js";
+} from "./../index";
 
 /** Every closed vocabulary that both the model and a validator need. */
 const VOCABULARIES: Record<string, readonly (string | number)[]> = {

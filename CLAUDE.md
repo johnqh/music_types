@@ -11,7 +11,7 @@ The model of the Moosiac music family, and every name the family shares: the sco
 
 ## Tech Stack
 
-- TypeScript (strict), ESM only, built with `tsc -p tsconfig.esm.json`
+- TypeScript (strict), ESM only. Source imports are extensionless (`entity_pages`' convention, not the `.js`-suffixed one most of the rest of this family uses — see that family's own CLAUDE.md). `tsc` (plain `tsconfig.json`, `noEmit: true`) is the type-check gate; `vite build` (`vite-plugin-dts` for declarations) is what actually emits `dist/` — one bundled `dist/index.js`, plus `dist/test/fixtures.js` as its own entry since `@sudobility/music_types/test` is a real, separately-imported subpath across the family
 - Zod v4 schemas (runtime dependency — schemas are exported values)
 - Bun for scripts, vitest for tests
 - Published to npm as `@sudobility/music_types` (public access) via CI on push to main

@@ -6,12 +6,12 @@
  * the score, so folding it into that command would break the contract its
  * callers rely on.
  */
-import { appendMeasure } from "../score/factory.js";
-import { allNotes, scoreEndTick } from "../score/queries.js";
-import { addNoteCommand, moveNotesCommand } from "./note-commands.js";
-import { transformCommand } from "./snapshot.js";
-import type { ScoreCommand } from "./types.js";
-import type { Articulation, Pitch, Score, UUID } from "../../index.js";
+import { appendMeasure } from "../score/factory";
+import { allNotes, scoreEndTick } from "../score/queries";
+import { addNoteCommand, moveNotesCommand } from "./note-commands";
+import { transformCommand } from "./snapshot";
+import type { ScoreCommand } from "./types";
+import type { Articulation, Pitch, Score, UUID } from "../../index";
 
 export type RippleInsertParams = {
   trackId: UUID;

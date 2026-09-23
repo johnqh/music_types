@@ -3,7 +3,7 @@ import {
   SCORE_PRESET_KEYS,
   isScorePresetKey,
   scorePresetsResponseSchema,
-} from "./score-presets.js";
+} from "./score-presets";
 
 describe("the score preset vocabulary", () => {
   it("is a closed list with the type read off it", () => {

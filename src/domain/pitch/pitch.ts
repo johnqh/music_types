@@ -3,7 +3,7 @@ import type {
   KeySignature,
   Pitch,
   PitchStep,
-} from "../../index.js";
+} from "../../index";
 
 /** Semitone offset from C for each natural pitch step (no accidental). */
 const NATURAL_STEP_SEMITONES: Record<PitchStep, number> = {

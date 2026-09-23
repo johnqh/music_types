@@ -11,7 +11,7 @@
  * prompt and the inspector all answer identically without any of them knowing
  * how a pickup is stored.
  */
-import type { Measure } from "../../index.js";
+import type { Measure } from "../../index";
 
 /**
  * The number printed over `measures[index]`, or `null` for a bar that is not

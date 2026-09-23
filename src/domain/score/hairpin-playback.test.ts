@@ -3,12 +3,12 @@
  * a hairpin that resolved to a single level would be a dynamic, not a wedge.
  */
 import { describe, expect, it } from "vitest";
-import type { Score } from "../../index.js";
-import { isNoteEvent } from "../../index.js";
-import { twinkleScore } from "../../test/fixtures.js";
-import { toggleHairpinCommand } from "../commands/note-marks.js";
-import { changeDynamicCommand } from "../commands/note-marks.js";
-import { flattenScoreNotes } from "./flatten.js";
+import type { Score } from "../../index";
+import { isNoteEvent } from "../../index";
+import { twinkleScore } from "../../test/fixtures";
+import { toggleHairpinCommand } from "../commands/note-marks";
+import { changeDynamicCommand } from "../commands/note-marks";
+import { flattenScoreNotes } from "./flatten";
 
 const trackId = twinkleScore().tracks[0].id;
 

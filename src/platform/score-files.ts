@@ -16,17 +16,17 @@
  * takes PCM the caller already rendered, because rendering is a live synth in
  * `@sudobility/music_player` and the file layer never holds a reference to one.
  */
-import type { Score } from "../model/score.js";
-import type { TrackerModule } from "../formats/mod.js";
+import type { Score } from "../model/score";
+import type { TrackerModule } from "../formats/mod";
 import type {
   MidiImportOptions,
   MidiImportResult,
   MidiSummary,
-} from "../formats/midi-import.js";
+} from "../formats/midi-import";
 import type {
   MusicXmlImportResult,
   MusicXmlWarnings,
-} from "../formats/musicxml.js";
+} from "../formats/musicxml";
 
 export type ScoreFiles = {
   openMidi(bytes: ArrayBuffer, options: MidiImportOptions): MidiImportResult;

@@ -5,22 +5,22 @@
  * selection to full measures), and turns an accepted candidate back into a
  * single undoable `ScoreCommand`.
  */
-import { findTrack } from "../../domain/score/queries.js";
-import type { Score } from "../../index.js";
-import { selectionToRange } from "../../domain/selection/selection.js";
+import { findTrack } from "../../domain/score/queries";
+import type { Score } from "../../index";
+import { selectionToRange } from "../../domain/selection/selection";
 import type {
   ScoreRange,
   ScoreSelection,
-} from "../../domain/selection/types.js";
-import { extractFragment } from "../../domain/score/fragment.js";
-import { replaceRegionCommand } from "../../domain/commands/region-commands.js";
-import type { ScoreCommand } from "../../domain/commands/types.js";
-import { describeTrackForGeneration } from "../../domain/instruments/track-instrument.js";
+} from "../../domain/selection/types";
+import { extractFragment } from "../../domain/score/fragment";
+import { replaceRegionCommand } from "../../domain/commands/region-commands";
+import type { ScoreCommand } from "../../domain/commands/types";
+import { describeTrackForGeneration } from "../../domain/instruments/track-instrument";
 import type {
   RegenerateRegionRequest,
   RegenerationCandidate,
   RegenerationConstraints,
-} from "../../index.js";
+} from "../../index";
 
 /**
  * One, always. Generation is a background job now: nobody is present to pick

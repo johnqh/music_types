@@ -21,8 +21,8 @@
  * silently inert the moment a passage was marked, which is worse than either
  * behaviour on its own.
  */
-import type { Dynamic, MusicalEvent, NoteEvent } from "../../index.js";
-import { isNoteEvent } from "../../index.js";
+import type { Dynamic, MusicalEvent, NoteEvent } from "../../index";
+import { isNoteEvent } from "../../index";
 
 /**
  * The velocity each marking sounds at, for a note carrying no deviation.

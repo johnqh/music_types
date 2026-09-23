@@ -21,11 +21,11 @@ import type {
   Pitch,
   Score,
   TimeSignature,
-} from "../../index.js";
-import { DURATIONS, beatDurationTicks } from "../time/ticks.js";
-import { barNumberAt, indexOfBarNumber } from "../score/bar-numbers.js";
-import { shiftDiatonic } from "../pitch/transpose.js";
-import { clampVolume, parseNumericDraft } from "./field-values.js";
+} from "../../index";
+import { DURATIONS, beatDurationTicks } from "../time/ticks";
+import { barNumberAt, indexOfBarNumber } from "../score/bar-numbers";
+import { shiftDiatonic } from "../pitch/transpose";
+import { clampVolume, parseNumericDraft } from "./field-values";
 
 // ---- durations -------------------------------------------------------------
 

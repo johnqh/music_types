@@ -1,5 +1,5 @@
-import type { TempoEvent } from "../../index.js";
-import { DEFAULT_BPM } from "../score/defaults.js";
+import type { TempoEvent } from "../../index";
+import { DEFAULT_BPM } from "../score/defaults";
 
 /** Seconds elapsed for a given tick delta at a constant bpm. */
 function deltaTicksToSeconds(

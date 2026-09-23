@@ -12,7 +12,7 @@
  */
 
 /** Semitones to ADD to sounding pitch to get written pitch. */
-import { gmSpec } from "./gm-catalogue.js";
+import { gmSpec } from "./gm-catalogue";
 
 /**
  * Semitones to add to `program`'s sounding pitch to get its written pitch.

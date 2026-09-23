@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { createEmptyScore } from "./factory.js";
-import { addNoteCommand } from "../commands/note-commands.js";
+import { createEmptyScore } from "./factory";
+import { addNoteCommand } from "../commands/note-commands";
 import {
   applyRehearsalMarks,
   markLabel,
   rehearsalMarks,
   withRehearsalMarks,
-} from "./rehearsal-marks.js";
-import type { KeySignature, Pitch, Score, TimeSignature } from "../../index.js";
+} from "./rehearsal-marks";
+import type { KeySignature, Pitch, Score, TimeSignature } from "../../index";
 
 const pitch = (step: string): Pitch =>
   ({ step, accidental: 0, octave: 4 }) as unknown as Pitch;

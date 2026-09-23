@@ -22,8 +22,8 @@
  * guitars is "the" lead, because the roster order already carries that intent
  * (a preset lists its lead first) and a stable sort preserves it.
  */
-import { gmFamilyOf } from "./gm.js";
-import type { GmFamily } from "./gm.js";
+import { gmFamilyOf } from "./gm";
+import type { GmFamily } from "./gm";
 
 /** What a part does in an arrangement, which is what its writing order turns on. */
 export type ArrangementRole = "lead" | "harmony" | "bass" | "drums";

@@ -23,9 +23,9 @@
  *
  * Note entry inverts this, in the reverse order — see `soundingPitchForDrawn`.
  */
-import type { Score } from "../../index.js";
-import { ottavaScore } from "./ottava.js";
-import { writtenScore } from "./written-pitch.js";
+import type { Score } from "../../index";
+import { ottavaScore } from "./ottava";
+import { writtenScore } from "./written-pitch";
 
 /** Which pitch the reader is being shown. Mirrors `ui-slice.pitchDisplay`. */
 export type PitchDisplay = "concert" | "written";

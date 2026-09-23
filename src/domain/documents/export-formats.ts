@@ -8,8 +8,8 @@
  * (`planExport`) is music_lib's; naming the file, rendering audio and the write
  * itself belong to the packages that own each.
  */
-import type { Score } from "../../model/score.js";
-import { DOCUMENT_EXTENSION } from "./project-file.js";
+import type { Score } from "../../model/score";
+import { DOCUMENT_EXTENSION } from "./project-file";
 
 /**
  * How a format reaches disk.

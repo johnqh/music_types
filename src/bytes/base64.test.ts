@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { base64ToBytes, bytesToBase64 } from "./base64.js";
+import { base64ToBytes, bytesToBase64 } from "./base64";
 
 const bytes = (...values: number[]) => Uint8Array.from(values);
 

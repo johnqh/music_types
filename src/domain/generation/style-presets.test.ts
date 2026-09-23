@@ -3,7 +3,7 @@ import {
   GENERATE_SCORE_STYLE_OPTIONS,
   GENERATE_SCORE_STYLE_PRESETS,
   styleTempoRange,
-} from "./style-presets.js";
+} from "./style-presets";
 
 describe("generation style presets", () => {
   it("has a preset for every offered style", () => {

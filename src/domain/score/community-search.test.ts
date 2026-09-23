@@ -4,7 +4,7 @@ import {
   communityListState,
   filterCommunity,
   publishedSnapshotUrl,
-} from "./community-search.js";
+} from "./community-search";
 
 const items = [
   { publicName: "Nocturne in E flat", publisherName: "Ada" },

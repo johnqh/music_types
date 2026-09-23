@@ -155,7 +155,7 @@ function parse(files: string[]): Map<string, Module> {
           if (ts.isImportSpecifier(element)) locals.push(element.name.text);
         }
       }
-      // `export * from './x.js'` re-exports values.
+      // `export * from './x'` re-exports values.
       if (!isImport && !named) hasValueSpecifier = true;
 
       if (!hasValueSpecifier) continue;

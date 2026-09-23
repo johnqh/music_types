@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { GenerateScoreRequest, RegenerateRegionRequest } from "./generation.js";
+import type { GenerateScoreRequest, RegenerateRegionRequest } from "./generation";
 import {
   GENERATION_VARIANTS,
   GENERATION_VARIANT_LABELS,
   withGenerationVariant,
-} from "./generation.js";
+} from "./generation";
 
 /**
  * The generation backend rides on the request, and only when it is not the

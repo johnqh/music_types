@@ -10,9 +10,9 @@
  * transport is playing like every other edit. Rewriting notes out from under
  * a running engine is exactly what that lock exists to prevent.
  */
-import { transformCommand } from "./snapshot.js";
-import type { ScoreCommand } from "./types.js";
-import { repairScore } from "../validation/repair.js";
+import { transformCommand } from "./snapshot";
+import type { ScoreCommand } from "./types";
+import { repairScore } from "../validation/repair";
 
 /**
  * Repairs every validation issue that has an unambiguous fix.

@@ -5,10 +5,10 @@
  * means a deterministic "already close enough, leave it" tolerance, not
  * random jitter). Exposed for both MIDI import cleanup and manual editing.
  */
-import { createId } from "../score/ids.js";
-import type { MusicalEvent } from "../../index.js";
-import { isNoteEvent } from "../../index.js";
-import type { QuantizeOptions } from "./options.js";
+import { createId } from "../score/ids";
+import type { MusicalEvent } from "../../index";
+import { isNoteEvent } from "../../index";
+import type { QuantizeOptions } from "./options";
 
 /** `tripletGrid` subdivides `grid` into thirds-of-two (2/3 of `grid`); otherwise the grid unit is used as-is. */
 function effectiveGridTicks(opts: QuantizeOptions): number {

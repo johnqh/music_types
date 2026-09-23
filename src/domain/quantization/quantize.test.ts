@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { quantizeEvents } from "./quantize.js";
-import type { QuantizeOptions } from "./options.js";
-import { isNoteEvent, isRestEvent } from "../../index.js";
-import type { MusicalEvent, NoteEvent, RestEvent } from "../../index.js";
+import { quantizeEvents } from "./quantize";
+import type { QuantizeOptions } from "./options";
+import { isNoteEvent, isRestEvent } from "../../index";
+import type { MusicalEvent, NoteEvent, RestEvent } from "../../index";
 
 const TRACK = "t1";
 const VOICE = "v1";

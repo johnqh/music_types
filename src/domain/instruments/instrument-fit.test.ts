@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { shiftToFitRange } from "./instrument-fit.js";
+import { shiftToFitRange } from "./instrument-fit";
 
 const RANGE = { min: 60, max: 72 };
 

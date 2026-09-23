@@ -14,8 +14,8 @@
  * comes back whole.
  */
 import { describe, expect, it } from "vitest";
-import { measureSchema, noteEventSchema, restEventSchema } from "./index.js";
-import type { Measure, NoteEvent, RestEvent } from "./index.js";
+import { measureSchema, noteEventSchema, restEventSchema } from "./index";
+import type { Measure, NoteEvent, RestEvent } from "./index";
 
 /** A measure carrying every field a `Measure` can have. */
 const FULL_MEASURE: Measure = {

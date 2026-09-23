@@ -7,9 +7,9 @@ import {
   findMeasure,
   findTrack,
   scoreEndTick,
-} from "../score/queries.js";
-import type { Score, Track } from "../../index.js";
-import type { ScoreRange, ScoreSelection } from "./types.js";
+} from "../score/queries";
+import type { Score, Track } from "../../index";
+import type { ScoreRange, ScoreSelection } from "./types";
 
 /**
  * The smallest tick range, aligned to full-measure boundaries on every

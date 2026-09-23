@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { GM_CATALOGUE } from "./gm-catalogue.js";
-import { gmInstrumentRows } from "./instrument-reference.js";
+import { GM_CATALOGUE } from "./gm-catalogue";
+import { gmInstrumentRows } from "./instrument-reference";
 
 describe("gmInstrumentRows", () => {
   it("lists the whole catalogue for an empty query", () => {

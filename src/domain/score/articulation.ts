@@ -29,7 +29,7 @@
  * rests, which is the other way to make staccato audible and which would make
  * the marking impossible to remove.
  */
-import type { Articulation } from "../../index.js";
+import type { Articulation } from "../../index";
 
 /** How a marking is performed: a proportion of the written length, and a weight. */
 export type ArticulationSound = {

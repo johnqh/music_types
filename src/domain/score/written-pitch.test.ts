@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { createEmptyScore } from "./factory.js";
-import { addNoteCommand } from "../commands/note-commands.js";
-import { allNotes } from "./queries.js";
-import { soundingPitch, writtenScore } from "./written-pitch.js";
-import { transposeKeySignature, transposePitch } from "../pitch/transpose.js";
-import { pitchToMidi } from "../pitch/pitch.js";
-import type { KeySignature, Pitch, Score } from "../../index.js";
+import { createEmptyScore } from "./factory";
+import { addNoteCommand } from "../commands/note-commands";
+import { allNotes } from "./queries";
+import { soundingPitch, writtenScore } from "./written-pitch";
+import { transposeKeySignature, transposePitch } from "../pitch/transpose";
+import { pitchToMidi } from "../pitch/pitch";
+import type { KeySignature, Pitch, Score } from "../../index";
 
 const pitch = (step: string, octave = 4): Pitch =>
   ({ step, accidental: 0, octave }) as unknown as Pitch;

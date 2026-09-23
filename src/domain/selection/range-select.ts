@@ -2,8 +2,8 @@
  * Caret-to-click range selection (the cmd-click gesture). Pure over `Score`
  * — no store, no DOM — so the tick math is unit-testable without rendering.
  */
-import { isNoteEvent } from "../../index.js";
-import type { Score, UUID } from "../../index.js";
+import { isNoteEvent } from "../../index";
+import type { Score, UUID } from "../../index";
 
 /**
  * Every note whose `startTick` falls in `[min(fromTick,toTick),

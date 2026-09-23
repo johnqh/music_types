@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ORIENTATION_OPTIONS, PAPER_OPTIONS, PAPER_SIZES } from "./print.js";
+import { ORIENTATION_OPTIONS, PAPER_OPTIONS, PAPER_SIZES } from "./print";
 
 describe("paper and orientation options", () => {
   it("lists every paper once, with a label key and the CSS size keyword", () => {

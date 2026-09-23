@@ -5,10 +5,10 @@
  * its sentences — music_lib's `createLibraryCopy(t)` builds every table from a
  * translate function — and these are the shapes of those tables.
  */
-import type { SelectionSummaryCopy } from "../selection/selection.js";
-import type { MusicXmlWarnings } from "../../formats/musicxml.js";
-import type { TemplateCopy } from "../documents/templates.js";
-import type { EditingCopy } from "./editing-copy.js";
+import type { SelectionSummaryCopy } from "../selection/selection";
+import type { MusicXmlWarnings } from "../../formats/musicxml";
+import type { TemplateCopy } from "../documents/templates";
+import type { EditingCopy } from "./editing-copy";
 
 /**
  * The messages music_lib raises from long-lived internals — an autosave, the

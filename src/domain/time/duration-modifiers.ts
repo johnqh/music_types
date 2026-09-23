@@ -9,7 +9,7 @@
  *
  * Pure, so the composition rules are testable without a toolbar.
  */
-import type { DurationName } from "../../index.js";
+import type { DurationName } from "../../index";
 
 /** The six plain note values, longest first — the toolbar's row. */
 export const BASE_DURATIONS = [

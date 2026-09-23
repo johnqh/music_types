@@ -30,12 +30,12 @@
 // the model hard to find in it. They now live in `src/model/` and are
 // re-exported, so the package presents exactly the same surface.
 // ---------------------------------------------------------------------------
-export * from "./model/score.js";
-export * from "./model/schemas.js";
-export * from "./model/generation.js";
-export * from "./model/api.js";
-export * from "./model/position.js";
-export * from "./model/selection-source.js";
+export * from "./model/score";
+export * from "./model/schemas";
+export * from "./model/generation";
+export * from "./model/api";
+export * from "./model/position";
+export * from "./model/selection-source";
 
 // ---------------------------------------------------------------------------
 // 10. Score file-format models (codecs live in @sudobility/music_codecs)
@@ -43,126 +43,126 @@ export * from "./model/selection-source.js";
 // ---------------------------------------------------------------------------
 // Playhead — the one stateful service here; see position/music-position.ts
 // ---------------------------------------------------------------------------
-export * from "./position/index.js";
-export * from "./bytes/index.js";
+export * from "./position/index";
+export * from "./bytes/index";
 
-export * from "./formats/index.js";
+export * from "./formats/index";
 
 // ---------------------------------------------------------------------------
 // 11. Platform interfaces (implementations live in @sudobility/music_io)
 // ---------------------------------------------------------------------------
-export * from "./platform/index.js";
+export * from "./platform/index";
 
 // ---------------------------------------------------------------------------
 // 10. Pure domain primitives (shared by frontend and backend)
 // ---------------------------------------------------------------------------
 
-export * from "./domain/pitch/pitch.js";
-export * from "./domain/pitch/transpose.js";
-export * from "./domain/quantization/options.js";
-export * from "./domain/quantization/quantize.js";
-export * from "./domain/score/defaults.js";
-export * from "./domain/score/transport-state.js";
-export * from "./domain/score/factory.js";
-export * from "./domain/score/fragment.js";
-export * from "./domain/score/ids.js";
-export * from "./domain/score/queries.js";
-export * from "./domain/score/ties.js";
-export * from "./domain/selection/types.js";
-export * from "./domain/time/durations.js";
-export * from "./domain/time/fraction.js";
-export * from "./domain/time/tempo-map.js";
-export * from "./domain/time/ticks.js";
-export * from "./domain/voicing/allocate.js";
-export * from "./domain/validation/issues.js";
-export * from "./domain/validation/validator.js";
-export * from "./domain/validation/limits.js";
-export * from "./domain/validation/repair.js";
+export * from "./domain/pitch/pitch";
+export * from "./domain/pitch/transpose";
+export * from "./domain/quantization/options";
+export * from "./domain/quantization/quantize";
+export * from "./domain/score/defaults";
+export * from "./domain/score/transport-state";
+export * from "./domain/score/factory";
+export * from "./domain/score/fragment";
+export * from "./domain/score/ids";
+export * from "./domain/score/queries";
+export * from "./domain/score/ties";
+export * from "./domain/selection/types";
+export * from "./domain/time/durations";
+export * from "./domain/time/fraction";
+export * from "./domain/time/tempo-map";
+export * from "./domain/time/ticks";
+export * from "./domain/voicing/allocate";
+export * from "./domain/validation/issues";
+export * from "./domain/validation/validator";
+export * from "./domain/validation/limits";
+export * from "./domain/validation/repair";
 
 // ---------------------------------------------------------------------------
 // 11. Score commands (pure Score -> Score transformations, shared by both sides)
 // ---------------------------------------------------------------------------
 
-export * from "./domain/commands/types.js";
-export * from "./domain/commands/reflow.js";
-export * from "./domain/commands/snapshot.js";
-export * from "./domain/commands/structure-commands.js";
-export * from "./domain/commands/clipboard-commands.js";
-export * from "./domain/commands/track-commands.js";
-export * from "./domain/commands/region-commands.js";
-export * from "./domain/commands/note-commands.js";
-export * from "./domain/commands/note-marks.js";
-export * from "./domain/commands/repair-commands.js";
-export * from "./domain/commands/edit-commands.js";
-export * from "./domain/commands/relocate-commands.js";
-export * from "./domain/commands/ripple-commands.js";
-export * from "./domain/instruments/gm.js";
-export * from "./domain/instruments/gm-catalogue.js";
-export * from "./domain/instruments/arrangement-order.js";
-export * from "./domain/instruments/midi-protocol.js";
-export * from "./domain/instruments/gm-kit.js";
-export * from "./domain/instruments/gm-range.js";
-export * from "./domain/instruments/range-fit.js";
-export * from "./domain/instruments/gm-polyphony.js";
-export * from "./domain/instruments/gm-transposition.js";
-export * from "./domain/instruments/gm-percussion.js";
-export * from "./domain/generation/style-presets.js";
-export * from "./domain/generation/option-order.js";
-export * from "./domain/documents/project-file.js";
-export * from "./domain/generation/score-presets.js";
-export * from "./domain/selection/selection.js";
-export * from "./services/regeneration/controller.js";
+export * from "./domain/commands/types";
+export * from "./domain/commands/reflow";
+export * from "./domain/commands/snapshot";
+export * from "./domain/commands/structure-commands";
+export * from "./domain/commands/clipboard-commands";
+export * from "./domain/commands/track-commands";
+export * from "./domain/commands/region-commands";
+export * from "./domain/commands/note-commands";
+export * from "./domain/commands/note-marks";
+export * from "./domain/commands/repair-commands";
+export * from "./domain/commands/edit-commands";
+export * from "./domain/commands/relocate-commands";
+export * from "./domain/commands/ripple-commands";
+export * from "./domain/instruments/gm";
+export * from "./domain/instruments/gm-catalogue";
+export * from "./domain/instruments/arrangement-order";
+export * from "./domain/instruments/midi-protocol";
+export * from "./domain/instruments/gm-kit";
+export * from "./domain/instruments/gm-range";
+export * from "./domain/instruments/range-fit";
+export * from "./domain/instruments/gm-polyphony";
+export * from "./domain/instruments/gm-transposition";
+export * from "./domain/instruments/gm-percussion";
+export * from "./domain/generation/style-presets";
+export * from "./domain/generation/option-order";
+export * from "./domain/documents/project-file";
+export * from "./domain/generation/score-presets";
+export * from "./domain/selection/selection";
+export * from "./services/regeneration/controller";
 
 // Absorbed from music_lib: pure, synchronous, dependency-free model code
 // that both the app and the server need.
-export * from "./domain/commands/history.js";
-export * from "./domain/generation/replacement-region.js";
-export * from "./domain/instruments/gm-icon.js";
-export * from "./domain/instruments/icon-art.js";
-export * from "./domain/instruments/instrument-fit.js";
-export * from "./domain/instruments/instrument-options.js";
-export * from "./domain/instruments/track-instrument.js";
-export * from "./domain/notation/chord-symbol.js";
-export * from "./domain/notation/lyric-syllables.js";
-export * from "./domain/notation/music-vocabulary.js";
-export * from "./domain/notation/picker-options.js";
-export * from "./domain/notation/field-values.js";
-export * from "./domain/notation/toolbar-icons.js";
-export * from "./domain/score/transport-readouts.js";
-export * from "./domain/instruments/instrument-menus.js";
-export * from "./domain/instruments/instrument-reference.js";
-export * from "./domain/score/articulation.js";
-export * from "./domain/score/bar-numbers.js";
-export * from "./domain/score/collapse-rests.js";
-export * from "./domain/score/common-value.js";
-export * from "./domain/score/community-search.js";
-export * from "./domain/score/cue-notes.js";
-export * from "./domain/score/dynamics.js";
-export * from "./domain/score/effective-clef.js";
-export * from "./domain/score/extract-part.js";
-export * from "./domain/score/fermata-tempo.js";
-export * from "./domain/score/flatten.js";
-export * from "./domain/score/ottava.js";
-export * from "./domain/score/display-score.js";
-export * from "./domain/score/performance-timeline.js";
-export * from "./domain/score/rehearsal-marks.js";
-export * from "./domain/score/repeat-order.js";
-export * from "./domain/score/snapshot-tree.js";
-export * from "./domain/score/written-pitch.js";
-export * from "./domain/selection/range-select.js";
-export * from "./domain/selection/selection-editing.js";
-export * from "./domain/selection/clipboard-prompts.js";
-export * from "./domain/notation/display-lens.js";
-export * from "./domain/time/duration-modifiers.js";
-export * from "./domain/time/duration-selection.js";
-export * from "./domain/time/tap-to-note.js";
-export * from "./domain/time/beams.js";
-export * from "./domain/time/tuplets.js";
+export * from "./domain/commands/history";
+export * from "./domain/generation/replacement-region";
+export * from "./domain/instruments/gm-icon";
+export * from "./domain/instruments/icon-art";
+export * from "./domain/instruments/instrument-fit";
+export * from "./domain/instruments/instrument-options";
+export * from "./domain/instruments/track-instrument";
+export * from "./domain/notation/chord-symbol";
+export * from "./domain/notation/lyric-syllables";
+export * from "./domain/notation/music-vocabulary";
+export * from "./domain/notation/picker-options";
+export * from "./domain/notation/field-values";
+export * from "./domain/notation/toolbar-icons";
+export * from "./domain/score/transport-readouts";
+export * from "./domain/instruments/instrument-menus";
+export * from "./domain/instruments/instrument-reference";
+export * from "./domain/score/articulation";
+export * from "./domain/score/bar-numbers";
+export * from "./domain/score/collapse-rests";
+export * from "./domain/score/common-value";
+export * from "./domain/score/community-search";
+export * from "./domain/score/cue-notes";
+export * from "./domain/score/dynamics";
+export * from "./domain/score/effective-clef";
+export * from "./domain/score/extract-part";
+export * from "./domain/score/fermata-tempo";
+export * from "./domain/score/flatten";
+export * from "./domain/score/ottava";
+export * from "./domain/score/display-score";
+export * from "./domain/score/performance-timeline";
+export * from "./domain/score/rehearsal-marks";
+export * from "./domain/score/repeat-order";
+export * from "./domain/score/snapshot-tree";
+export * from "./domain/score/written-pitch";
+export * from "./domain/selection/range-select";
+export * from "./domain/selection/selection-editing";
+export * from "./domain/selection/clipboard-prompts";
+export * from "./domain/notation/display-lens";
+export * from "./domain/time/duration-modifiers";
+export * from "./domain/time/duration-selection";
+export * from "./domain/time/tap-to-note";
+export * from "./domain/time/beams";
+export * from "./domain/time/tuplets";
 /**
  * The notation glyphs as data, shared by the web and native toolbars.
  * Generated; see the module header.
  */
-export * from "./domain/notation/notation-icon-art.js";
+export * from "./domain/notation/notation-icon-art";
 
 // ---------------------------------------------------------------------------
 // Frontend vocabulary: the closed lists, option tables and shapes both apps
@@ -170,26 +170,26 @@ export * from "./domain/notation/notation-icon-art.js";
 // live in music_editing, music_drawing and music_lib, which import them from
 // here rather than declaring a second copy.
 // ---------------------------------------------------------------------------
-export * from "./domain/instruments/out-of-range.js";
-export * from "./domain/documents/document-state.js";
-export * from "./domain/documents/export-formats.js";
-export * from "./domain/documents/formats.js";
-export * from "./domain/documents/publish.js";
-export * from "./domain/documents/templates.js";
-export * from "./domain/generation/request-drafts.js";
-export * from "./domain/generation/replace-drafts.js";
-export * from "./domain/score/transport-settings.js";
-export * from "./domain/editor/app-errors.js";
-export * from "./domain/editor/context-menu.js";
-export * from "./domain/editor/device-prefs.js";
-export * from "./domain/editor/docs.js";
-export * from "./domain/editor/edit-mode.js";
-export * from "./domain/editor/editing-copy.js";
-export * from "./domain/editor/inspector.js";
-export * from "./domain/editor/labelled-option.js";
-export * from "./domain/editor/library-copy.js";
-export * from "./domain/editor/print.js";
-export * from "./domain/editor/score-input.js";
-export * from "./domain/editor/toast.js";
-export * from "./domain/editor/toolbar.js";
-export * from "./domain/editor/view-settings.js";
+export * from "./domain/instruments/out-of-range";
+export * from "./domain/documents/document-state";
+export * from "./domain/documents/export-formats";
+export * from "./domain/documents/formats";
+export * from "./domain/documents/publish";
+export * from "./domain/documents/templates";
+export * from "./domain/generation/request-drafts";
+export * from "./domain/generation/replace-drafts";
+export * from "./domain/score/transport-settings";
+export * from "./domain/editor/app-errors";
+export * from "./domain/editor/context-menu";
+export * from "./domain/editor/device-prefs";
+export * from "./domain/editor/docs";
+export * from "./domain/editor/edit-mode";
+export * from "./domain/editor/editing-copy";
+export * from "./domain/editor/inspector";
+export * from "./domain/editor/labelled-option";
+export * from "./domain/editor/library-copy";
+export * from "./domain/editor/print";
+export * from "./domain/editor/score-input";
+export * from "./domain/editor/toast";
+export * from "./domain/editor/toolbar";
+export * from "./domain/editor/view-settings";

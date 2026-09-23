@@ -6,9 +6,9 @@
  * from a form (`defaultReplaceSubmission`, `buildReplaceSubmission`) is
  * music_lib's.
  */
-import type { ScoreRange } from "../../model/score.js";
-import type { RegenerateRegionRequest } from "../../model/generation.js";
-import type { GenerateScoreComplexity } from "./request-drafts.js";
+import type { ScoreRange } from "../../model/score";
+import type { RegenerateRegionRequest } from "../../model/generation";
+import type { GenerateScoreComplexity } from "./request-drafts";
 
 /** What the Replace dialog collects. The region it applies to is derived, not asked for. */
 export type ReplaceSubmission = {

@@ -5,8 +5,8 @@
  * store that holds them — are music_lib's. The closed lists and the shape are
  * here because both apps draw a settings screen from them.
  */
-import type { PitchDisplay } from "../score/display-score.js";
-import type { PickerOption } from "../notation/picker-options.js";
+import type { PitchDisplay } from "../score/display-score";
+import type { PickerOption } from "../notation/picker-options";
 
 /**
  * The colour scheme a reader asked for.

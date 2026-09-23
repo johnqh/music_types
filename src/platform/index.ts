@@ -1,12 +1,12 @@
-export * from "./audio.js";
+export * from "./audio";
 /**
  * Platform interfaces. Type-only contracts whose implementations live in
  * `@sudobility/music_io`, which serves web and React Native from one import
  * specifier via a `react-native` export condition.
  */
-export * from "./playback.js";
-export * from "./xml.js";
-export * from "./file.js";
-export * from "./midi-input.js";
-export * from "./score-files.js";
-export * from "./storage.js";
+export * from "./playback";
+export * from "./xml";
+export * from "./file";
+export * from "./midi-input";
+export * from "./score-files";
+export * from "./storage";

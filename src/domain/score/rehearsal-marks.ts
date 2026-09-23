@@ -8,8 +8,8 @@
  *
  * Print-only: a stored score carries none, and the editor never shows them.
  */
-import { isSilentMeasure } from "./collapse-rests.js";
-import type { Measure, Score } from "../../index.js";
+import { isSilentMeasure } from "./collapse-rests";
+import type { Measure, Score } from "../../index";
 
 /** A mark every this many bars through a stretch with no other structure. */
 const REGULAR_INTERVAL = 16;

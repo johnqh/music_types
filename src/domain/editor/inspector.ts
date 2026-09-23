@@ -5,8 +5,8 @@
  * The rules over these — which tab a selection opens, what a typed tempo
  * commits — are music_editing's. Keys, never words.
  */
-import type { Clef, Track } from "../../model/score.js";
-import type { INHERIT_CLEF } from "../notation/picker-options.js";
+import type { Clef, Track } from "../../model/score";
+import type { INHERIT_CLEF } from "../notation/picker-options";
 
 /**
  * The inspector's tabs, in the web order.

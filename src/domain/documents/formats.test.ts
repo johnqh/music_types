@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { DOCUMENT_EXTENSION, DOCUMENT_EXTENSIONS } from "./project-file.js";
-import { EXPORT_FORMATS, IMPORT_FORMATS } from "./formats.js";
-import { WRITABLE_EXPORT_FORMATS } from "./export-formats.js";
+import { DOCUMENT_EXTENSION, DOCUMENT_EXTENSIONS } from "./project-file";
+import { EXPORT_FORMATS, IMPORT_FORMATS } from "./formats";
+import { WRITABLE_EXPORT_FORMATS } from "./export-formats";
 
 describe("WRITABLE_EXPORT_FORMATS", () => {
   it("is what the docs export table lists, plus printing", () => {

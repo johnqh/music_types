@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createEmptyScore } from "../score/factory.js";
-import { snapshotCommand, transformCommand } from "./snapshot.js";
+import { createEmptyScore } from "../score/factory";
+import { snapshotCommand, transformCommand } from "./snapshot";
 
 describe("snapshotCommand", () => {
   it("applies the mutation on execute and produces a deep-equal score on undo", () => {

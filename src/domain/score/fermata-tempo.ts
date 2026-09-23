@@ -24,10 +24,10 @@
  * identity**, so nothing about an unmarked score's playback is even
  * recomputed.
  */
-import type { NoteEvent, Score, TempoEvent } from "../../index.js";
-import { isNoteEvent } from "../../index.js";
-import { createId } from "./ids.js";
-import { TempoMap } from "../time/tempo-map.js";
+import type { NoteEvent, Score, TempoEvent } from "../../index";
+import { isNoteEvent } from "../../index";
+import { createId } from "./ids";
+import { TempoMap } from "../time/tempo-map";
 
 /**
  * How much longer a held note lasts than its written value.

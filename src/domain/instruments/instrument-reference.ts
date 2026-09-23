@@ -8,12 +8,12 @@
  * the same table, and a second transcription of the formatting would be a
  * second place for a range to be spelled differently.
  */
-import type { Pitch } from "../../index.js";
-import { midiToPitch } from "../pitch/pitch.js";
-import { GM_FAMILY_LABELS } from "./gm.js";
-import type { GmFamily } from "./gm.js";
-import { GM_CATALOGUE, UNLIMITED_POLYPHONY } from "./gm-catalogue.js";
-import type { InstrumentBasis } from "./gm-catalogue.js";
+import type { Pitch } from "../../index";
+import { midiToPitch } from "../pitch/pitch";
+import { GM_FAMILY_LABELS } from "./gm";
+import type { GmFamily } from "./gm";
+import { GM_CATALOGUE, UNLIMITED_POLYPHONY } from "./gm-catalogue";
+import type { InstrumentBasis } from "./gm-catalogue";
 
 export type GmInstrumentRow = {
   program: number;

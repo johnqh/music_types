@@ -4,8 +4,8 @@
  * different places.
  */
 import { describe, expect, it } from "vitest";
-import type { Measure } from "../../index.js";
-import { barNumberAt, hasPickup, indexOfBarNumber } from "./bar-numbers.js";
+import type { Measure } from "../../index";
+import { barNumberAt, hasPickup, indexOfBarNumber } from "./bar-numbers";
 
 function bars(pickupFirst: boolean, count = 4): Measure[] {
   return Array.from({ length: count }, (_, index) => ({

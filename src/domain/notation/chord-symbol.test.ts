@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseChordSymbol } from "./chord-symbol.js";
+import { parseChordSymbol } from "./chord-symbol";
 
 describe("parseChordSymbol", () => {
   it("reads a bare triad", () => {

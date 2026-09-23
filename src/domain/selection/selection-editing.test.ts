@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { chordSelection } from "./selection-editing.js";
-import type { NoteEvent } from "../../index.js";
+import { chordSelection } from "./selection-editing";
+import type { NoteEvent } from "../../index";
 
 const note = (
   id: string,

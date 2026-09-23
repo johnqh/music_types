@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
-import type { Dynamic, NoteEvent } from "../../index.js";
-import { twinkleScore, twoTrackScore } from "../../test/fixtures.js";
-import { flattenScoreNotes } from "./flatten.js";
+import type { Dynamic, NoteEvent } from "../../index";
+import { twinkleScore, twoTrackScore } from "../../test/fixtures";
+import { flattenScoreNotes } from "./flatten";
 import {
   DEFAULT_VELOCITY,
   dynamicsInForce,
   effectiveVelocity,
   velocityForDynamic,
-} from "./dynamics.js";
+} from "./dynamics";
 
 function note(overrides: Partial<NoteEvent> = {}): NoteEvent {
   return {

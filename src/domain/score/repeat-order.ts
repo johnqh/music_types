@@ -10,7 +10,7 @@
  * and so the *plan* is the only thing that ever sees expanded time — the score
  * itself stays the canonical, written thing.
  */
-import type { Measure, Score } from "../../index.js";
+import type { Measure, Score } from "../../index";
 
 /** One bar as played, and which pass through the repeat it belongs to. */
 export type PlayedMeasure = {

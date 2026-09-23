@@ -4,7 +4,7 @@
  * Pure — no DOM, no store, no audio — so the timing maths is unit-testable, in
  * the same shape as the editor's other geometry modules.
  */
-import type { DurationName } from "../../index.js";
+import type { DurationName } from "../../index";
 
 /**
  * The durations a tap can land on, longest first, with their length as a

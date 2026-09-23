@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { Measure, Score } from "../../index.js";
-import { repeatPlayOrder } from "./repeat-order.js";
+import type { Measure, Score } from "../../index";
+import { repeatPlayOrder } from "./repeat-order";
 
 /** A score of `count` bars, with per-bar repeat markings applied by index. */
 function scoreWith(

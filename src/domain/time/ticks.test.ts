@@ -6,7 +6,7 @@ import {
   durationNameForTicks,
   measureDurationTicks,
   ticksFor,
-} from "./ticks.js";
+} from "./ticks";
 
 const PPQ = 480;
 

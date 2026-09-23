@@ -4,14 +4,14 @@ import {
   ARTICULATIONS,
   DYNAMICS,
   ORNAMENTS,
-} from "../../index.js";
-import { BARLINE_STYLES, CLEFS, REPEAT_JUMPS } from "../../index.js";
+} from "../../index";
+import { BARLINE_STYLES, CLEFS, REPEAT_JUMPS } from "../../index";
 import {
   THEME_MODES,
   THEME_MODE_LABEL_KEY,
   THEME_MODE_OPTIONS,
-} from "../editor/device-prefs.js";
-import { DURATIONS } from "../time/ticks.js";
+} from "../editor/device-prefs";
+import { DURATIONS } from "../time/ticks";
 import {
   BARLINE_OPTIONS,
   CLEF_LABEL_KEY,
@@ -28,7 +28,7 @@ import {
   MIDI_GRID_OPTIONS,
   NO_MARK,
   ORNAMENT_OPTIONS,
-} from "./picker-options.js";
+} from "./picker-options";
 
 /**
  * The point of these lists is that they are *derived*. A hand-written picker

@@ -18,15 +18,15 @@
  * fixed identifiers rather than translatable strings — "Acoustic Grand Piano"
  * is the program's name in every locale.
  */
-import type { Clef } from "../../index.js";
+import type { Clef } from "../../index";
 import {
   GM_FAMILIES,
   GM_FAMILY_LABELS,
   gmInstrument,
   gmInstrumentsByFamily,
-} from "./gm.js";
-import { GM_KITS, gmKit, gmKitAt } from "./gm-kit.js";
-import { VOICE_PROGRAMS, isVocalProgram } from "./arrangement-order.js";
+} from "./gm";
+import { GM_KITS, gmKit, gmKitAt } from "./gm-kit";
+import { VOICE_PROGRAMS, isVocalProgram } from "./arrangement-order";
 
 /** What a caller needs to write an instrument onto a track, or request one. */
 export type InstrumentChoice = {

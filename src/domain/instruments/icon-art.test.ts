@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseIconPath } from "./icon-art.js";
+import { parseIconPath } from "./icon-art";
 
 describe("parseIconPath", () => {
   it("parses each supported command", () => {

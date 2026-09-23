@@ -7,8 +7,8 @@
  * option lists are here because both apps draw these forms and music_client
  * submits what they produce without depending on music_lib.
  */
-import type { KeySignature, Score, TimeSignature } from "../../model/score.js";
-import type { GenerateScoreRequest } from "../../model/generation.js";
+import type { KeySignature, Score, TimeSignature } from "../../model/score";
+import type { GenerateScoreRequest } from "../../model/generation";
 
 /**
  * The shape `POST /jobs` wants for a `generate-track` job.

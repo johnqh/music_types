@@ -2,9 +2,9 @@
  * The beam derivation — the one both the renderer and the exporter read.
  */
 import { describe, expect, it } from "vitest";
-import { beamBeatTicks, beamGroups } from "./beams.js";
-import type { MusicalEvent, NoteEvent, TimeSignature } from "../../index.js";
-import { ticksFor } from "./ticks.js";
+import { beamBeatTicks, beamGroups } from "./beams";
+import type { MusicalEvent, NoteEvent, TimeSignature } from "../../index";
+import { ticksFor } from "./ticks";
 
 const PPQ = 480;
 const FOUR_FOUR: TimeSignature = { numerator: 4, denominator: 4 };

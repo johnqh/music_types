@@ -1,4 +1,4 @@
-import type { UUID } from "../../index.js";
+import type { UUID } from "../../index";
 
 const HEX_CHARS = "0123456789abcdef";
 

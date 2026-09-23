@@ -17,8 +17,8 @@
  * opinions about how a bar is beamed, and the exported file would drift from
  * the drawn page.
  */
-import type { MusicalEvent, NoteEvent, TimeSignature } from "../../index.js";
-import { isNoteEvent } from "../../index.js";
+import type { MusicalEvent, NoteEvent, TimeSignature } from "../../index";
+import { isNoteEvent } from "../../index";
 
 /** Indices into the events array that are beamed as one group. */
 export type BeamGroup = {

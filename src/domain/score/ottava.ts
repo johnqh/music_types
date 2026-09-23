@@ -22,8 +22,8 @@
  * from where it was placed while drawing exactly where it was clicked, which
  * is why it went unnoticed.
  */
-import type { NoteEvent, Ottava, Score } from "../../index.js";
-import { isNoteEvent } from "../../index.js";
+import type { NoteEvent, Ottava, Score } from "../../index";
+import { isNoteEvent } from "../../index";
 
 /** How many octaves, and which way, a bracket displaces what is written. */
 const OTTAVA_OCTAVES: Record<Ottava, number> = {

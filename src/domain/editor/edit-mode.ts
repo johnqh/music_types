@@ -1,7 +1,7 @@
 /**
  * What happens to music already at the caret when a new note is written.
  */
-import type { NotationIconName } from "../notation/notation-icon-art.js";
+import type { NotationIconName } from "../notation/notation-icon-art";
 
 /**
  * `insert` shifts the active track's later notes out of the way, `replace`

@@ -6,7 +6,7 @@
  * and they are what a payload crossing the wire is checked against.
  */
 import { z } from "zod";
-import type { Score } from "./score.js";
+import type { Score } from "./score";
 // ---------------------------------------------------------------------------
 // 4. Zod schemas for the score tree
 // ---------------------------------------------------------------------------

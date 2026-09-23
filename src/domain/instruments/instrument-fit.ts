@@ -13,15 +13,15 @@
  * that answer is returned rather than approximated — the caller decides what
  * to say about it. Nothing here knows any user-facing words.
  */
-import { isNoteEvent } from "../../index.js";
-import type { Score, Track, UUID } from "../../index.js";
-import { transformCommand } from "../commands/snapshot.js";
-import { withTracks } from "../commands/reflow.js";
-import { findTrack } from "../score/queries.js";
-import { pitchToMidi } from "../pitch/pitch.js";
-import { transposePitch } from "../pitch/transpose.js";
-import type { ScoreCommand } from "../commands/types.js";
-import { gmInstrumentRange, type MidiRange } from "./gm-range.js";
+import { isNoteEvent } from "../../index";
+import type { Score, Track, UUID } from "../../index";
+import { transformCommand } from "../commands/snapshot";
+import { withTracks } from "../commands/reflow";
+import { findTrack } from "../score/queries";
+import { pitchToMidi } from "../pitch/pitch";
+import { transposePitch } from "../pitch/transpose";
+import type { ScoreCommand } from "../commands/types";
+import { gmInstrumentRange, type MidiRange } from "./gm-range";
 
 /** The instrument fields that move together — the name is stored, so it must not drift from the program. */
 export type InstrumentPatch = { midiProgram: number; instrumentName: string };

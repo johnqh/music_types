@@ -7,9 +7,9 @@
  * app would have had to rediscover — and getting it wrong is invisible, since
  * the note then draws exactly where it was clicked and only sounds wrong.
  */
-import type { Pitch, Score, UUID } from "../../index.js";
-import { soundingPitchForTrack } from "../../index.js";
-import { ottavaShiftAt } from "../../index.js";
+import type { Pitch, Score, UUID } from "../../index";
+import { soundingPitchForTrack } from "../../index";
+import { ottavaShiftAt } from "../../index";
 
 /**
  * Turns a pitch read off the *drawn* staff into the pitch to store.

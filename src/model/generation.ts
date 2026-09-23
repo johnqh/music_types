@@ -11,7 +11,7 @@ import {
   measureSchema,
   scoreSchema,
   timeSignatureSchema,
-} from "./schemas.js";
+} from "./schemas";
 import type {
   Score,
   ScoreFragment,
@@ -20,7 +20,7 @@ import type {
   TimeSignature,
   Track,
   UUID,
-} from "./score.js";
+} from "./score";
 // ---------------------------------------------------------------------------
 // 5. AI generation contracts
 // ---------------------------------------------------------------------------

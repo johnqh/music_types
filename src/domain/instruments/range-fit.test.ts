@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   midiIsInRange,
   trackRangeIsBinding,
-} from "./range-fit.js";
+} from "./range-fit";
 
 /** Timpani: D2-A3, the narrowest measured compass in the catalogue. */
 const TIMPANI = { min: 38, max: 57 };

@@ -8,10 +8,10 @@
  * music. The web rule (the longest track, never less than one tick) is the one
  * stated here.
  */
-import type { PlaybackLoadState } from "../../platform/playback.js";
-import type { Score } from "../../index.js";
-import { TempoMap } from "../time/tempo-map.js";
-import { scoreEndTick } from "./queries.js";
+import type { PlaybackLoadState } from "../../platform/playback";
+import type { Score } from "../../index";
+import { TempoMap } from "../time/tempo-map";
+import { scoreEndTick } from "./queries";
 
 /** Spec §22: "Speeds: 0.5x, 0.75x, 1x, 1.25x, 1.5x, 2x." */
 export const PLAYBACK_SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2] as const;

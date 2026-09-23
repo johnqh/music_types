@@ -6,11 +6,11 @@
  * them the *opposite* way from the bracket, or a reader plays two octaves out.
  */
 import { describe, expect, it } from "vitest";
-import type { NoteEvent, Ottava, Score } from "../../index.js";
-import { isNoteEvent } from "../../index.js";
-import { twinkleScore } from "../../test/fixtures.js";
-import { toggleOttavaCommand } from "../commands/note-marks.js";
-import { hasOttava, ottavaScore, ottavaShiftAt } from "./ottava.js";
+import type { NoteEvent, Ottava, Score } from "../../index";
+import { isNoteEvent } from "../../index";
+import { twinkleScore } from "../../test/fixtures";
+import { toggleOttavaCommand } from "../commands/note-marks";
+import { hasOttava, ottavaScore, ottavaShiftAt } from "./ottava";
 
 function notes(score: Score): NoteEvent[] {
   return score.tracks[0].measures

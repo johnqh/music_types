@@ -20,9 +20,9 @@
  * renderer draws it into the track gutter too, and one table beats passing a
  * per-track art map in as a render option.
  */
-import { gmFamilyOf, gmInstrument } from "./gm.js";
-import type { GmFamily } from "./gm.js";
-import type { InstrumentIconArt } from "./icon-art.js";
+import { gmFamilyOf, gmInstrument } from "./gm";
+import type { GmFamily } from "./gm";
+import type { InstrumentIconArt } from "./icon-art";
 
 /** A keyboard: three white keys, three black keys sitting on top of them. */
 const PIANO: InstrumentIconArt = {

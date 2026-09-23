@@ -11,9 +11,9 @@
  * The component that replays a glyph stays in each app; a name is the one
  * thing about a drawing a platform-free package can hold.
  */
-import type { Accidental } from "../../index.js";
-import type { BaseDuration } from "../time/duration-modifiers.js";
-import type { NotationIconName } from "./notation-icon-art.js";
+import type { Accidental } from "../../index";
+import type { BaseDuration } from "../time/duration-modifiers";
+import type { NotationIconName } from "./notation-icon-art";
 
 /** The note glyph for each base duration. */
 export const DURATION_ICON: Record<BaseDuration, NotationIconName> = {

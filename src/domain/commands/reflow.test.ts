@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createEmptyScore } from "../score/factory.js";
+import { createEmptyScore } from "../score/factory";
 import {
   clearDanglingTies,
   ensureVoiceAtIndex,
@@ -7,9 +7,9 @@ import {
   reflowVoice,
   removeNotesFromTrack,
   touchMetadata,
-} from "./reflow.js";
-import { isNoteEvent } from "../../index.js";
-import type { Measure, NoteEvent, Pitch, Track } from "../../index.js";
+} from "./reflow";
+import { isNoteEvent } from "../../index";
+import type { Measure, NoteEvent, Pitch, Track } from "../../index";
 
 const PITCH: Pitch = { step: "C", accidental: 0, octave: 4 };
 const PITCH_E: Pitch = { step: "E", accidental: 0, octave: 4 };

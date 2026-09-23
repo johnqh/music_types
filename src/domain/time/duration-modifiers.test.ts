@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { ticksFor } from "../../index.js";
-import type { DurationName } from "../../index.js";
+import { ticksFor } from "../../index";
+import type { DurationName } from "../../index";
 import {
   BASE_DURATIONS,
   composeDuration,
   durationParts,
   withBase,
   withModifier,
-} from "../time/duration-modifiers.js";
+} from "../time/duration-modifiers";
 
 describe("durationParts", () => {
   it("splits a plain value", () => {

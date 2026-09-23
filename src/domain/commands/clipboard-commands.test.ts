@@ -4,8 +4,8 @@
  * insert that lengthens one part and not the others.
  */
 import { describe, expect, it } from "vitest";
-import { twoTrackScore } from "../../test/fixtures.js";
-import { allNotes } from "../score/queries.js";
+import { twoTrackScore } from "../../test/fixtures";
+import { allNotes } from "../score/queries";
 import {
   clearMeasuresCommand,
   clearTrackCommand,
@@ -13,9 +13,9 @@ import {
   insertTrackCommand,
   replaceMeasuresCommand,
   replaceTrackCommand,
-} from "./clipboard-commands.js";
-import type { MeasureSlice } from "./clipboard-commands.js";
-import type { Score } from "../../model/score.js";
+} from "./clipboard-commands";
+import type { MeasureSlice } from "./clipboard-commands";
+import type { Score } from "../../model/score";
 
 const run = (score: Score, command: ReturnType<typeof clearTrackCommand>): Score =>
   command.execute(score);

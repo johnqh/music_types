@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { snapshotTree } from "./snapshot-tree.js";
-import type { SnapshotSummary } from "../../index.js";
+import { snapshotTree } from "./snapshot-tree";
+import type { SnapshotSummary } from "../../index";
 
 /** `[id, parentId]` pairs, oldest first. */
 function summaries(pairs: Array<[string, string | null]>): SnapshotSummary[] {

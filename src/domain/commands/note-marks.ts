@@ -26,13 +26,13 @@ import type {
   Ottava,
   Pitch,
   UUID,
-} from "../../index.js";
-import { isNoteEvent } from "../../model/score.js";
-import { findEvent } from "../score/queries.js";
-import type { ScoreCommand } from "./types.js";
-import { transformCommand } from "./snapshot.js";
-import { withTracks } from "./reflow.js";
-import { mapNotes } from "./note-commands.js";
+} from "../../index";
+import { isNoteEvent } from "../../model/score";
+import { findEvent } from "../score/queries";
+import type { ScoreCommand } from "./types";
+import { transformCommand } from "./snapshot";
+import { withTracks } from "./reflow";
+import { mapNotes } from "./note-commands";
 
 // ---- simple per-note field commands ------------------------------------------
 

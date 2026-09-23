@@ -3,7 +3,7 @@ import {
   transposeDiatonicOctave,
   transposeKeySignature,
   transposePitch,
-} from "./transpose.js";
+} from "./transpose";
 
 describe("transposePitch", () => {
   it("transposes up by a whole step", () => {

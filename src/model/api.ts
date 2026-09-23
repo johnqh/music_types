@@ -5,9 +5,9 @@
  * two cannot drift as long as both import from here.
  */
 import { z } from "zod";
-import type { GenerationRecord, ProjectStatus } from "./generation.js";
-import type { Score, UUID } from "./score.js";
-import { scoreSchema } from "./schemas.js";
+import type { GenerationRecord, ProjectStatus } from "./generation";
+import type { Score, UUID } from "./score";
+import { scoreSchema } from "./schemas";
 // ---------------------------------------------------------------------------
 // 7. Project API types (music_api payloads)
 // ---------------------------------------------------------------------------

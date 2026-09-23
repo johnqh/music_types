@@ -1,5 +1,5 @@
-import type { DurationName, Fraction, TimeSignature } from "../../index.js";
-import { fraction, fractionToTicks } from "./fraction.js";
+import type { DurationName, Fraction, TimeSignature } from "../../index";
+import { fraction, fractionToTicks } from "./fraction";
 
 /** Multiplies a fraction by a positive integer/rational scalar expressed as a fraction. */
 function scaleFraction(f: Fraction, scale: Fraction): Fraction {

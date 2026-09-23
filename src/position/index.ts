@@ -1,2 +1,2 @@
-export * from "./music-position.js";
-export * from "./singleton.js";
+export * from "./music-position";
+export * from "./singleton";

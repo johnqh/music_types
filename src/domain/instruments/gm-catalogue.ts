@@ -33,8 +33,8 @@
  *                  left deliberately wide. Anything reading these numbers to
  *                  refuse a note must not refuse on an `assumed` row.
  */
-import { GM_FAMILIES } from "./gm.js";
-import type { GmFamily } from "./gm.js";
+import { GM_FAMILIES } from "./gm";
+import type { GmFamily } from "./gm";
 
 /**
  * A row's column types and sentinels live here, with the table itself.

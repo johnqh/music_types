@@ -10,12 +10,12 @@
  * rehearsal marks and cue notes, which is why part extraction lives in one
  * place rather than four.
  */
-import { trackWrittenTransposition } from "../instruments/track-instrument.js";
-import { collapseRests } from "./collapse-rests.js";
-import { applyRehearsalMarks, rehearsalMarks } from "./rehearsal-marks.js";
-import { applyCues, measureCues } from "./cue-notes.js";
-import { transposeMeasure } from "./written-pitch.js";
-import type { Score } from "../../index.js";
+import { trackWrittenTransposition } from "../instruments/track-instrument";
+import { collapseRests } from "./collapse-rests";
+import { applyRehearsalMarks, rehearsalMarks } from "./rehearsal-marks";
+import { applyCues, measureCues } from "./cue-notes";
+import { transposeMeasure } from "./written-pitch";
+import type { Score } from "../../index";
 
 /**
  * The part for `trackId`: that track alone, transposed for its instrument.

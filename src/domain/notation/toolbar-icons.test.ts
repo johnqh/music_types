@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { ACCIDENTALS } from "../../index.js";
-import { BASE_DURATIONS } from "../time/duration-modifiers.js";
-import { NOTATION_ICON_NAMES } from "./notation-icon-art.js";
-import { ACCIDENTAL_ICON, DURATION_ICON } from "./toolbar-icons.js";
+import { ACCIDENTALS } from "../../index";
+import { BASE_DURATIONS } from "../time/duration-modifiers";
+import { NOTATION_ICON_NAMES } from "./notation-icon-art";
+import { ACCIDENTAL_ICON, DURATION_ICON } from "./toolbar-icons";
 
 const known = new Set<string>(NOTATION_ICON_NAMES);
 

@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { addNoteCommand, allNotes, createEmptyScore } from "../../index.js";
-import type { NoteEvent, Pitch, Score } from "../../index.js";
+import { addNoteCommand, allNotes, createEmptyScore } from "../../index";
+import type { NoteEvent, Pitch, Score } from "../../index";
 import {
   clipboardSpan,
   cutNeedsPrompt,
   pasteNeedsPrompt,
-} from "./clipboard-prompts.js";
+} from "./clipboard-prompts";
 
 const pitch = (step: string): Pitch =>
   ({ step, accidental: 0, octave: 4 }) as unknown as Pitch;

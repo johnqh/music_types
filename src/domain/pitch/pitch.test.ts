@@ -4,8 +4,8 @@ import {
   midiToPitch,
   pitchToMidi,
   pitchToString,
-} from "./pitch.js";
-import type { Pitch } from "../../index.js";
+} from "./pitch";
+import type { Pitch } from "../../index";
 
 describe("pitchToMidi", () => {
   it("C4 is midi 60", () => {

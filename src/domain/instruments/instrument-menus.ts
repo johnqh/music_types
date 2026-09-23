@@ -9,16 +9,16 @@
  * singer under Ensemble where nobody looks for one; kits next, because a kit
  * is not a program; then the families in catalogue order.
  */
-import type { Track } from "../../index.js";
+import type { Track } from "../../index";
 import {
   FAMILY_GROUPS,
   INSTRUMENT_OPTIONS,
   KIT_OPTIONS,
   VOICE_OPTIONS,
   kitOptionValue,
-} from "./instrument-options.js";
-import type { InstrumentOption } from "./instrument-options.js";
-import { isPercussionTrack } from "./track-instrument.js";
+} from "./instrument-options";
+import type { InstrumentOption } from "./instrument-options";
+import { isPercussionTrack } from "./track-instrument";
 
 /**
  * One heading and its entries.

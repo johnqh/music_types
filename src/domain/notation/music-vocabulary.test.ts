@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { twinkleScore } from "../../test/fixtures.js";
-import { barNumberAt } from "../score/bar-numbers.js";
-import type { Score } from "../../model/score.js";
+import { twinkleScore } from "../../test/fixtures";
+import { barNumberAt } from "../score/bar-numbers";
+import type { Score } from "../../model/score";
 import {
   accidentalCountLabel,
   barBeatCommitTick,
@@ -16,7 +16,7 @@ import {
   volumeReadout,
   pitchAtStavePosition,
   tickForBarBeat,
-} from "./music-vocabulary.js";
+} from "./music-vocabulary";
 
 describe("durationLabel", () => {
   it("names every duration, dots and triplets included", () => {

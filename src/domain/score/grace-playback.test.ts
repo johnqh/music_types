@@ -3,11 +3,11 @@
  * rather than from the bar.
  */
 import { describe, expect, it } from "vitest";
-import { isNoteEvent } from "../../index.js";
-import type { NoteEvent, Score } from "../../index.js";
-import { twinkleScore } from "../../test/fixtures.js";
-import { toGraceNoteCommand } from "../commands/note-marks.js";
-import { flattenScoreNotes } from "./flatten.js";
+import { isNoteEvent } from "../../index";
+import type { NoteEvent, Score } from "../../index";
+import { twinkleScore } from "../../test/fixtures";
+import { toGraceNoteCommand } from "../commands/note-marks";
+import { flattenScoreNotes } from "./flatten";
 
 /** Twinkle with its first note turned into an ornament on the second. */
 function ornamented(): { score: Score; principal: NoteEvent } {

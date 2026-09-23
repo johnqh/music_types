@@ -4,8 +4,8 @@
  * never a `Score` itself or any store reference: the current score always
  * lives with the caller, passed in and received back on every call.
  */
-import type { Score } from "../../index.js";
-import type { ScoreCommand } from "./types.js";
+import type { Score } from "../../index";
+import type { ScoreCommand } from "./types";
 
 const DEFAULT_LIMIT = 200;
 

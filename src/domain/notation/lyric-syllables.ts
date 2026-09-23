@@ -5,7 +5,7 @@
  * about words, the entry bar is a component, and keeping them together costs
  * that file its fast refresh.
  */
-import type { Syllabic } from "../../index.js";
+import type { Syllabic } from "../../index";
 
 /**
  * Derived from whether the writer hyphenated this syllable and whether they

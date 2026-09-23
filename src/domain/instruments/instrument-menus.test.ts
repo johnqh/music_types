@@ -1,16 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { createEmptyScore } from "../score/factory.js";
+import { createEmptyScore } from "../score/factory";
 import {
   FAMILY_GROUPS,
   INSTRUMENT_OPTIONS,
   KIT_OPTIONS,
   VOICE_OPTIONS,
-} from "./instrument-options.js";
+} from "./instrument-options";
 import {
   GENERATION_INSTRUMENT_GROUPS,
   generationInstrumentOptionsFlat,
   instrumentPickerFor,
-} from "./instrument-menus.js";
+} from "./instrument-menus";
 
 describe("GENERATION_INSTRUMENT_GROUPS", () => {
   it("is voices, then kits, then the GM families in catalogue order", () => {

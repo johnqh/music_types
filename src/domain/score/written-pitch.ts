@@ -10,10 +10,10 @@
  * sounding changes the pitch 0 times and the spelling 567 — so a deliberately
  * spelled C# would become Db the first time somebody toggled the view twice.
  */
-import { gmWrittenTransposition } from "../instruments/gm-transposition.js";
-import { trackWrittenTransposition } from "../instruments/track-instrument.js";
-import { transposeKeySignature, transposePitch } from "../pitch/transpose.js";
-import { isNoteEvent } from "../../index.js";
+import { gmWrittenTransposition } from "../instruments/gm-transposition";
+import { trackWrittenTransposition } from "../instruments/track-instrument";
+import { transposeKeySignature, transposePitch } from "../pitch/transpose";
+import { isNoteEvent } from "../../index";
 import type {
   KeySignature,
   Measure,
@@ -21,7 +21,7 @@ import type {
   Pitch,
   Score,
   Track,
-} from "../../index.js";
+} from "../../index";
 
 /** `events` with every pitch moved by `semitones`, respelled in `keySignature`. */
 export function transposeEvents(

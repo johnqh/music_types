@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { NOTATION_ICON_NAMES } from "../notation/notation-icon-art.js";
-import { EDIT_MODES, EDIT_MODE_OPTIONS } from "./edit-mode.js";
-import type { EditMode } from "./edit-mode.js";
+import { NOTATION_ICON_NAMES } from "../notation/notation-icon-art";
+import { EDIT_MODES, EDIT_MODE_OPTIONS } from "./edit-mode";
+import type { EditMode } from "./edit-mode";
 
 describe("EDIT_MODE_OPTIONS", () => {
   it("offers every edit mode once, in toolbar order", () => {

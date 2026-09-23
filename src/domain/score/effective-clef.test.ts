@@ -3,12 +3,12 @@
  * reads it through here, so these pin the rule they all share.
  */
 import { describe, expect, it } from "vitest";
-import type { Clef, Measure, Track } from "../../index.js";
+import type { Clef, Measure, Track } from "../../index";
 import {
   clefAtMeasure,
   clefChangesAt,
   effectiveClef,
-} from "./effective-clef.js";
+} from "./effective-clef";
 
 function track(
   clefs: Array<Clef | undefined>,

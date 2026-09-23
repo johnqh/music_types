@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { validateScore } from "./validator.js";
-import { ISSUE_CODES } from "./issues.js";
-import { createEmptyScore } from "../score/factory.js";
-import { replaceFragment } from "../score/fragment.js";
+import { validateScore } from "./validator";
+import { ISSUE_CODES } from "./issues";
+import { createEmptyScore } from "../score/factory";
+import { replaceFragment } from "../score/fragment";
 import {
   chordScore,
   twinkleScore,
   twoTrackScore,
-} from "../../test/fixtures.js";
-import type { Measure, NoteEvent, Score, Track } from "../../index.js";
+} from "../../test/fixtures";
+import type { Measure, NoteEvent, Score, Track } from "../../index";
 
 describe("validateScore", () => {
   it("reports no issues for a well-formed single-track melody score", () => {

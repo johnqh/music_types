@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { createEmptyScore } from "../score/factory.js";
-import { validateScore } from "../validation/validator.js";
-import { isNoteEvent } from "../../index.js";
-import type { NoteEvent, Pitch, Score } from "../../index.js";
-import { twinkleScore } from "../../test/fixtures.js";
-import { allNotes } from "../score/queries.js";
-import { changeBeamCommand } from "./note-marks.js";
-import { ticksFor } from "../time/ticks.js";
+import { createEmptyScore } from "../score/factory";
+import { validateScore } from "../validation/validator";
+import { isNoteEvent } from "../../index";
+import type { NoteEvent, Pitch, Score } from "../../index";
+import { twinkleScore } from "../../test/fixtures";
+import { allNotes } from "../score/queries";
+import { changeBeamCommand } from "./note-marks";
+import { ticksFor } from "../time/ticks";
 import {
   addNoteCommand,
   changeDurationCommand,
@@ -14,7 +14,7 @@ import {
   deleteEventsCommand,
   moveNotesCommand,
   resizeNotesCommand,
-} from "./note-commands.js";
+} from "./note-commands";
 import {
   changeAccidentalCommand,
   changeArticulationCommand,
@@ -25,7 +25,7 @@ import {
   toggleFermataCommand,
   toggleSlurCommand,
   toggleTieCommand,
-} from "./note-marks.js";
+} from "./note-marks";
 
 const PITCH: Pitch = { step: "C", accidental: 0, octave: 4 };
 

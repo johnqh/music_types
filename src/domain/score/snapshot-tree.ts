@@ -8,7 +8,7 @@
  * descends from. "You are here" is the question the picker exists to answer,
  * and a tree without it is just a list of names.
  */
-import type { SnapshotSummary } from "../../index.js";
+import type { SnapshotSummary } from "../../index";
 
 export const LIVE_NODE_ID = "__live__";
 

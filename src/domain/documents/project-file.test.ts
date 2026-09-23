@@ -3,7 +3,7 @@ import {
   DOCUMENT_EXTENSION,
   DOCUMENT_EXTENSIONS,
   PROJECT_FILE_VERSION,
-} from "../../index.js";
+} from "../../index";
 
 describe("project file vocabulary", () => {
   it("writes .moo and opens every extension a project has been saved under", () => {

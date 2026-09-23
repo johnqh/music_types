@@ -12,8 +12,8 @@
  * Every description is an i18n key, so the prose lives in each host's locale
  * files and no library holds strings in any language.
  */
-import { DOCUMENT_EXTENSIONS } from "./project-file.js";
-import { WRITABLE_EXPORT_FORMATS } from "./export-formats.js";
+import { DOCUMENT_EXTENSIONS } from "./project-file";
+import { WRITABLE_EXPORT_FORMATS } from "./export-formats";
 
 export type FormatEntry = {
   id: string;

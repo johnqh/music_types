@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { allocateVoices } from "./allocate.js";
-import type { NoteEvent, Pitch } from "../../index.js";
+import { allocateVoices } from "./allocate";
+import type { NoteEvent, Pitch } from "../../index";
 
 const TRACK = "t1";
 

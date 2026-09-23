@@ -17,12 +17,12 @@ import type {
   Measure,
   Score,
   TempoEvent,
-} from "../../index.js";
-import { DEFAULT_BPM } from "../score/defaults.js";
-import { commonValue } from "../score/common-value.js";
-import { beatDurationTicks, durationNameForTicks } from "../time/ticks.js";
-import { MAX_BPM, MIN_BPM } from "../validation/limits.js";
-import { NO_PICKUP } from "./picker-options.js";
+} from "../../index";
+import { DEFAULT_BPM } from "../score/defaults";
+import { commonValue } from "../score/common-value";
+import { beatDurationTicks, durationNameForTicks } from "../time/ticks";
+import { MAX_BPM, MIN_BPM } from "../validation/limits";
+import { NO_PICKUP } from "./picker-options";
 
 // ---- numbers from drafts ---------------------------------------------------
 

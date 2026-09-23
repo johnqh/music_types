@@ -12,7 +12,7 @@
  * format's own default, not ours, and folding it in would make one constant
  * mean two things.
  */
-import type { KeySignature, TimeSignature } from "../../index.js";
+import type { KeySignature, TimeSignature } from "../../index";
 
 /** Ticks per quarter note. Every tick in the model is against this. */
 export const DEFAULT_PPQ = 480;

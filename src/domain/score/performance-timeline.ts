@@ -12,8 +12,8 @@
  * everything, `performanceTick === sourceTick`. That is what keeps every
  * existing behaviour byte-identical.
  */
-import type { PerformanceTimeline, Score } from "../../index.js";
-import { repeatPlayOrder } from "./repeat-order.js";
+import type { PerformanceTimeline, Score } from "../../index";
+import { repeatPlayOrder } from "./repeat-order";
 
 // The shape lives beside `PlaybackPlan` in this package's platform types, and
 // is already exported from there — this module builds one rather than

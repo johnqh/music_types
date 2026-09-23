@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { createEmptyScore } from "../score/factory.js";
+import { createEmptyScore } from "../score/factory";
 import {
   normalizeSelection,
   selectionIsRegenerable,
   selectionSummaryLabel,
   selectionToRange,
-} from "./selection.js";
-import { emptySelection } from "./types.js";
-import type { ScoreSelection } from "./types.js";
+} from "./selection";
+import { emptySelection } from "./types";
+import type { ScoreSelection } from "./types";
 
 function fixtureScore() {
   // 3 measures, 2 tracks (4/4, 480 ppq -> 1920 ticks/measure).

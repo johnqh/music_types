@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { createEmptyScore } from "./factory.js";
-import { joinTiedNotes, splitNoteAcrossMeasures, tieChainFor } from "./ties.js";
-import type { MusicalEvent, NoteEvent, Score } from "../../index.js";
-import { isNoteEvent } from "../../index.js";
+import { createEmptyScore } from "./factory";
+import { joinTiedNotes, splitNoteAcrossMeasures, tieChainFor } from "./ties";
+import type { MusicalEvent, NoteEvent, Score } from "../../index";
+import { isNoteEvent } from "../../index";
 
 function note(
   overrides: Partial<NoteEvent> &

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { commonValue } from "./common-value.js";
+import { commonValue } from "./common-value";
 
 describe("commonValue", () => {
   it("answers the shared value when everything agrees", () => {

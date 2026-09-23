@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TempoMap } from "./tempo-map.js";
+import { TempoMap } from "./tempo-map";
 
 const PPQ = 480;
 

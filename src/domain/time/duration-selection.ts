@@ -19,10 +19,10 @@
  * doing. Kept pure and separate from the toolbar so the four cases can be
  * tested without rendering one.
  */
-import { durationNameForTicks } from "../../index.js";
-import type { DurationName, NoteEvent } from "../../index.js";
-import { durationParts } from "../time/duration-modifiers.js";
-import type { BaseDuration } from "../time/duration-modifiers.js";
+import { durationNameForTicks } from "../../index";
+import type { DurationName, NoteEvent } from "../../index";
+import { durationParts } from "../time/duration-modifiers";
+import type { BaseDuration } from "../time/duration-modifiers";
 
 export type DurationDisplay =
   /** A single agreed duration: the selection's, or the armed one when nothing is selected. */

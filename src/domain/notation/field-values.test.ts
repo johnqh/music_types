@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createEmptyScore } from "../score/factory.js";
+import { createEmptyScore } from "../score/factory";
 import {
   MAX_BPM,
   MAX_MIDI,
@@ -10,9 +10,9 @@ import {
   MIN_OCTAVE,
   TIME_SIG_DENOMINATOR_OPTIONS,
   VALID_TIME_SIG_DENOMINATORS,
-} from "../validation/limits.js";
-import { midiToPitch } from "../pitch/pitch.js";
-import { NO_PICKUP } from "./picker-options.js";
+} from "../validation/limits";
+import { midiToPitch } from "../pitch/pitch";
+import { NO_PICKUP } from "./picker-options";
 import {
   MIX_STEP,
   clampBpm,
@@ -26,8 +26,8 @@ import {
   pickupBeatOptions,
   quantizeMix,
   tempoAtBar,
-} from "./field-values.js";
-import type { Measure, Score } from "../../index.js";
+} from "./field-values";
+import type { Measure, Score } from "../../index";
 
 describe("clampBpm", () => {
   it("rounds to a whole tempo", () => {

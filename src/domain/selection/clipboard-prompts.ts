@@ -6,7 +6,7 @@
  * ask only when the answers would differ. A dialog whose options do the same
  * thing is a click the user cannot get wrong, so it should not appear.
  */
-import type { NoteEvent, Score } from "../../index.js";
+import type { NoteEvent, Score } from "../../index";
 
 /** Notes on `trackId` that start at or after `tick`. */
 function notesAfter(score: Score, trackId: string, tick: number): NoteEvent[] {

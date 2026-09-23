@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { durationForTap } from "./tap-to-note.js";
+import { durationForTap } from "./tap-to-note";
 
 /** At 120bpm a quarter note is 500ms, so a whole note is 2000ms. */
 describe("durationForTap", () => {

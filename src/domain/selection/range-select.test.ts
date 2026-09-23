@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { twinkleScore, twoTrackScore } from "../../test/fixtures.js";
-import { isNoteEvent } from "../../index.js";
-import type { NoteEvent, Score } from "../../index.js";
-import { noteIdsInTickRange } from "../selection/range-select.js";
+import { twinkleScore, twoTrackScore } from "../../test/fixtures";
+import { isNoteEvent } from "../../index";
+import type { NoteEvent, Score } from "../../index";
+import { noteIdsInTickRange } from "../selection/range-select";
 
 /** Every note on one track, in tick order — expectations derive from the fixture rather than hardcoding ids. */
 function notesOf(score: Score, trackIndex = 0): NoteEvent[] {

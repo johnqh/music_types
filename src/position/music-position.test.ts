@@ -7,13 +7,13 @@
  * one number, so two readers cannot differ.
  */
 import { describe, expect, it, vi, afterEach } from "vitest";
-import { MusicPosition } from "./music-position.js";
+import { MusicPosition } from "./music-position";
 import {
   getMusicPosition,
   getMusicPositionSource,
   initializeMusicPosition,
   resetMusicPosition,
-} from "./singleton.js";
+} from "./singleton";
 
 afterEach(() => {
   resetMusicPosition();

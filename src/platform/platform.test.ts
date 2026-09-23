@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { MidiFile, XmlElement } from "./index.js";
-import { XmlParseError } from "./index.js";
+import type { MidiFile, XmlElement } from "./index";
+import { XmlParseError } from "./index";
 
 describe("platform interfaces", () => {
   it("XmlParseError is a real Error subclass, so callers can catch it by type", () => {

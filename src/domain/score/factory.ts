@@ -1,4 +1,4 @@
-import { createId } from "./ids.js";
+import { createId } from "./ids";
 import type {
   KeySignature,
   Measure,
@@ -6,14 +6,14 @@ import type {
   ScoreMetadata,
   TimeSignature,
   Track,
-} from "../../index.js";
-import { measureDurationTicks } from "../time/ticks.js";
+} from "../../index";
+import { measureDurationTicks } from "../time/ticks";
 import {
   DEFAULT_BPM,
   DEFAULT_KEY_SIGNATURE,
   DEFAULT_PPQ,
   DEFAULT_TIME_SIGNATURE,
-} from "./defaults.js";
+} from "./defaults";
 
 const DEFAULT_MEASURE_COUNT = 1;
 const DEFAULT_VOICE_NAME = "Voice 1";

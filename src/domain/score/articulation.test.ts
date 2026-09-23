@@ -8,7 +8,7 @@ import {
   articulatedDuration,
   articulatedVelocity,
   articulationSound,
-} from "./articulation.js";
+} from "./articulation";
 
 describe("articulationSound", () => {
   it("plays an unmarked note plain", () => {

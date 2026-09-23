@@ -10,9 +10,9 @@ import {
   createEmptyScore,
   trackRangeIsBinding,
   writtenScore,
-} from "../../index.js";
-import type { Score } from "../../index.js";
-import { outOfRangeNoteIds } from "./out-of-range.js";
+} from "../../index";
+import type { Score } from "../../index";
+import { outOfRangeNoteIds } from "./out-of-range";
 
 /** A one-track score whose first measure holds `pitches`. */
 function scoreWith(

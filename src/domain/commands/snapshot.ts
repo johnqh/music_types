@@ -22,9 +22,9 @@ import {
   enablePatches,
   produceWithPatches,
 } from "immer";
-import { createId } from "../score/ids.js";
-import type { Score } from "../../index.js";
-import type { CommandKind, ScoreCommand } from "./types.js";
+import { createId } from "../score/ids";
+import type { Score } from "../../index";
+import type { CommandKind, ScoreCommand } from "./types";
 
 enablePatches();
 

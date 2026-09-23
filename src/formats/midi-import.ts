@@ -12,7 +12,7 @@ import type {
   DurationName,
   Score,
   TimeSignature,
-} from "../model/score.js";
+} from "../model/score";
 
 // ---- The summary (spec §15) -------------------------------------------------
 

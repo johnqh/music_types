@@ -12,7 +12,7 @@
  * the parser stay in music_codecs; the words and the types they read and write
  * are the model's.
  */
-import type { Score } from "../../index.js";
+import type { Score } from "../../index";
 
 /** The format version this build writes and the newest it reads. */
 export const PROJECT_FILE_VERSION = 1;

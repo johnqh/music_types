@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { createEmptyScore } from "../score/factory.js";
-import { validateScore } from "../validation/validator.js";
-import { isNoteEvent } from "../../index.js";
-import { twinkleScore, twoTrackScore } from "../../test/fixtures.js";
+import { createEmptyScore } from "../score/factory";
+import { validateScore } from "../validation/validator";
+import { isNoteEvent } from "../../index";
+import { twinkleScore, twoTrackScore } from "../../test/fixtures";
 import {
   addMeasureCommand,
   addTrackCommand,
@@ -17,7 +17,7 @@ import {
   insertBlankMeasuresCommand,
   deleteMeasureCommand,
   deleteTrackCommand,
-} from "./structure-commands.js";
+} from "./structure-commands";
 
 function baseScore() {
   return createEmptyScore({

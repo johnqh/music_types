@@ -27,18 +27,18 @@
  * other command, so `music_api` can apply one with no store, and the deciding —
  * insert or replace, clear or delete — stays with whoever asked.
  */
-import { createId } from "../score/ids.js";
-import { rebuildMeasureTicks } from "../score/factory.js";
-import { transformCommand } from "./snapshot.js";
-import { withTracks } from "./reflow.js";
-import type { ScoreCommand } from "./types.js";
+import { createId } from "../score/ids";
+import { rebuildMeasureTicks } from "../score/factory";
+import { transformCommand } from "./snapshot";
+import { withTracks } from "./reflow";
+import type { ScoreCommand } from "./types";
 import type {
   Measure,
   MusicalEvent,
   Track,
   UUID,
   Voice,
-} from "../../model/score.js";
+} from "../../model/score";
 
 /**
  * The bars at one span of indices, across every track.

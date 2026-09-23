@@ -3,8 +3,8 @@ import {
   UNLIMITED_POLYPHONY,
   gmMaxPolyphony,
   gmSupportsChord,
-} from "./gm-polyphony.js";
-import { GM_INSTRUMENTS } from "./gm.js";
+} from "./gm-polyphony";
+import { GM_INSTRUMENTS } from "./gm";
 
 describe("gmMaxPolyphony", () => {
   it("gives wind and brass soloists a single note", () => {

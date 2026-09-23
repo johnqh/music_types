@@ -1,5 +1,5 @@
-import type { DurationName } from "../../index.js";
-import { DURATIONS, ticksFor } from "./ticks.js";
+import type { DurationName } from "../../index";
+import { DURATIONS, ticksFor } from "./ticks";
 
 const NON_TRIPLET_DURATION_NAMES = (
   Object.keys(DURATIONS) as DurationName[]

@@ -13,11 +13,11 @@
  * UI can say so before anything is replaced, rather than leaving it to be
  * discovered afterwards.
  */
-import type { Score, ScoreRange, ScoreSelection } from "../../index.js";
-import { createEmptyScore } from "../score/factory.js";
-import type { GenerateScoreRequest } from "../../index.js";
-import { isNoteEvent } from "../../index.js";
-import { findEvent, findMeasure, findTrack } from "../score/queries.js";
+import type { Score, ScoreRange, ScoreSelection } from "../../index";
+import { createEmptyScore } from "../score/factory";
+import type { GenerateScoreRequest } from "../../index";
+import { isNoteEvent } from "../../index";
+import { findEvent, findMeasure, findTrack } from "../score/queries";
 
 export type ReplaceScope = "notes" | "measures" | "track";
 

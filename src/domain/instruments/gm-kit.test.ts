@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { GM_KITS, gmKit, gmKitAt } from "./gm-kit.js";
-import { gmInstrument } from "./gm.js";
+import { GM_KITS, gmKit, gmKitAt } from "./gm-kit";
+import { gmInstrument } from "./gm";
 
 describe("gmKit", () => {
   it("has the eight kits General MIDI defines, at their own addresses", () => {

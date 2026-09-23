@@ -6,7 +6,7 @@ import {
   gmFamilyOf,
   gmInstrument,
   gmInstrumentsByFamily,
-} from "./gm.js";
+} from "./gm";
 
 describe("GM_INSTRUMENTS", () => {
   it("has exactly 128 entries, in program order", () => {

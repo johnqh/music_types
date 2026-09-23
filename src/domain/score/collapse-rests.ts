@@ -7,8 +7,8 @@
  * For **printed parts only**. A stored score always writes its rests out:
  * collapsing loses which bar is which, and the editor needs every bar.
  */
-import { isNoteEvent } from "../../index.js";
-import type { Measure } from "../../index.js";
+import { isNoteEvent } from "../../index";
+import type { Measure } from "../../index";
 
 /** Below this, a run is written out — "1" over a bar is noise, not notation. */
 const MIN_RUN = 2;

@@ -4,11 +4,11 @@
  * (empty when the score is fully consistent). Pure and read-only: never
  * mutates its input.
  */
-import type { Measure, Pitch, Score, Track, Voice } from "../../index.js";
-import { isNoteEvent } from "../../index.js";
-import { pitchToMidi } from "../pitch/pitch.js";
-import { voiceChannel } from "../score/ties.js";
-import type { ChannelCandidate } from "../score/ties.js";
+import type { Measure, Pitch, Score, Track, Voice } from "../../index";
+import { isNoteEvent } from "../../index";
+import { pitchToMidi } from "../pitch/pitch";
+import { voiceChannel } from "../score/ties";
+import type { ChannelCandidate } from "../score/ties";
 import {
   MAX_BPM,
   MAX_FIFTHS,
@@ -24,9 +24,9 @@ import {
   MIN_MIDI_PROGRAM,
   MIN_VELOCITY,
   VALID_TIME_SIG_DENOMINATORS,
-} from "./limits.js";
-import { ISSUE_CODES } from "./issues.js";
-import type { ValidationIssue } from "./issues.js";
+} from "./limits";
+import { ISSUE_CODES } from "./issues";
+import type { ValidationIssue } from "./issues";
 
 function samePitch(a: Pitch, b: Pitch): boolean {
   return (

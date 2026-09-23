@@ -13,8 +13,8 @@
 import type {
   IMusicPosition,
   IMusicPositionSource,
-} from "../model/position.js";
-import { MusicPosition } from "./music-position.js";
+} from "../model/position";
+import { MusicPosition } from "./music-position";
 
 let instance: IMusicPositionSource | null = null;
 

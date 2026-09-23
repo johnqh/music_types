@@ -14,9 +14,9 @@ import {
   gmSpec,
   INSTRUMENT_BASES,
   UNLIMITED_POLYPHONY,
-} from "./gm-catalogue.js";
-import { GM_INSTRUMENTS, gmFamilyOf } from "./gm.js";
-import { MAX_MIDI, MIN_MIDI } from "../validation/limits.js";
+} from "./gm-catalogue";
+import { GM_INSTRUMENTS, gmFamilyOf } from "./gm";
+import { MAX_MIDI, MIN_MIDI } from "../validation/limits";
 
 describe("the GM catalogue", () => {
   it("has exactly one row per program, in program order", () => {

@@ -1,8 +1,8 @@
-import { rebuildMeasureTicks } from "./factory.js";
-import { measuresInRange } from "./queries.js";
-import type { Measure, Score } from "../../index.js";
-import type { ScoreFragment } from "../../model/score.js";
-import type { ScoreRange } from "../selection/types.js";
+import { rebuildMeasureTicks } from "./factory";
+import { measuresInRange } from "./queries";
+import type { Measure, Score } from "../../index";
+import type { ScoreFragment } from "../../model/score";
+import type { ScoreRange } from "../selection/types";
 
 /*
   `ScoreFragment` is declared in `model/score.ts` and re-exported from the

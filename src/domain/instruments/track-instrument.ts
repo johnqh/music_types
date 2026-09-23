@@ -23,15 +23,15 @@ import type {
   GenerateScoreRequestTrack,
   Score,
   Track,
-} from "../../index.js";
-import { gmInstrumentRange, type MidiRange } from "./gm-range.js";
-import { gmMaxPolyphony, UNLIMITED_POLYPHONY } from "./gm-polyphony.js";
-import { gmWrittenTransposition } from "./gm-transposition.js";
-import { gmKit, gmKitAt } from "./gm-kit.js";
-import { GM_PERCUSSION_RANGE } from "./gm-percussion.js";
-import { gmInstrumentIcon, gmKitIcon } from "./gm-icon.js";
-import type { InstrumentIconArt } from "./icon-art.js";
-import { gmInstrument } from "./gm.js";
+} from "../../index";
+import { gmInstrumentRange, type MidiRange } from "./gm-range";
+import { gmMaxPolyphony, UNLIMITED_POLYPHONY } from "./gm-polyphony";
+import { gmWrittenTransposition } from "./gm-transposition";
+import { gmKit, gmKitAt } from "./gm-kit";
+import { GM_PERCUSSION_RANGE } from "./gm-percussion";
+import { gmInstrumentIcon, gmKitIcon } from "./gm-icon";
+import type { InstrumentIconArt } from "./icon-art";
+import { gmInstrument } from "./gm";
 
 /** Whether `track`'s `midiProgram` addresses a drum kit rather than an instrument. */
 export function isPercussionTrack(track: Pick<Track, "clef">): boolean {

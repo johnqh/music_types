@@ -5,7 +5,7 @@
  * Types and vocabulary only. `TRACKER_LIMITS` (the numbers, anchored to our own
  * decoder) and the exporter itself live in `@sudobility/music_codecs`.
  */
-import type { TrackerModule } from "./mod.js";
+import type { TrackerModule } from "./mod";
 
 /** The formats export can write. A subset of `TrackerFormat`, which import also covers. */
 export type WritableTrackerFormat = "mod" | "s3m" | "xm" | "it";

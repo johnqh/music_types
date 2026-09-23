@@ -1,4 +1,4 @@
-import type { Fraction } from "../../index.js";
+import type { Fraction } from "../../index";
 
 /** Greatest common divisor (non-negative). */
 function gcd(a: number, b: number): number {

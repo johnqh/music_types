@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { createEmptyScore } from "./factory.js";
+import { createEmptyScore } from "./factory";
 import {
   PLAYBACK_SPEEDS,
   formatTimecode,
   synthLoadPercent,
   transportExtent,
-} from "./transport-readouts.js";
-import type { Score } from "../../index.js";
+} from "./transport-readouts";
+import type { Score } from "../../index";
 
 describe("formatTimecode", () => {
   it("writes minutes, zero-padded seconds and tenths", () => {

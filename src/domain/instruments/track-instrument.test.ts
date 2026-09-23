@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Score, Track } from "../../index.js";
+import type { Score, Track } from "../../index";
 import {
   auditionVoiceFor,
   scoreWithResolvedKits,
@@ -7,9 +7,9 @@ import {
   trackKeyboardRange,
   trackMaxPolyphony,
   trackWrittenTransposition,
-} from "./track-instrument.js";
-import { UNLIMITED_POLYPHONY } from "./gm-polyphony.js";
-import { GM_PERCUSSION_RANGE } from "./gm-percussion.js";
+} from "./track-instrument";
+import { UNLIMITED_POLYPHONY } from "./gm-polyphony";
+import { GM_PERCUSSION_RANGE } from "./gm-percussion";
 
 const track = (over: Partial<Track> = {}): Track =>
   ({

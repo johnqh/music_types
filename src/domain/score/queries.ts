@@ -1,4 +1,4 @@
-import type { ScoreRange } from "../selection/types.js";
+import type { ScoreRange } from "../selection/types";
 import type {
   Measure,
   MusicalEvent,
@@ -6,9 +6,9 @@ import type {
   Score,
   Track,
   UUID,
-} from "../../index.js";
-import { isNoteEvent } from "../../index.js";
-import { pitchToMidi } from "../pitch/pitch.js";
+} from "../../index";
+import { isNoteEvent } from "../../index";
+import { pitchToMidi } from "../pitch/pitch";
 
 /** Finds a track by id, or `null` if no track has that id. */
 export function findTrack(score: Score, trackId: UUID): Track | null {

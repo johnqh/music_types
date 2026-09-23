@@ -3,8 +3,8 @@
  * canonical in @sudobility/music_types and re-exported here so domain
  * modules keep one import site; `emptySelection` is the runtime helper.
  */
-export type { ScoreRange, ScoreSelection } from "../../model/score.js";
-import type { ScoreSelection } from "../../model/score.js";
+export type { ScoreRange, ScoreSelection } from "../../model/score";
+import type { ScoreSelection } from "../../model/score";
 
 /** An empty selection: no events, measures, tracks, or range selected. */
 export function emptySelection(): ScoreSelection {

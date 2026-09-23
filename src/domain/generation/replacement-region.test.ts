@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import type { NoteEvent, Score, ScoreSelection } from "../../index.js";
-import { isNoteEvent } from "../../index.js";
-import { twoTrackScore } from "../../test/fixtures.js";
+import type { NoteEvent, Score, ScoreSelection } from "../../index";
+import { isNoteEvent } from "../../index";
+import { twoTrackScore } from "../../test/fixtures";
 import {
   emptyScoreForRequest,
   replacementRegion,
-} from "./replacement-region.js";
+} from "./replacement-region";
 
 /** Notes of one track, in tick order — the fixture's treble track is four quarters per measure. */
 function notesOfTrack(score: Score, trackIndex: number): NoteEvent[] {

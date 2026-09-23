@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createEmptyScore } from "./factory.js";
+import { createEmptyScore } from "./factory";
 import {
   measureAtTick,
   measureIndexOf,
@@ -7,8 +7,8 @@ import {
   noteIndexAtOrAfter,
   trackNotesInOrder,
   voiceNumberOf,
-} from "./queries.js";
-import { createEmptyScore as testScore } from "../../test-helpers.js";
+} from "./queries";
+import { createEmptyScore as testScore } from "../../test-helpers";
 
 /**
  * Three named tracks, built from this package's own helper.
@@ -33,8 +33,8 @@ import {
   noteAt,
   scoreEndTick,
   scoreWithTracks,
-} from "./queries.js";
-import type { NoteEvent, Score } from "../../index.js";
+} from "./queries";
+import type { NoteEvent, Score } from "../../index";
 
 /** Builds a 2-measure, single-track score, then overwrites voice 0's events with `events`. */
 function scoreWithEvents(events: NoteEvent[]): Score {

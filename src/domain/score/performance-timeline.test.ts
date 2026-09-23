@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { Measure, Score } from "../../index.js";
+import type { Measure, Score } from "../../index";
 import {
   performanceTickFor,
   performanceTimeline,
   sourceTickFor,
-} from "./performance-timeline.js";
+} from "./performance-timeline";
 
 const BAR = 1920;
 

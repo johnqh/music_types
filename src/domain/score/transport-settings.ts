@@ -3,8 +3,8 @@
  * can fail — as vocabulary. The binder itself (`bindPlayer`) and the defaults
  * are music_lib's.
  */
-import type { ScoreRange } from "../../model/score.js";
-import type { PlaybackLoadState } from "../../platform/playback.js";
+import type { ScoreRange } from "../../model/score";
+import type { PlaybackLoadState } from "../../platform/playback";
 
 /**
  * Transport settings the binder keeps in the store beside the player.

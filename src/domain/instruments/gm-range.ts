@@ -6,7 +6,7 @@
  * programs inherited a compass nobody had chosen for them — see that module's
  * doc for what that hid.
  */
-import { FULL_KEYBOARD, gmSpec, type MidiRange } from "./gm-catalogue.js";
+import { FULL_KEYBOARD, gmSpec, type MidiRange } from "./gm-catalogue";
 
 /**
  * `MidiRange` and `FULL_KEYBOARD` are declared in `gm-catalogue.ts` and

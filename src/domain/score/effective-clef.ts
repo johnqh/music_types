@@ -13,7 +13,7 @@
  * above or below the one under the pointer — a bug that looks like a rounding
  * error and is not.
  */
-import type { Clef, Measure, Track } from "../../index.js";
+import type { Clef, Measure, Track } from "../../index";
 
 /**
  * The clef `measures[index]` is read in, given the track's own clef as the

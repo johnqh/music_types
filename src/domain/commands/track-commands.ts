@@ -6,12 +6,12 @@
  * the MIDI importer rather than a note at a time. Generation still appends a
  * single produced track, which is this.
  */
-import { touchMetadata, withTracks } from "./reflow.js";
-import { transformCommand } from "./snapshot.js";
-import { restMeasureLike } from "./structure-commands.js";
-import { createId } from "../score/ids.js";
-import type { Track } from "../../index.js";
-import type { ScoreCommand } from "./types.js";
+import { touchMetadata, withTracks } from "./reflow";
+import { transformCommand } from "./snapshot";
+import { restMeasureLike } from "./structure-commands";
+import { createId } from "../score/ids";
+import type { Track } from "../../index";
+import type { ScoreCommand } from "./types";
 
 /**
  * Appends `track` to the score, re-homed onto the score's own measure grid.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { gmWrittenTransposition, gmIsTransposing } from "./gm-transposition.js";
-import { GM_INSTRUMENTS } from "./gm.js";
+import { gmWrittenTransposition, gmIsTransposing } from "./gm-transposition";
+import { GM_INSTRUMENTS } from "./gm";
 
 describe("gmWrittenTransposition", () => {
   it("writes B-flat instruments a tone above what they sound", () => {

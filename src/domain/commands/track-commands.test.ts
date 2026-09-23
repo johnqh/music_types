@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { createEmptyScore } from "../score/factory.js";
-import { addNoteCommand } from "./note-commands.js";
-import { allNotes } from "../score/queries.js";
-import { appendTrackCommand } from "./track-commands.js";
-import type { Score } from "../../index.js";
+import { createEmptyScore } from "../score/factory";
+import { addNoteCommand } from "./note-commands";
+import { allNotes } from "../score/queries";
+import { appendTrackCommand } from "./track-commands";
+import type { Score } from "../../index";
 
 const pitch = (step: string, octave = 4) =>
   ({

@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { createEmptyScore } from "../../domain/score/factory.js";
-import { emptySelection } from "../../domain/selection/types.js";
-import type { ScoreSelection } from "../../domain/selection/types.js";
+import { createEmptyScore } from "../../domain/score/factory";
+import { emptySelection } from "../../domain/selection/types";
+import type { ScoreSelection } from "../../domain/selection/types";
 import {
   applyCandidate,
   prepareRegenerationRequest,
   prepareRegenerationRequestForRange,
-} from "./controller.js";
-import type { RegenerationCandidate } from "../../index.js";
+} from "./controller";
+import type { RegenerationCandidate } from "../../index";
 
 function scoreWithMeasures(measureCount = 6) {
   return createEmptyScore({

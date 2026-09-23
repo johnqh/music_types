@@ -8,8 +8,8 @@
  * the Fine the first time it is met, which is roughly half the score.
  */
 import { describe, expect, it } from "vitest";
-import type { Measure, Score } from "../../index.js";
-import { repeatPlayOrder } from "./repeat-order.js";
+import type { Measure, Score } from "../../index";
+import { repeatPlayOrder } from "./repeat-order";
 
 /** A score of `n` bars, with per-bar marks applied by index. */
 function score(n: number, marks: Record<number, Partial<Measure>> = {}): Score {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { GM_INSTRUMENTS } from "./gm.js";
-import { FULL_KEYBOARD, gmInstrumentRange } from "./gm-range.js";
+import { GM_INSTRUMENTS } from "./gm";
+import { FULL_KEYBOARD, gmInstrumentRange } from "./gm-range";
 
 describe("gmInstrumentRange", () => {
   it("gives every one of the 128 programs a usable range", () => {

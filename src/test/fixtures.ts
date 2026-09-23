@@ -34,14 +34,14 @@ import type {
   Score,
   TimeSignature,
   Track,
-} from "../index.js";
-import { measureDurationTicks, ticksFor } from "../index.js";
+} from "../index";
+import { measureDurationTicks, ticksFor } from "../index";
 import {
   DEFAULT_KEY_SIGNATURE,
   DEFAULT_TIME_SIGNATURE,
   PITCH_STEPS,
-} from "../index.js";
-import type { DurationName } from "../index.js";
+} from "../index";
+import type { DurationName } from "../index";
 
 export const FIXED_TIMESTAMP = "2024-01-01T00:00:00.000Z";
 

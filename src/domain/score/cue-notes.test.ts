@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { createEmptyScore } from "./factory.js";
-import { addNoteCommand } from "../commands/note-commands.js";
-import { applyCues, measureCues } from "./cue-notes.js";
-import { isNoteEvent } from "../../index.js";
-import type { Pitch, Score } from "../../index.js";
+import { createEmptyScore } from "./factory";
+import { addNoteCommand } from "../commands/note-commands";
+import { applyCues, measureCues } from "./cue-notes";
+import { isNoteEvent } from "../../index";
+import type { Pitch, Score } from "../../index";
 
 const pitch = (step: string, octave = 4): Pitch =>
   ({ step, accidental: 0, octave }) as unknown as Pitch;

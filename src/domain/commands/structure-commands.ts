@@ -7,13 +7,13 @@ import {
   appendMeasure,
   createTrack,
   rebuildMeasureTicks,
-} from "../score/factory.js";
-import { gmKitAt } from "../instruments/gm-kit.js";
-import { gmInstrument } from "../instruments/gm.js";
-import type { CreateTrackOptions } from "../score/factory.js";
-import { createId } from "../score/ids.js";
-import { clefAtMeasure } from "../score/effective-clef.js";
-import { beatDurationTicks, measureDurationTicks } from "../time/ticks.js";
+} from "../score/factory";
+import { gmKitAt } from "../instruments/gm-kit";
+import { gmInstrument } from "../instruments/gm";
+import type { CreateTrackOptions } from "../score/factory";
+import { createId } from "../score/ids";
+import { clefAtMeasure } from "../score/effective-clef";
+import { beatDurationTicks, measureDurationTicks } from "../time/ticks";
 import type {
   BarlineStyle,
   Clef,
@@ -25,10 +25,10 @@ import type {
   TimeSignature,
   Track,
   UUID,
-} from "../../index.js";
-import type { CommandKind, ScoreCommand } from "./types.js";
-import { transformCommand } from "./snapshot.js";
-import { reflowVoice, touchMetadata, withTracks } from "./reflow.js";
+} from "../../index";
+import type { CommandKind, ScoreCommand } from "./types";
+import { transformCommand } from "./snapshot";
+import { reflowVoice, touchMetadata, withTracks } from "./reflow";
 
 // ---- addMeasureCommand / deleteMeasureCommand ----------------------------------
 

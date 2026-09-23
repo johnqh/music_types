@@ -5,7 +5,7 @@
  * the keyboard's two jobs is testable on its own, in the same shape as
  * `tap-to-note.ts` and `pitch-drag.ts`.
  */
-import type { NoteEvent } from "../../index.js";
+import type { NoteEvent } from "../../index";
 
 export type ChordSelection = {
   startTick: number;

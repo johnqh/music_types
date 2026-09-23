@@ -14,7 +14,7 @@
  * deliberately does NOT describe what a synthesizer patch can do — polyphony
  * there is a setting, not a limit — so every synth family is unlimited.
  */
-import { gmSpec, UNLIMITED_POLYPHONY } from "./gm-catalogue.js";
+import { gmSpec, UNLIMITED_POLYPHONY } from "./gm-catalogue";
 
 /**
  * `UNLIMITED_POLYPHONY` is declared in `gm-catalogue.ts` and re-exported here,

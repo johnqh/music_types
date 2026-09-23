@@ -4,7 +4,7 @@ import {
   GM_PERCUSSION_RANGE,
   gmPercussion,
   gmPercussionName,
-} from "./gm-percussion.js";
+} from "./gm-percussion";
 
 describe("gmPercussion", () => {
   it("covers every note in the General MIDI percussion range, with no gaps", () => {

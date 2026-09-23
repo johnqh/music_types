@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { createEmptyScore } from "../score/factory.js";
-import { allNotes } from "../score/queries.js";
-import { addNoteCommand, deleteEventsCommand } from "./note-commands.js";
-import { closeGap, insertWithRippleCommand } from "./ripple-commands.js";
-import type { Pitch, Score } from "../../index.js";
+import { createEmptyScore } from "../score/factory";
+import { allNotes } from "../score/queries";
+import { addNoteCommand, deleteEventsCommand } from "./note-commands";
+import { closeGap, insertWithRippleCommand } from "./ripple-commands";
+import type { Pitch, Score } from "../../index";
 
 const pitch = (step: string, octave = 4): Pitch =>
   ({ step, accidental: 0, octave }) as unknown as Pitch;

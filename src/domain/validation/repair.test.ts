@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { repairScore } from "./repair.js";
-import { validateScore } from "./validator.js";
-import { ISSUE_CODES } from "./issues.js";
-import { twinkleScore, twoTrackScore } from "../../test/fixtures.js";
-import type { NoteEvent, Score } from "../../index.js";
+import { repairScore } from "./repair";
+import { validateScore } from "./validator";
+import { ISSUE_CODES } from "./issues";
+import { twinkleScore, twoTrackScore } from "../../test/fixtures";
+import type { NoteEvent, Score } from "../../index";
 
 /** Applies `edit` to the first voice of the first measure of the first track. */
 function editFirstVoice(

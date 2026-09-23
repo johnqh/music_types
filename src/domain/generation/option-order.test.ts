@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { sortOptionsByLabel } from "./option-order.js";
+import { sortOptionsByLabel } from "./option-order";
 
 describe("sortOptionsByLabel", () => {
   it("orders values by their label, not by the value itself", () => {

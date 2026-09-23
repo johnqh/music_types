@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { MusicalEvent } from "../../index.js";
-import { ticksFor } from "./ticks.js";
-import { tupletGroups } from "./tuplets.js";
+import type { MusicalEvent } from "../../index";
+import { ticksFor } from "./ticks";
+import { tupletGroups } from "./tuplets";
 
 const PPQ = 480;
 

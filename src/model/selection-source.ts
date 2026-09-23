@@ -13,7 +13,7 @@
  * mirrors rather than duplicates, and the two cannot drift apart. Nothing here
  * is a second copy of the truth that somebody has to remember to update.
  */
-import type { ScoreSelection, UUID } from "../index.js";
+import type { ScoreSelection, UUID } from "../index";
 
 /** Undoes a `subscribe`. */
 export type UnsubscribeSelection = () => void;

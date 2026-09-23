@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { createEmptyScore } from "./factory.js";
-import { extractFragment, replaceFragment } from "./fragment.js";
-import { isNoteEvent } from "../../index.js";
-import type { Measure, NoteEvent } from "../../index.js";
+import { createEmptyScore } from "./factory";
+import { extractFragment, replaceFragment } from "./fragment";
+import { isNoteEvent } from "../../index";
+import type { Measure, NoteEvent } from "../../index";
 
 describe("extractFragment", () => {
   it("captures the range, score ppq, and per-track measures overlapping the range", () => {

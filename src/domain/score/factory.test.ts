@@ -4,9 +4,9 @@ import {
   createEmptyScore,
   createTrack,
   rebuildMeasureTicks,
-} from "./factory.js";
-import { isRestEvent } from "../../index.js";
-import { measureDurationTicks } from "../time/ticks.js";
+} from "./factory";
+import { isRestEvent } from "../../index";
+import { measureDurationTicks } from "../time/ticks";
 
 describe("createTrack", () => {
   it("fills in defaults for an unspecified instrument track", () => {

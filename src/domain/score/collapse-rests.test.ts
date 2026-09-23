@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { collapseRests, isSilentMeasure } from "./collapse-rests.js";
-import type { KeySignature, Measure, TimeSignature } from "../../index.js";
+import { collapseRests, isSilentMeasure } from "./collapse-rests";
+import type { KeySignature, Measure, TimeSignature } from "../../index";
 
 const FOUR_FOUR: TimeSignature = { numerator: 4, denominator: 4 };
 const C_MAJOR: KeySignature = { fifths: 0, mode: "major" };

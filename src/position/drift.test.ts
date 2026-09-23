@@ -13,7 +13,7 @@
  * A fake clock makes the difference exact and the result reproducible.
  */
 import { describe, expect, it, vi, afterEach } from "vitest";
-import { MusicPosition } from "./music-position.js";
+import { MusicPosition } from "./music-position";
 
 /** 120bpm at 480ppq: two quarters a second, so 960 ticks a second. */
 const TICKS_PER_SECOND = 960;

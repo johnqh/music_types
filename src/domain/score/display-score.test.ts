@@ -8,13 +8,13 @@
  * or exactly an instrument's interval.
  */
 import { describe, expect, it } from "vitest";
-import type { NoteEvent, Score } from "../../index.js";
-import { isNoteEvent } from "../../index.js";
-import { twinkleScore } from "../../test/fixtures.js";
-import { toggleOttavaCommand } from "../commands/note-marks.js";
-import { displayScore } from "./display-score.js";
-import { ottavaScore } from "./ottava.js";
-import { writtenScore } from "./written-pitch.js";
+import type { NoteEvent, Score } from "../../index";
+import { isNoteEvent } from "../../index";
+import { twinkleScore } from "../../test/fixtures";
+import { toggleOttavaCommand } from "../commands/note-marks";
+import { displayScore } from "./display-score";
+import { ottavaScore } from "./ottava";
+import { writtenScore } from "./written-pitch";
 
 function notes(score: Score): NoteEvent[] {
   return score.tracks[0].measures

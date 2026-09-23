@@ -1,5 +1,5 @@
-import type { KeySignature, Pitch, PitchStep } from "../../index.js";
-import { midiToPitch, pitchToMidi } from "./pitch.js";
+import type { KeySignature, Pitch, PitchStep } from "../../index";
+import { midiToPitch, pitchToMidi } from "./pitch";
 
 /**
  * Transposes a pitch by a number of semitones (may be negative), re-spelling

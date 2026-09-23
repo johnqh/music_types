@@ -33,7 +33,7 @@
 import type {
   IMusicPositionSource,
   UnsubscribePosition,
-} from "../model/position.js";
+} from "../model/position";
 
 /**
  * How far the playhead may be projected past its last report.

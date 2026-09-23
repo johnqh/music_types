@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isVocalProgram } from "./arrangement-order.js";
+import { isVocalProgram } from "./arrangement-order";
 import {
   DEFAULT_VOCAL_INSTRUMENT_VALUE,
   FAMILY_GROUPS,
@@ -7,7 +7,7 @@ import {
   VOICE_OPTIONS,
   instrumentChoiceFor,
   isVocalInstrumentValue,
-} from "./instrument-options.js";
+} from "./instrument-options";
 
 describe("the voice group", () => {
   it("offers the three programs that are a human voice, solo patch first", () => {

@@ -4,8 +4,8 @@
  * random). A bad value in any tier is a track the dialog cannot build.
  */
 import { describe, expect, it } from "vitest";
-import { GENERATE_SCORE_STYLE_PRESETS } from "./style-presets.js";
-import { instrumentChoiceFor, isVocalInstrumentValue } from "../instruments/instrument-options.js";
+import { GENERATE_SCORE_STYLE_PRESETS } from "./style-presets";
+import { instrumentChoiceFor, isVocalInstrumentValue } from "../instruments/instrument-options";
 
 describe("style instrument tiers", () => {
   const styles = Object.entries(GENERATE_SCORE_STYLE_PRESETS);

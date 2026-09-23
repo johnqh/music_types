@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { ticksFor } from "../../index.js";
-import type { NoteEvent } from "../../index.js";
-import { durationDisplay } from "./duration-selection.js";
+import { ticksFor } from "../../index";
+import type { NoteEvent } from "../../index";
+import { durationDisplay } from "./duration-selection";
 
 const PPQ = 480;
 

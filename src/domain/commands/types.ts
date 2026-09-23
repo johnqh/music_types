@@ -3,7 +3,7 @@
  * and `undo` each take a `Score` and return a new `Score`, never mutating
  * their input, holding a store reference, or performing I/O.
  */
-import type { Score } from "../../index.js";
+import type { Score } from "../../index";
 
 /**
  * Whether a command changes the music or only how it is mixed.

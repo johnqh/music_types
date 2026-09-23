@@ -6,8 +6,8 @@
  * meaning of each input is music_editing's. The shapes they pass between them
  * are declared here once, so neither package restates the other's.
  */
-import type { Pitch, UUID } from "../../model/score.js";
-import type { PitchDisplay } from "../score/display-score.js";
+import type { Pitch, UUID } from "../../model/score";
+import type { PitchDisplay } from "../score/display-score";
 
 // ---- a press on the score ------------------------------------------------------
 

@@ -5,12 +5,12 @@
  * spec §12 item 13 / §15.
  */
 import { current } from "immer";
-import { replaceFragment } from "../score/fragment.js";
-import type { ScoreFragment } from "../score/fragment.js";
-import type { ScoreRange } from "../selection/types.js";
-import type { Score } from "../../index.js";
-import type { ScoreCommand } from "./types.js";
-import { snapshotCommand } from "./snapshot.js";
+import { replaceFragment } from "../score/fragment";
+import type { ScoreFragment } from "../score/fragment";
+import type { ScoreRange } from "../selection/types";
+import type { Score } from "../../index";
+import type { ScoreCommand } from "./types";
+import { snapshotCommand } from "./snapshot";
 
 /** 1-based inclusive [min, max] measure index label span across every track in `fragment`, or `null` if it has no measures. */
 function measureIndexSpan(

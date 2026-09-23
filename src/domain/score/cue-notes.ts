@@ -8,15 +8,15 @@
  * Print-only: a stored score carries none, and the whole-score print gets none
  * either, because a conductor is already looking at every part.
  */
-import { isNoteEvent } from "../../index.js";
-import { isSilentMeasure } from "./collapse-rests.js";
+import { isNoteEvent } from "../../index";
+import { isSilentMeasure } from "./collapse-rests";
 import type {
   Measure,
   MeasureCue,
   MusicalEvent,
   Score,
   Track,
-} from "../../index.js";
+} from "../../index";
 
 /**
  * Shortest rest that earns a cue.

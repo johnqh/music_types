@@ -1,13 +1,13 @@
 import { z } from "zod";
-import type { KeySignature } from "../../model/score.js";
+import type { KeySignature } from "../../model/score";
 import {
   DEFAULT_VOCAL_INSTRUMENT_VALUE,
   isVocalInstrumentValue,
-} from "../instruments/instrument-options.js";
+} from "../instruments/instrument-options";
 import {
   measuresForSeconds,
   SONG_SECONDS,
-} from "../notation/music-vocabulary.js";
+} from "../notation/music-vocabulary";
 
 /**
  * The keyword values the generation prompt parser branches on.

@@ -35,7 +35,7 @@ import {
   CLEFS,
   DYNAMICS,
   ORNAMENTS,
-} from "../../model/score.js";
+} from "../../model/score";
 import type {
   Accidental,
   Articulation,
@@ -45,7 +45,7 @@ import type {
   Dynamic,
   KeySignature,
   Ornament,
-} from "../../model/score.js";
+} from "../../model/score";
 
 /** "No marking here", distinct from a marking that happens to be quiet. */
 export const NO_MARK = "none";

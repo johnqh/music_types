@@ -5,8 +5,8 @@
  * The model and the rules (`scoreContextMenuModel`, `selectionKind`,
  * `canPasteInto`) are music_editing's. Keys, never words.
  */
-import type { NoteEvent, Track } from "../../model/score.js";
-import type { MeasureSlice } from "../commands/clipboard-commands.js";
+import type { NoteEvent, Track } from "../../model/score";
+import type { MeasureSlice } from "../commands/clipboard-commands";
 
 /**
  * What a selection is *of*. **Notes win, then measures, then tracks** — see

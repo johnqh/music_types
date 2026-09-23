@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { preferredLanguage } from "./device-prefs.js";
+import { preferredLanguage } from "./device-prefs";
 
 /**
  * Ported from music_app's `languages.test.ts`, which is where this rule was
