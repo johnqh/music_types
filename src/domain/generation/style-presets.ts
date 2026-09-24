@@ -523,8 +523,12 @@ const STYLE_PRESET_SOURCE: Readonly<
     keys: [0, 1, -1, 2, -2],
     timeSignature: "4/4",
     // Shorter than the typical song, on purpose: the smallest of the three
-    // sizes, in both forces and duration.
-    seconds: 150,
+    // sizes, in both forces and duration. Not 150 itself: `measuresForSeconds`
+    // rounds to the nearest whole four-bar group, and at this tempo 150s
+    // rounds DOWN to 64 bars (147.7s actual) — under the "a listener would
+    // call it a song" floor `request.test.ts` checks. 156 rounds to 68 bars,
+    // 156.9s actual, clearing it with margin on either side of the rounding.
+    seconds: 156,
   },
   symphonyMedium: {
     // "eighteenth-century", not "classical": see symphonySmall's comment
