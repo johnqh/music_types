@@ -712,6 +712,9 @@ export function setUnpluggedListenerCommand(
     label,
     (score) => withUnpluggedListener(score, patch),
     "mix",
+    // Every listener move folds into the previous one: a walk is one undo
+    // entry, not one per frame.
+    "unplugged-listener",
   );
 }
 
@@ -739,6 +742,9 @@ export function setUnpluggedTrackPositionCommand(
     label,
     (score) => withUnpluggedTrackPosition(score, trackId, point),
     "mix",
+    // Per track: dragging one instrument is one undo entry, dragging two
+    // in turn is two.
+    `unplugged-track:${trackId}`,
   );
 }
 

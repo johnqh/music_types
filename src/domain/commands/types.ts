@@ -27,6 +27,17 @@ export type ScoreCommand = {
    * admitted by a convenient default.
    */
   kind: CommandKind;
+  /**
+   * When set, `HistoryManager.execute` folds this command into the previous
+   * one if that carries the same key, so a stream of tiny updates — the
+   * listener walking across the Spatial stage at sixty commands a second —
+   * is one undo entry that restores where the walk started, not thousands
+   * that evict every real edit from a 200-deep history. Only for commands
+   * whose `undo` restores by replacing whole values (the Immer-patch
+   * commands do), so the *first* command's undo is still right after the
+   * later ones ran.
+   */
+  coalesceKey?: string;
   execute(score: Score): Score;
   undo(score: Score): Score;
 };

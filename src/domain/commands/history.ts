@@ -9,6 +9,19 @@ import type { ScoreCommand } from "./types";
 
 const DEFAULT_LIMIT = 200;
 
+/** `first`'s undo with `latest`'s execute — see `ScoreCommand.coalesceKey`. */
+function coalesced(first: ScoreCommand, latest: ScoreCommand): ScoreCommand {
+  return {
+    id: first.id,
+    label: latest.label,
+    timestamp: first.timestamp,
+    kind: latest.kind,
+    coalesceKey: first.coalesceKey,
+    execute: (score) => latest.execute(score),
+    undo: (score) => first.undo(score),
+  };
+}
+
 export class HistoryManager {
   private readonly limit: number;
   private undoStack: ScoreCommand[] = [];
@@ -26,9 +39,17 @@ export class HistoryManager {
    */
   execute(cmd: ScoreCommand, score: Score): Score {
     const next = cmd.execute(score);
-    this.undoStack.push(cmd);
-    if (this.undoStack.length > this.limit) {
-      this.undoStack.shift();
+    const top = this.undoStack[this.undoStack.length - 1];
+    if (cmd.coalesceKey !== undefined && top?.coalesceKey === cmd.coalesceKey) {
+      // Fold into the previous entry: it keeps its own undo (which restores
+      // the state before the whole run began) and takes on the newest
+      // command's execute and label, so redo replays the run's end state.
+      this.undoStack[this.undoStack.length - 1] = coalesced(top, cmd);
+    } else {
+      this.undoStack.push(cmd);
+      if (this.undoStack.length > this.limit) {
+        this.undoStack.shift();
+      }
     }
     this.redoStack = [];
     return next;

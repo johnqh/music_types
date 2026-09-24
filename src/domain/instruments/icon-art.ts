@@ -24,8 +24,13 @@ export const ICON_VIEWBOX = 24;
 /**
  * Stroke width in viewbox units. Scales with the icon, so the weight stays
  * proportional at any size rather than going hairline when drawn small.
+ *
+ * 1.0, down from 1.6: the icons are projected from the 3D models now
+ * (`icon-from-model.ts`) and carry several times the line work of the
+ * hand-drawn set the heavier stroke was tuned for — at 1.6 a violin's
+ * strings and bow merged into one smear at gutter size.
  */
-export const ICON_STROKE_WIDTH = 1.6;
+export const ICON_STROKE_WIDTH = 1.0;
 
 export type IconShape =
   | { readonly kind: "path"; readonly d: string }

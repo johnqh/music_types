@@ -32,6 +32,8 @@ import { GM_PERCUSSION_RANGE } from "./gm-percussion";
 import { gmInstrumentIcon, gmKitIcon } from "./gm-icon";
 import type { InstrumentIconArt } from "./icon-art";
 import { gmInstrument } from "./gm";
+import { gmSpatialModelFor, gmKitSpatialModel } from "./gm-spatial-model";
+import type { PlayedInstrumentModel } from "./spatial-art";
 
 /** Whether `track`'s `midiProgram` addresses a drum kit rather than an instrument. */
 export function isPercussionTrack(track: Pick<Track, "clef">): boolean {
@@ -127,8 +129,20 @@ export function trackInstrumentIcon(
   track: Pick<Track, "clef" | "midiProgram">,
 ): InstrumentIconArt {
   return isPercussionTrack(track)
-    ? gmKitIcon()
+    ? gmKitIcon(gmKitAt(track.midiProgram).program)
     : gmInstrumentIcon(track.midiProgram);
+}
+
+/** The 3D "Spatial" view model for `track` — a kit on a percussion track,
+ *  its instrument's played pose otherwise. Same clef-aware split as
+ *  `trackInstrumentIcon`, for the same reason: a percussion track's program
+ *  addresses a kit, not whatever melodic instrument shares that number. */
+export function trackSpatialModel(
+  track: Pick<Track, "clef" | "midiProgram">,
+): PlayedInstrumentModel {
+  return isPercussionTrack(track)
+    ? gmKitSpatialModel(gmKitAt(track.midiProgram).program)
+    : gmSpatialModelFor(track.midiProgram);
 }
 
 /** What to call `track`'s sound: its kit's name on a percussion track, its instrument's otherwise. */

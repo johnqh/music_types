@@ -39,6 +39,7 @@ export function snapshotCommand(
   label: string,
   mutate: (draft: Draft<Score>) => void,
   kind: CommandKind = "content",
+  coalesceKey?: string,
 ): ScoreCommand {
   let inversePatches: Patch[] | null = null;
 
@@ -47,6 +48,7 @@ export function snapshotCommand(
     label,
     timestamp: Date.now(),
     kind,
+    ...(coalesceKey === undefined ? {} : { coalesceKey }),
     execute(score: Score): Score {
       const [next, , inverse] = produceWithPatches(score, mutate);
       inversePatches = inverse;
@@ -71,6 +73,7 @@ export function transformCommand(
   label: string,
   transform: (score: Score) => Score,
   kind: CommandKind = "content",
+  coalesceKey?: string,
 ): ScoreCommand {
   return snapshotCommand(
     label,
@@ -79,5 +82,6 @@ export function transformCommand(
       Object.assign(draft, next);
     },
     kind,
+    coalesceKey,
   );
 }
