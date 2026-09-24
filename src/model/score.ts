@@ -152,12 +152,12 @@ export type RepeatJump = (typeof REPEAT_JUMPS)[number];
  * of them gained a jump.
  */
 export const REPEAT_JUMP_LABEL: Record<RepeatJump, string> = {
-  'da-capo': 'D.C.',
-  'da-capo-al-fine': 'D.C. al Fine',
-  'da-capo-al-coda': 'D.C. al Coda',
-  'dal-segno': 'D.S.',
-  'dal-segno-al-fine': 'D.S. al Fine',
-  'dal-segno-al-coda': 'D.S. al Coda',
+  "da-capo": "D.C.",
+  "da-capo-al-fine": "D.C. al Fine",
+  "da-capo-al-coda": "D.C. al Coda",
+  "dal-segno": "D.S.",
+  "dal-segno-al-fine": "D.S. al Fine",
+  "dal-segno-al-coda": "D.S. al Coda",
 };
 
 /**
@@ -535,6 +535,42 @@ export type Track = {
   measures: Measure[];
 };
 
+/**
+ * A position on the Unplugged stage's ground plane. Arbitrary units, not a
+ * physical distance — only positions relative to each other and to the
+ * listener matter. `+x` is to the listener's default right, `+z` is straight
+ * ahead of the listener's default facing (into the half-circle).
+ */
+export type UnpluggedPoint = {
+  x: number;
+  z: number;
+};
+
+/** Where the listener stands on the Unplugged stage, and which way they face. */
+export type UnpluggedListener = UnpluggedPoint & {
+  /** Degrees, clockwise-positive, `0` = facing straight ahead (`+z`). */
+  facingDeg: number;
+};
+
+/**
+ * The instrument arrangement for Unplugged mode.
+ *
+ * See `effectiveUnpluggedArrangement` and `unpluggedMixFor` in music_lib for
+ * how this turns into an actual volume and pan per track — this type is only
+ * the stored positions.
+ *
+ * A track absent from `tracks` has never been explicitly placed (never
+ * dragged, or added to the score after the arrangement existed) and falls
+ * back to its default half-circle slot. `Score.unplugged` itself is absent
+ * on an untouched project — nothing is written here until a reader first
+ * drags something, so opening Unplugged mode on an ordinary project costs
+ * nothing in the saved score.
+ */
+export type UnpluggedArrangement = {
+  listener: UnpluggedListener;
+  tracks: Readonly<Record<UUID, UnpluggedPoint>>;
+};
+
 export type ScoreMetadata = {
   title: string;
   composer?: string;
@@ -550,6 +586,8 @@ export type Score = {
   metadata: ScoreMetadata;
   tempoMap: TempoEvent[];
   tracks: Track[];
+  /** The Unplugged-mode instrument arrangement. See `UnpluggedArrangement`. */
+  unplugged?: UnpluggedArrangement;
 };
 
 // ---------------------------------------------------------------------------

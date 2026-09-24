@@ -206,6 +206,20 @@ export const scoreMetadataSchema = z.object({
   updatedAt: z.string(),
 });
 
+export const unpluggedPointSchema = z.object({
+  x: z.number(),
+  z: z.number(),
+});
+
+export const unpluggedListenerSchema = unpluggedPointSchema.extend({
+  facingDeg: z.number(),
+});
+
+export const unpluggedArrangementSchema = z.object({
+  listener: unpluggedListenerSchema,
+  tracks: z.record(uuidSchema, unpluggedPointSchema),
+});
+
 export const scoreSchema = z.object({
   id: uuidSchema,
   version: z.number().int().nonnegative(),
@@ -213,6 +227,7 @@ export const scoreSchema = z.object({
   metadata: scoreMetadataSchema,
   tempoMap: z.array(tempoEventSchema),
   tracks: z.array(trackSchema),
+  unplugged: unpluggedArrangementSchema.optional(),
 });
 
 /** Parses and validates untrusted JSON as a `Score`. Throws `ZodError` on invalid input. */

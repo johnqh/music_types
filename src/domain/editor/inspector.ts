@@ -18,8 +18,18 @@ import type { INHERIT_CLEF } from "../notation/picker-options";
  *
  * `measure` is the id and the model's word; the label is "Bar" (see the app's
  * copy), because the reader is shown a bar and the code keeps `Measure`.
+ *
+ * `unplugged` is last, never auto-selected the way `defaultInspectorTab`
+ * picks Note or Bar from a selection — a reader reaches it only by tapping
+ * it, same as Score.
  */
-export const INSPECTOR_TABS = ["score", "track", "note", "measure"] as const;
+export const INSPECTOR_TABS = [
+  "score",
+  "track",
+  "note",
+  "measure",
+  "unplugged",
+] as const;
 
 export type InspectorTab = (typeof INSPECTOR_TABS)[number];
 
@@ -29,6 +39,7 @@ export const INSPECTOR_TAB_LABEL_KEY: Record<InspectorTab, string> = {
   track: "inspector.track",
   note: "inspector.note",
   measure: "inspector.measure",
+  unplugged: "inspector.unplugged",
 };
 
 /**
@@ -44,6 +55,15 @@ export const MIX_ONLY_CONTROLS = [
   "trackPan",
   "trackMute",
   "trackSolo",
+  /**
+   * Dragging an instrument or the listener, or turning the listener's
+   * facing. One name for the whole Unplugged canvas rather than one per
+   * gesture — the commands underneath (`setUnpluggedListenerCommand`,
+   * `setUnpluggedTrackPositionCommand`) are already `kind: "mix"`, so this
+   * is only what decides whether the canvas *renders* as locked; a reader
+   * dragging the stage while the piece plays is the point of the feature.
+   */
+  "unpluggedArrangement",
 ] as const;
 
 export type MixOnlyControl = (typeof MIX_ONLY_CONTROLS)[number];

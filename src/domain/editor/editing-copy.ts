@@ -69,6 +69,10 @@ export const COMMAND_LABEL_KEYS = [
   "toggleSlur",
   "toggleTie",
   "transpose",
+  "moveUnpluggedListener",
+  "turnUnpluggedListener",
+  "moveUnpluggedTrack",
+  "resetUnpluggedArrangement",
 ] as const;
 
 export type CommandLabelKey = (typeof COMMAND_LABEL_KEYS)[number];

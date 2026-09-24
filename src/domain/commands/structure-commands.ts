@@ -24,6 +24,8 @@ import type {
   TempoEvent,
   TimeSignature,
   Track,
+  UnpluggedListener,
+  UnpluggedPoint,
   UUID,
 } from "../../index";
 import type { CommandKind, ScoreCommand } from "./types";
@@ -46,7 +48,10 @@ export function insertBlankMeasuresCommand(
   return transformCommand(label, (score) => {
     const amount = Math.max(0, Math.floor(count));
     if (amount === 0 || score.tracks.length === 0) return score;
-    const safeIndex = Math.max(0, Math.min(atIndex, score.tracks[0]!.measures.length));
+    const safeIndex = Math.max(
+      0,
+      Math.min(atIndex, score.tracks[0]!.measures.length),
+    );
     const tracks = score.tracks.map((track) => {
       const template =
         track.measures[safeIndex] ?? track.measures[track.measures.length - 1];
@@ -668,5 +673,91 @@ export function changeTrackPropsCommand(
     label,
     (score) => changeTrackProps(score, trackId, patch),
     trackPatchKind(patch),
+  );
+}
+
+// ---- Unplugged arrangement commands ------------------------------------------------
+
+/**
+ * All three are `kind: "mix"`, the same carve-out `changeTrackPropsCommand`
+ * uses for volume/pan/mute/solo — dragging the stage has to work while the
+ * transport plays, which is the entire point of hearing the mix change live,
+ * and `commandAllowed` only lets `"mix"` commands through during playback.
+ */
+
+function withUnpluggedListener(
+  score: Score,
+  patch: Partial<UnpluggedListener>,
+): Score {
+  const current: UnpluggedListener = score.unplugged?.listener ?? {
+    x: 0,
+    z: 0,
+    facingDeg: 0,
+  };
+  return {
+    ...score,
+    unplugged: {
+      listener: { ...current, ...patch },
+      tracks: score.unplugged?.tracks ?? {},
+    },
+  };
+}
+
+/** Moves and/or turns the listener. A patch, not a full replace, so a drag can send `{x, z}` and a turn `{facingDeg}` independently. */
+export function setUnpluggedListenerCommand(
+  patch: Partial<UnpluggedListener>,
+  label: string,
+): ScoreCommand {
+  return transformCommand(
+    label,
+    (score) => withUnpluggedListener(score, patch),
+    "mix",
+  );
+}
+
+function withUnpluggedTrackPosition(
+  score: Score,
+  trackId: UUID,
+  point: UnpluggedPoint,
+): Score {
+  return {
+    ...score,
+    unplugged: {
+      listener: score.unplugged?.listener ?? { x: 0, z: 0, facingDeg: 0 },
+      tracks: { ...(score.unplugged?.tracks ?? {}), [trackId]: point },
+    },
+  };
+}
+
+/** Moves one instrument to an explicit position on the stage. */
+export function setUnpluggedTrackPositionCommand(
+  trackId: UUID,
+  point: UnpluggedPoint,
+  label: string,
+): ScoreCommand {
+  return transformCommand(
+    label,
+    (score) => withUnpluggedTrackPosition(score, trackId, point),
+    "mix",
+  );
+}
+
+/**
+ * Clears the saved arrangement, reverting to the computed default half-circle
+ * — see `effectiveUnpluggedArrangement` in music_lib, which is what a reader
+ * sees immediately once this drops `score.unplugged` back to absent.
+ *
+ * Sets the field to `undefined` rather than omitting it from the returned
+ * object: `transformCommand` adopts a transform's result onto the Immer
+ * draft via `Object.assign`, which only ever *sets* keys present on the
+ * source object — a key missing from `rest` after destructuring is not
+ * copied at all, so the draft's existing `unplugged` would survive
+ * untouched. An explicit `undefined` is a key `Object.assign` does copy.
+ */
+export function resetUnpluggedArrangementCommand(label: string): ScoreCommand {
+  return transformCommand(
+    label,
+    (score) => ({ ...score, unplugged: undefined }),
+    "mix",
   );
 }

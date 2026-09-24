@@ -17,6 +17,9 @@ import {
   insertBlankMeasuresCommand,
   deleteMeasureCommand,
   deleteTrackCommand,
+  resetUnpluggedArrangementCommand,
+  setUnpluggedListenerCommand,
+  setUnpluggedTrackPositionCommand,
 } from "./structure-commands";
 
 function baseScore() {
@@ -43,9 +46,11 @@ describe("insertBlankMeasuresCommand", () => {
   it("inserts rested bars at the requested index across every track", () => {
     const score = twoTrackScore();
     const next = insertBlankMeasuresCommand(1, 2, "Insert bars").execute(score);
-    expect(next.tracks.map(track => track.measures.length)).toEqual([6, 6]);
+    expect(next.tracks.map((track) => track.measures.length)).toEqual([6, 6]);
     expect(next.tracks[0]!.measures[1]!.voices[0]!.events).toHaveLength(1);
-    expect(isNoteEvent(next.tracks[0]!.measures[1]!.voices[0]!.events[0]!)).toBe(false);
+    expect(
+      isNoteEvent(next.tracks[0]!.measures[1]!.voices[0]!.events[0]!),
+    ).toBe(false);
     expect(next.tracks[0]!.measures[5]!.index).toBe(5);
   });
 });
@@ -589,5 +594,122 @@ describe("changeRepeatsCommand", () => {
     expect(validateScore(result).filter((i) => i.severity === "error")).toEqual(
       [],
     );
+  });
+});
+
+describe("setUnpluggedListenerCommand", () => {
+  it("creates the arrangement from an all-default listener on first move", () => {
+    const score = baseScore();
+    const cmd = setUnpluggedListenerCommand({ x: 1, z: 2 }, "Move listener");
+
+    const next = cmd.execute(score);
+    expect(next.unplugged).toEqual({
+      listener: { x: 1, z: 2, facingDeg: 0 },
+      tracks: {},
+    });
+    expect(cmd.undo(next)).toEqual(score);
+  });
+
+  it("patches rather than replaces, so a turn does not move the listener", () => {
+    const score = setUnpluggedListenerCommand(
+      { x: 3, z: 4, facingDeg: 10 },
+      "Move listener",
+    ).execute(baseScore());
+
+    const turned = setUnpluggedListenerCommand(
+      { facingDeg: 45 },
+      "Turn listener",
+    ).execute(score);
+
+    expect(turned.unplugged?.listener).toEqual({ x: 3, z: 4, facingDeg: 45 });
+  });
+
+  it("leaves any placed tracks alone", () => {
+    const score = setUnpluggedTrackPositionCommand(
+      "t1",
+      { x: 5, z: 5 },
+      "Move instrument",
+    ).execute(baseScore());
+
+    const next = setUnpluggedListenerCommand(
+      { x: 1, z: 1 },
+      "Move listener",
+    ).execute(score);
+
+    expect(next.unplugged?.tracks).toEqual({ t1: { x: 5, z: 5 } });
+  });
+
+  it("is a mix command, so it works while the transport plays", () => {
+    expect(
+      setUnpluggedListenerCommand({ x: 1, z: 1 }, "Move listener").kind,
+    ).toBe("mix");
+  });
+});
+
+describe("setUnpluggedTrackPositionCommand", () => {
+  it("places one track and round-trips through undo", () => {
+    const score = baseScore();
+    const trackId = score.tracks[0].id;
+    const cmd = setUnpluggedTrackPositionCommand(
+      trackId,
+      { x: -2, z: 3 },
+      "Move instrument",
+    );
+
+    const next = cmd.execute(score);
+    expect(next.unplugged?.tracks[trackId]).toEqual({ x: -2, z: 3 });
+    expect(next.unplugged?.listener).toEqual({ x: 0, z: 0, facingDeg: 0 });
+    expect(cmd.undo(next)).toEqual(score);
+  });
+
+  it("moving a second track leaves the first where it was placed", () => {
+    const score = twoTrackScore();
+    const [first, second] = score.tracks;
+    const onePlaced = setUnpluggedTrackPositionCommand(
+      first.id,
+      { x: 1, z: 1 },
+      "Move instrument",
+    ).execute(score);
+
+    const bothPlaced = setUnpluggedTrackPositionCommand(
+      second.id,
+      { x: -1, z: 1 },
+      "Move instrument",
+    ).execute(onePlaced);
+
+    expect(bothPlaced.unplugged?.tracks).toEqual({
+      [first.id]: { x: 1, z: 1 },
+      [second.id]: { x: -1, z: 1 },
+    });
+  });
+
+  it("is a mix command, so it works while the transport plays", () => {
+    expect(
+      setUnpluggedTrackPositionCommand("t1", { x: 0, z: 0 }, "Move instrument")
+        .kind,
+    ).toBe("mix");
+  });
+});
+
+describe("resetUnpluggedArrangementCommand", () => {
+  it("drops the arrangement back to absent and round-trips through undo", () => {
+    const placed = setUnpluggedTrackPositionCommand(
+      "t1",
+      { x: 1, z: 1 },
+      "Move instrument",
+    ).execute(baseScore());
+    expect(placed.unplugged).toBeDefined();
+
+    const cmd = resetUnpluggedArrangementCommand("Reset arrangement");
+    const next = cmd.execute(placed);
+    expect(next.unplugged).toBeUndefined();
+    expect(cmd.undo(next)).toEqual(placed);
+  });
+
+  it("is a no-op, and still a mix command, on a score with no arrangement", () => {
+    const score = baseScore();
+    const cmd = resetUnpluggedArrangementCommand("Reset arrangement");
+    expect(cmd.execute(score)).toEqual(score);
+    expect(cmd.kind).toBe("mix");
   });
 });
