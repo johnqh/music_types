@@ -4,10 +4,7 @@ import {
   DEFAULT_VOCAL_INSTRUMENT_VALUE,
   isVocalInstrumentValue,
 } from "../instruments/instrument-options";
-import {
-  measuresForSeconds,
-  SONG_SECONDS,
-} from "../notation/music-vocabulary";
+import { measuresForSeconds, SONG_SECONDS } from "../notation/music-vocabulary";
 
 /**
  * The keyword values the generation prompt parser branches on.
@@ -48,6 +45,9 @@ const GENERATE_SCORE_STYLE_KEYS = [
   "disco",
   "classical",
   "baroque",
+  "symphonySmall",
+  "symphonyMedium",
+  "symphonyLarge",
   "march",
 ] as const;
 
@@ -131,7 +131,10 @@ const KIT = "kit:0";
 const VOICE = DEFAULT_VOCAL_INSTRUMENT_VALUE;
 
 const STYLE_PRESET_SOURCE: Readonly<
-  Record<GenerateScoreStyle, Omit<GenerateScoreStylePreset, "measures" | "instruments">>
+  Record<
+    GenerateScoreStyle,
+    Omit<GenerateScoreStylePreset, "measures" | "instruments">
+  >
 > = {
   waltz: {
     prompt:
@@ -506,6 +509,54 @@ const STYLE_PRESET_SOURCE: Readonly<
     keys: [1, -1, 0, 2, -2],
     timeSignature: "4/4",
   },
+  symphonySmall: {
+    // "chamber symphony", not "classical" anything: the phrase must not
+    // contain a word music_api's `classical` genre entry matches
+    // (classical|mozart|haydn|sonata), or a small symphony request would
+    // silently resolve to that entry's rules instead of its own.
+    prompt:
+      "chamber symphony — a small string-led ensemble stating balanced phrases, a light Alberti or block-chord accompaniment under a clear melodic line, and a cadence every four or eight bars",
+    essential: ["40", "42"],
+    preferred: ["41", "68"],
+    optional: ["70", "60"],
+    tempo: 104,
+    keys: [0, 1, -1, 2, -2],
+    timeSignature: "4/4",
+    // Shorter than the typical song, on purpose: the smallest of the three
+    // sizes, in both forces and duration.
+    seconds: 150,
+  },
+  symphonyMedium: {
+    // "eighteenth-century", not "classical": see symphonySmall's comment
+    // above — the same collision, with the same fix.
+    prompt:
+      "full orchestra symphony — an eighteenth-century orchestra stating a balanced theme and developing it through sequence and variation, with functional harmony and a cadence every four or eight bars",
+    essential: ["40", "42", "60", "47"],
+    preferred: ["41", "68", "71", "70", "56"],
+    optional: ["73", "43"],
+    tempo: 108,
+    keys: [0, 1, -1, 2, -2],
+    timeSignature: "4/4",
+    seconds: 240,
+  },
+  symphonyLarge: {
+    prompt:
+      "romantic symphony — a full Romantic-era orchestra with expanded brass and strings, chromatic harmony, wide dynamic swells and a grand dramatic arc toward a full-orchestra climax",
+    essential: ["40", "42", "43", "60", "47"],
+    preferred: ["41", "68", "71", "70", "56", "57"],
+    optional: ["73", "58", "46"],
+    tempo: 96,
+    // Minor tonics, per the field's own doc comment. Romantic drama leans
+    // minor more often than not, but plenty of the repertoire — Brahms's
+    // Second, Dvořák's Eighth — is major throughout.
+    keys: [-1, 0, 1, -2, -3],
+    timeSignature: "4/4",
+    mode: "minor",
+    modeFixed: false,
+    // Longer than any other style's default: the largest of the three sizes,
+    // in both forces and duration.
+    seconds: 330,
+  },
   march: {
     prompt:
       "march — a firm two-beat pulse, dotted fanfare rhythms, a brass melody over a low oom-pah, crisp snare figures",
@@ -536,7 +587,9 @@ const STYLE_PRESET_SOURCE: Readonly<
 export const TEMPO_SPREAD = 0.06;
 
 /** The bpm range a style may be generated at, rounded to whole beats. */
-export function styleTempoRange(style: string): readonly [number, number] | null {
+export function styleTempoRange(
+  style: string,
+): readonly [number, number] | null {
   const preset = GENERATE_SCORE_STYLE_PRESETS[style];
   if (!preset) return null;
   const spread = Math.round(preset.tempo * TEMPO_SPREAD);
@@ -558,7 +611,7 @@ export type GenerateScoreStyleSetting = {
   timeSignature: string;
   /** Key-signature fifths the style offers. */
   keys: readonly number[];
-    /**
+  /**
    * A mode the style refuses to leave, for the styles that have one.
    *
    * Absent means the caller may choose either — including for a style whose
@@ -614,16 +667,18 @@ export function generateScoreStyleSettings(): GenerateScoreStyleSettings {
 
 /** Resolves either a style token or the expanded style phrase on the wire. */
 export function generateScoreStyleSettingFor(
-  style: string | undefined
+  style: string | undefined,
 ): GenerateScoreStyleSetting | null {
   if (!style) return null;
-  const token =
-    Object.prototype.hasOwnProperty.call(GENERATE_SCORE_STYLE_PRESETS, style)
-      ? style
-      : Object.entries(GENERATE_SCORE_STYLE_PRESETS).find(
-          ([, preset]) => preset.prompt === style
-        )?.[0];
-  return token ? generateScoreStyleSettings()[token] ?? null : null;
+  const token = Object.prototype.hasOwnProperty.call(
+    GENERATE_SCORE_STYLE_PRESETS,
+    style,
+  )
+    ? style
+    : Object.entries(GENERATE_SCORE_STYLE_PRESETS).find(
+        ([, preset]) => preset.prompt === style,
+      )?.[0];
+  return token ? (generateScoreStyleSettings()[token] ?? null) : null;
 }
 
 /**
