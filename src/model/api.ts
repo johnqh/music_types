@@ -95,6 +95,12 @@ export type ProjectStatusResult = {
   updatedAt: string;
   lastGenerationError: string | null;
   parentSnapshotId: UUID | null;
+  /**
+   * The queued or running generation job, when there is one — how an editor
+   * opened while a job runs (or on another device) finds its live stream.
+   * Optional so a client talking to an older server simply keeps polling.
+   */
+  jobId?: UUID | null;
 };
 
 /**

@@ -34,6 +34,7 @@ export * from "./model/score";
 export * from "./model/schemas";
 export * from "./model/generation";
 export * from "./model/api";
+export * from "./model/live";
 export * from "./model/position";
 export * from "./model/selection-source";
 
@@ -117,6 +118,7 @@ export * from "./services/regeneration/controller";
 // that both the app and the server need.
 export * from "./domain/commands/history";
 export * from "./domain/generation/replacement-region";
+export * from "./domain/generation/live-generation";
 export * from "./domain/instruments/gm-icon";
 export * from "./domain/instruments/gm-spatial-model";
 export * from "./domain/instruments/icon-art";
