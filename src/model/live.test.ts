@@ -86,9 +86,10 @@ describe("live generation protocol", () => {
     expect(terminal).toEqual(["cancelled", "complete", "error", "failed"]);
   });
 
-  it("accepts the client's two frames and nothing else", () => {
+  it("accepts the client's three frames and nothing else", () => {
     expect(liveGenerationClientMessageSchema.safeParse({ type: "auth", token: "t" }).success).toBe(true);
     expect(liveGenerationClientMessageSchema.safeParse({ type: "ping" }).success).toBe(true);
+    expect(liveGenerationClientMessageSchema.safeParse({ type: "pong" }).success).toBe(true);
     expect(liveGenerationClientMessageSchema.safeParse({ type: "auth", token: "" }).success).toBe(false);
     expect(liveGenerationClientMessageSchema.safeParse({ type: "snapshot" }).success).toBe(false);
   });

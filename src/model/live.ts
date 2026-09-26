@@ -99,8 +99,19 @@ export const LIVE_GENERATION_CLOSE_CODES = {
 
 /** How long the server waits for the `auth` frame before closing 4408. */
 export const LIVE_GENERATION_AUTH_TIMEOUT_MS = 10_000;
-/** The longest the server goes without sending anything on an open stream. */
+/**
+ * The longest the server goes without sending anything on an open stream.
+ * Its `heartbeat` is also its ping: the client answers each with `pong`.
+ */
 export const LIVE_GENERATION_HEARTBEAT_MS = 20_000;
+/**
+ * Silence longer than this, in either direction, is a dead connection. Two
+ * heartbeats and a little slack: one lost frame is forgiven, two are not.
+ * The client reconnects when the server has been quiet this long; the server
+ * closes 1001 when the client has — a code below 4000, so a client that was
+ * merely slow comes back.
+ */
+export const LIVE_GENERATION_IDLE_TIMEOUT_MS = 45_000;
 
 // ---------------------------------------------------------------------------
 // Client -> server
@@ -109,15 +120,20 @@ export const LIVE_GENERATION_HEARTBEAT_MS = 20_000;
 /**
  * The client's frames. `auth` is the first, and the only one required: a
  * browser cannot set headers on a WebSocket handshake, so the bearer token
- * travels in-band. `ping` is answered with a `heartbeat`.
+ * travels in-band. `pong` answers each server `heartbeat`, which is how the
+ * server knows the client is still there. `ping` is the client asking the
+ * same question — answered with a `heartbeat` — for a connection it has
+ * reason to doubt, such as one that was in the background.
  */
 export type LiveGenerationClientMessage =
   | { type: "auth"; token: string }
-  | { type: "ping" };
+  | { type: "ping" }
+  | { type: "pong" };
 
 export const liveGenerationClientMessageSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("auth"), token: z.string().min(1) }),
   z.object({ type: z.literal("ping") }),
+  z.object({ type: z.literal("pong") }),
 ]);
 
 // ---------------------------------------------------------------------------
