@@ -472,8 +472,16 @@ const STYLE_PRESET_SOURCE: Readonly<
     prompt:
       "electro swing — vintage swing horns over a modern four-on-the-floor electronic beat, minor and bluesy in a gypsy-jazz vein; hard-swung eighths, syncopated and playful, with clarinet and trumpet riffs answering each other",
     essential: [KIT, "38"],
-    preferred: [VOICE, "56", "71"],
-    optional: ["0", "57", "28"],
+    /*
+      The piano is preferred, not optional: gypsy jazz is carried by la pompe,
+      the damped chord on every beat, and a lineup of kit, bass, voice and two
+      horns had nobody to play it — measured on a real generation, nothing
+      chopped the beat under the horns and the piece read as a ballad with a
+      house kick. The tenor sax joins the optional row as the third horn the
+      genre actually uses.
+    */
+    preferred: [VOICE, "56", "71", "0"],
+    optional: ["57", "28", "66"],
     tempo: 122,
     keys: [-1, 0, -2, 1],
     timeSignature: "4/4",

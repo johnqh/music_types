@@ -3,8 +3,52 @@ import type { GenerateScoreRequest, RegenerateRegionRequest } from "./generation
 import {
   GENERATION_VARIANTS,
   GENERATION_VARIANT_LABELS,
+  generationJobDetailSchema,
+  generationJobSchema,
   withGenerationVariant,
 } from "./generation";
+
+/**
+ * A listed job carries the request it was written to; the job a stream or a
+ * poll reports does not, since that shape rides on every frame.
+ */
+describe("generationJobDetailSchema", () => {
+  const job = {
+    id: "j1",
+    projectId: "p1",
+    kind: "generate-score",
+    status: "done",
+    createdAt: "2026-08-07T00:00:00.000Z",
+    finishedAt: "2026-08-07T00:01:00.000Z",
+    error: null,
+    usage: { promptTokens: 1200, completionTokens: 300, model: "gpt-5.4" },
+  };
+  const request = {
+    prompt: "a slow waltz",
+    style: "waltz",
+    durationMeasures: 16,
+    tracks: [
+      { name: "Piano", instrumentName: "Piano", midiProgram: 0, clef: "treble" },
+    ],
+  };
+
+  it("carries a whole-score request and the job's usage", () => {
+    const parsed = generationJobDetailSchema.parse({ ...job, request });
+    expect(parsed.request).toEqual(request);
+    expect(parsed.usage?.promptTokens).toBe(1200);
+  });
+
+  it("requires the request, which is what distinguishes it from a plain job", () => {
+    expect(() => generationJobDetailSchema.parse(job)).toThrow();
+    expect(() =>
+      generationJobDetailSchema.parse({ ...job, request: { nonsense: true } }),
+    ).toThrow();
+  });
+
+  it("leaves the plain job shape without a request", () => {
+    expect("request" in generationJobSchema.shape).toBe(false);
+  });
+});
 
 /**
  * The generation backend rides on the request, and only when it is not the

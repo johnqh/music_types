@@ -565,6 +565,35 @@ export const generationJobSchema = z.object({
 });
 
 /**
+ * What a job was asked for, by kind: a whole-score request for
+ * `generate-score` and `generate-track`, a region request for the three
+ * replace kinds. The one union every stored job request narrows to.
+ */
+export type GenerationJobRequest =
+  | GenerateScoreRequest
+  | RegenerateRegionRequest;
+
+/**
+ * A job together with what it was asked for — what `GET /projects/:id/jobs`
+ * lists, so a project's history can show the brief each job was written to.
+ *
+ * A separate type rather than a field on `GenerationJob`, which rides on
+ * every live-stream frame and every poll: a region request carries the
+ * selected fragment and its context, and sending that on each heartbeat
+ * would be a score's worth of bytes nothing on the stream reads.
+ */
+export type GenerationJobDetail = GenerationJob & {
+  request: GenerationJobRequest;
+};
+
+export const generationJobDetailSchema = generationJobSchema.extend({
+  request: z.union([
+    generateScoreRequestSchema,
+    regenerateRegionRequestSchema,
+  ]),
+});
+
+/**
  * `request` is the whole provider request, stored verbatim so the job never
  * re-reads the project. Its shape varies by `kind`, so it is unknown here and
  * narrowed by the runner.

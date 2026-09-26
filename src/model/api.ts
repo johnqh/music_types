@@ -8,6 +8,10 @@ import { z } from "zod";
 import type { GenerationRecord, ProjectStatus } from "./generation";
 import type { Score, UUID } from "./score";
 import { scoreSchema } from "./schemas";
+import {
+  IMPORT_FORMAT_IDS,
+  type ImportFormatId,
+} from "../domain/documents/formats";
 // ---------------------------------------------------------------------------
 // 7. Project API types (music_api payloads)
 // ---------------------------------------------------------------------------
@@ -27,6 +31,37 @@ export type ProjectUiPrefs = {
   visibleTrackIds?: string[];
 };
 
+/**
+ * Where a project came from — the one fact about a project's history that
+ * the row itself cannot be asked for afterwards.
+ *
+ * A generated project names its job, so the request it was generated from
+ * and what that job cost can be read back from the job row rather than
+ * copied here. An imported one names the file's format (the importers'
+ * own vocabulary, `IMPORT_FORMAT_IDS`) and, when it was known, the file. A
+ * duplicate names its source, a transcription its recording, and `blank`
+ * is a project that started from nothing — recorded, not inferred from an
+ * absent value, because a row written before this existed is also absent
+ * and means "unknown".
+ *
+ * Set once at creation, with one exception: a `blank` project whose first
+ * whole-score generation succeeds becomes `generated`, since that is where
+ * its music came from. An `imported` project that generates a track stays
+ * `imported`; the file is still what the project is.
+ */
+export type ProjectOrigin =
+  | { kind: "generated"; jobId: UUID }
+  | { kind: "imported"; format: ImportFormatId; fileName?: string }
+  | { kind: "transcribed"; fileName?: string }
+  | { kind: "duplicated"; sourceProjectId: UUID }
+  | { kind: "blank" };
+
+/** The origins a client may declare on create; see `projectCreateOriginSchema`. */
+export type ProjectCreateOrigin = Extract<
+  ProjectOrigin,
+  { kind: "imported" | "transcribed" | "blank" }
+>;
+
 /** Project list item — everything but the (potentially large) score payload. */
 export type ProjectSummary = {
   id: string;
@@ -44,6 +79,11 @@ export type ProjectSummary = {
    * before this existed.
    */
   lastGeneration?: GenerationRecord | null;
+  /**
+   * Where the project came from. Absent or null on rows written before this
+   * existed, which is "unknown" rather than "blank".
+   */
+  origin?: ProjectOrigin | null;
 };
 
 export type ProjectRecord = ProjectSummary & {
@@ -160,6 +200,13 @@ export type ProjectCreateRequest = {
   name: string;
   score: Score;
   uiPrefs?: ProjectUiPrefs;
+  /**
+   * Where this project came from, as only the creator can say. The server
+   * records `blank` when nothing is sent. `generated` and `duplicated` are
+   * written by the server on its own paths and are refused here — a client
+   * cannot claim a job it did not run.
+   */
+  origin?: ProjectCreateOrigin;
 };
 
 export type ProjectUpdateRequest = {
@@ -191,12 +238,49 @@ export const projectUiPrefsSchema = z.object({
   visibleTrackIds: z.array(z.string().min(1)).nonempty().optional(),
 });
 
+const importedOriginSchema = z.object({
+  kind: z.literal("imported"),
+  format: z.enum(IMPORT_FORMAT_IDS),
+  fileName: z.string().min(1).optional(),
+});
+
+const transcribedOriginSchema = z.object({
+  kind: z.literal("transcribed"),
+  fileName: z.string().min(1).optional(),
+});
+
+const blankOriginSchema = z.object({ kind: z.literal("blank") });
+
+export const projectOriginSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("generated"), jobId: z.string().min(1) }),
+  importedOriginSchema,
+  transcribedOriginSchema,
+  z.object({
+    kind: z.literal("duplicated"),
+    sourceProjectId: z.string().min(1),
+  }),
+  blankOriginSchema,
+]);
+
+/**
+ * The origins a client may declare on create. `generated` names a job and
+ * `duplicated` a source row, and both are facts the server establishes on
+ * its own paths — accepting them from a request would let a client claim
+ * either without having done it.
+ */
+export const projectCreateOriginSchema = z.discriminatedUnion("kind", [
+  importedOriginSchema,
+  transcribedOriginSchema,
+  blankOriginSchema,
+]);
+
 export const projectSummarySchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
   createdAt: z.string(),
   updatedAt: z.string(),
   schemaVersion: z.number().int().nonnegative(),
+  origin: projectOriginSchema.nullable().optional(),
 });
 
 export const projectSaveResultSchema = projectSummarySchema.extend({
@@ -258,6 +342,7 @@ export const projectCreateRequestSchema = z.object({
   name: z.string().min(1),
   score: scoreSchema,
   uiPrefs: projectUiPrefsSchema.optional(),
+  origin: projectCreateOriginSchema.optional(),
 });
 
 export const projectUpdateRequestSchema = z.object({

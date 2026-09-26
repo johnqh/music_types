@@ -119,6 +119,7 @@ export * from "./services/regeneration/controller";
 export * from "./domain/commands/history";
 export * from "./domain/generation/replacement-region";
 export * from "./domain/generation/live-generation";
+export * from "./domain/generation/project-origin";
 export * from "./domain/instruments/gm-icon";
 export * from "./domain/instruments/gm-spatial-model";
 export * from "./domain/instruments/icon-art";

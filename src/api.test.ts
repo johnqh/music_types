@@ -9,6 +9,7 @@ import {
   projectCreateRequestSchema,
   projectDuplicateRequestSchema,
   projectListQuerySchema,
+  projectOriginSchema,
   projectRecordSchema,
   projectSaveResultSchema,
   projectSummarySchema,
@@ -80,6 +81,106 @@ describe("project schemas", () => {
     expect(
       parsed.score.tracks[0].measures[0].multiMeasureRestCount,
     ).toBeUndefined();
+  });
+
+  describe("origin", () => {
+    it("is optional on create, since a row written without one reads as blank", () => {
+      const parsed = projectCreateRequestSchema.parse({ name: "P", score });
+      expect(parsed.origin).toBeUndefined();
+    });
+
+    it("accepts an import naming a format the importers know, with or without a file name", () => {
+      expect(
+        projectCreateRequestSchema.parse({
+          name: "P",
+          score,
+          origin: { kind: "imported", format: "midi", fileName: "tune.mid" },
+        }).origin,
+      ).toEqual({ kind: "imported", format: "midi", fileName: "tune.mid" });
+      expect(
+        projectCreateRequestSchema.parse({
+          name: "P",
+          score,
+          origin: { kind: "imported", format: "project" },
+        }).origin,
+      ).toEqual({ kind: "imported", format: "project" });
+    });
+
+    it("refuses a format the importers do not read", () => {
+      expect(() =>
+        projectCreateRequestSchema.parse({
+          name: "P",
+          score,
+          origin: { kind: "imported", format: "abc" },
+        }),
+      ).toThrow();
+    });
+
+    it("accepts transcribed and blank on create", () => {
+      expect(
+        projectCreateRequestSchema.parse({
+          name: "P",
+          score,
+          origin: { kind: "transcribed", fileName: "take.wav" },
+        }).origin,
+      ).toEqual({ kind: "transcribed", fileName: "take.wav" });
+      expect(
+        projectCreateRequestSchema.parse({
+          name: "P",
+          score,
+          origin: { kind: "blank" },
+        }).origin,
+      ).toEqual({ kind: "blank" });
+    });
+
+    it("refuses a client claiming a generation or a duplicate on create", () => {
+      // Both are facts the server establishes on its own paths.
+      expect(() =>
+        projectCreateRequestSchema.parse({
+          name: "P",
+          score,
+          origin: { kind: "generated", jobId: "j1" },
+        }),
+      ).toThrow();
+      expect(() =>
+        projectCreateRequestSchema.parse({
+          name: "P",
+          score,
+          origin: { kind: "duplicated", sourceProjectId: "p0" },
+        }),
+      ).toThrow();
+    });
+
+    it("reads every kind back on a summary, including the two the server writes", () => {
+      const base = {
+        id: "p1",
+        name: "P",
+        createdAt: "2026-01-01T00:00:00.000Z",
+        updatedAt: "2026-01-01T00:00:00.000Z",
+        schemaVersion: 1,
+      };
+      for (const origin of [
+        { kind: "generated", jobId: "j1" },
+        { kind: "imported", format: "musicxml", fileName: "a.xml" },
+        { kind: "transcribed" },
+        { kind: "duplicated", sourceProjectId: "p0" },
+        { kind: "blank" },
+      ]) {
+        expect(projectSummarySchema.parse({ ...base, origin }).origin).toEqual(
+          origin,
+        );
+      }
+      // Rows written before the column existed.
+      expect(projectSummarySchema.parse({ ...base, origin: null }).origin).toBeNull();
+      expect(projectSummarySchema.parse(base).origin).toBeUndefined();
+    });
+
+    it("refuses a generated origin with no job, and an unknown kind", () => {
+      expect(() =>
+        projectOriginSchema.parse({ kind: "generated" }),
+      ).toThrow();
+      expect(() => projectOriginSchema.parse({ kind: "cloned" })).toThrow();
+    });
   });
 
   it("rejects a count of one, which is not a multi-measure rest", () => {

@@ -23,7 +23,23 @@ export type FormatEntry = {
   noteKey: string;
 };
 
-export const IMPORT_FORMATS: readonly FormatEntry[] = [
+/**
+ * The closed list of formats the importers read, as an array with the type
+ * read off it: a `ProjectOrigin` records which one a project came in as, and
+ * a value that must be *validated* needs the list at runtime.
+ */
+export const IMPORT_FORMAT_IDS = [
+  "midi",
+  "musicxml",
+  "tracker",
+  "audio",
+  "project",
+] as const;
+export type ImportFormatId = (typeof IMPORT_FORMAT_IDS)[number];
+
+export type ImportFormatEntry = FormatEntry & { id: ImportFormatId };
+
+export const IMPORT_FORMATS: readonly ImportFormatEntry[] = [
   { id: "midi", extensions: ".mid, .midi", noteKey: "docs.formats.in.midi" },
   {
     id: "musicxml",
@@ -52,6 +68,24 @@ export const IMPORT_FORMATS: readonly FormatEntry[] = [
     noteKey: "docs.formats.in.project",
   },
 ];
+
+/**
+ * Which import format a file name belongs to, by its extension, or null for
+ * one no importer reads. How a document opened from a file records what it
+ * was when it becomes a project — the table above is the one list of
+ * extensions, so this cannot know fewer than the importers accept.
+ */
+export function importFormatForFileName(
+  fileName: string,
+): ImportFormatId | null {
+  const dot = fileName.lastIndexOf(".");
+  if (dot < 0) return null;
+  const extension = fileName.slice(dot).toLowerCase();
+  const entry = IMPORT_FORMATS.find((format) =>
+    format.extensions.split(",").some((ext) => ext.trim() === extension),
+  );
+  return entry?.id ?? null;
+}
 
 /**
  * What the docs export table lists: every format the export menu writes, then
