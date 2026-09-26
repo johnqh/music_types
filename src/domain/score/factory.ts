@@ -185,11 +185,21 @@ export function appendMeasure(score: Score): Score {
  * shifts each measure's events by the same delta so they stay positioned
  * consistently within their (possibly moved) measure. Measures whose
  * index/startTick are already consistent are returned unchanged
- * (referentially equal) so unaffected structure is preserved.
+ * (referentially equal) so unaffected structure is preserved — and so are
+ * a track none of whose measures moved, the tracks array when no track
+ * moved, and the score itself when nothing did.
+ *
+ * The track and score levels matter as much as the measure level: this runs
+ * after every structural edit and on every live-generation partial, and a
+ * fresh track object for an untouched track is a changed input to every
+ * memo keyed on it downstream — the 3D stage's colours and wander list, the
+ * visible-track selector, and through them a render of whatever hosts them.
  */
 export function rebuildMeasureTicks(score: Score): Score {
+  let anyTrackChanged = false;
   const tracks = score.tracks.map((track) => {
     let cursor = 0;
+    let anyMeasureChanged = false;
     const measures = track.measures.map((measure, index) => {
       const startTick = cursor;
       const delta = startTick - measure.startTick;
@@ -210,10 +220,13 @@ export function rebuildMeasureTicks(score: Score): Score {
               })),
             }));
 
+      anyMeasureChanged = true;
       return { ...measure, index, startTick, voices };
     });
+    if (!anyMeasureChanged) return track;
+    anyTrackChanged = true;
     return { ...track, measures };
   });
 
-  return { ...score, tracks };
+  return anyTrackChanged ? { ...score, tracks } : score;
 }

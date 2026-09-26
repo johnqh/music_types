@@ -216,4 +216,29 @@ describe("rebuildMeasureTicks", () => {
     expect(rebuilt.tracks[0].measures[0]).toBe(score.tracks[0].measures[0]);
     expect(rebuilt.tracks[0].measures[1]).toBe(score.tracks[0].measures[1]);
   });
+
+  it("keeps the score, the tracks array and every untouched track by identity", () => {
+    // Downstream memos key on `score.tracks` and on each track: a fresh
+    // object for a track nothing moved in is a render for nothing.
+    const score = createEmptyScore({
+      title: "Stable",
+      measures: 2,
+      tracks: [{ name: "Piano" }, { name: "Bass" }],
+    });
+    expect(rebuildMeasureTicks(score)).toBe(score);
+
+    const [m0, , m2] = createEmptyScore({
+      title: "Edited",
+      measures: 3,
+      tracks: [{ name: "Piano" }],
+    }).tracks[0].measures;
+    const edited = {
+      ...score,
+      tracks: [{ ...score.tracks[0], measures: [m0, m2] }, score.tracks[1]],
+    };
+    const rebuilt = rebuildMeasureTicks(edited);
+    expect(rebuilt).not.toBe(edited);
+    expect(rebuilt.tracks[0]).not.toBe(edited.tracks[0]);
+    expect(rebuilt.tracks[1]).toBe(score.tracks[1]);
+  });
 });
