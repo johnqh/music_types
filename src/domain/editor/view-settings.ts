@@ -39,19 +39,15 @@ export function isTrackInfoMode(value: unknown): value is TrackInfoMode {
 }
 
 /**
- * The name of each mode, and what choosing it does. `Record`s, so a fourth
- * mode fails to compile rather than printing a key.
+ * The name of each mode — what a control that switches to it is called. A
+ * `Record`, so a fourth mode fails to compile rather than printing a key.
+ * `hidden` keeps a name for a stored preference that says so; no control
+ * offers it any more, the toolbar switching between the other two.
  */
 export const TRACK_INFO_MODE_LABEL_KEY: Record<TrackInfoMode, string> = {
   full: "editor.trackInfoFull",
   icon: "editor.trackInfoIcon",
   hidden: "editor.trackInfoHidden",
-};
-
-export const TRACK_INFO_MODE_HINT_KEY: Record<TrackInfoMode, string> = {
-  full: "editor.trackInfoFullHint",
-  icon: "editor.trackInfoIconHint",
-  hidden: "editor.trackInfoHiddenHint",
 };
 
 /**

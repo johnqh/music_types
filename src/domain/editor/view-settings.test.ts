@@ -3,7 +3,6 @@ import {
   TRACK_INFO_MODES,
   TRACK_INFO_MODE_LABEL_KEY,
   isTrackInfoMode,
-  TRACK_INFO_MODE_HINT_KEY,
 } from "./view-settings";
 
 describe("track info modes", () => {
@@ -16,10 +15,6 @@ describe("track info modes", () => {
       (mode) => TRACK_INFO_MODE_LABEL_KEY[mode],
     );
     expect(new Set(keys).size).toBe(TRACK_INFO_MODES.length);
-    const hints = TRACK_INFO_MODES.map(
-      (mode) => TRACK_INFO_MODE_HINT_KEY[mode],
-    );
-    expect(new Set([...keys, ...hints]).size).toBe(2 * TRACK_INFO_MODES.length);
   });
 
   it("knows a mode from anything else", () => {
