@@ -5,7 +5,12 @@
 import { describe, expect, it } from "vitest";
 import {
   API_ERROR_CODES,
+  AVATAR_MAX_BYTES,
+  AVATAR_MIME_TYPES,
+  NICKNAME_MAX_LENGTH,
+  avatarMimeTypeOf,
   errorResponse,
+  profileUpdateRequestSchema,
   projectCreateRequestSchema,
   projectDuplicateRequestSchema,
   projectListQuerySchema,
@@ -171,14 +176,14 @@ describe("project schemas", () => {
         );
       }
       // Rows written before the column existed.
-      expect(projectSummarySchema.parse({ ...base, origin: null }).origin).toBeNull();
+      expect(
+        projectSummarySchema.parse({ ...base, origin: null }).origin,
+      ).toBeNull();
       expect(projectSummarySchema.parse(base).origin).toBeUndefined();
     });
 
     it("refuses a generated origin with no job, and an unknown kind", () => {
-      expect(() =>
-        projectOriginSchema.parse({ kind: "generated" }),
-      ).toThrow();
+      expect(() => projectOriginSchema.parse({ kind: "generated" })).toThrow();
       expect(() => projectOriginSchema.parse({ kind: "cloned" })).toThrow();
     });
   });
@@ -533,5 +538,75 @@ describe("publishing schemas", () => {
         publisherName: "Jane",
       }).publicId,
     ).toBe("pub_x");
+  });
+});
+
+describe("the user profile", () => {
+  it("trims a nickname before measuring it, so a name of spaces is no name", () => {
+    expect(
+      profileUpdateRequestSchema.parse({ nickname: "  Ada  " }).nickname,
+    ).toBe("Ada");
+    expect(
+      profileUpdateRequestSchema.safeParse({ nickname: "   " }).success,
+    ).toBe(false);
+  });
+
+  it("takes a nickname away with null, and refuses one left out", () => {
+    expect(profileUpdateRequestSchema.parse({ nickname: null }).nickname).toBe(
+      null,
+    );
+    expect(profileUpdateRequestSchema.safeParse({}).success).toBe(false);
+  });
+
+  it("allows a nickname as long as a publisher name, and no longer", () => {
+    // It becomes one: a nickname the publish form would refuse is a default
+    // nobody could publish under.
+    const longest = "a".repeat(NICKNAME_MAX_LENGTH);
+    expect(
+      profileUpdateRequestSchema.safeParse({ nickname: longest }).success,
+    ).toBe(true);
+    expect(
+      publishRequestSchema.safeParse({
+        publisherName: longest,
+        publicName: "x",
+      }).success,
+    ).toBe(true);
+    expect(
+      profileUpdateRequestSchema.safeParse({ nickname: `${longest}a` }).success,
+    ).toBe(false);
+  });
+
+  it("reads what a picture is off its first bytes, not off its name", () => {
+    const bytes = (...values: number[]) => new Uint8Array(values);
+    expect(avatarMimeTypeOf(bytes(0xff, 0xd8, 0xff, 0xe0))).toBe("image/jpeg");
+    expect(
+      avatarMimeTypeOf(bytes(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a)),
+    ).toBe("image/png");
+    expect(
+      avatarMimeTypeOf(
+        bytes(0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50),
+      ),
+    ).toBe("image/webp");
+  });
+
+  it("refuses what is not a picture it serves", () => {
+    const text = new TextEncoder().encode("<svg onload=alert(1)>");
+    expect(avatarMimeTypeOf(text)).toBeNull();
+    // A RIFF file that is not WebP: a WAV.
+    expect(
+      avatarMimeTypeOf(
+        new Uint8Array([
+          0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x41, 0x56, 0x45,
+        ]),
+      ),
+    ).toBeNull();
+    expect(avatarMimeTypeOf(new Uint8Array())).toBeNull();
+  });
+
+  it("names every type it can recognise", () => {
+    expect([...AVATAR_MIME_TYPES].sort()).toEqual(
+      ["image/jpeg", "image/png", "image/webp"].sort(),
+    );
+    expect(AVATAR_MAX_BYTES).toBeGreaterThan(0);
   });
 });

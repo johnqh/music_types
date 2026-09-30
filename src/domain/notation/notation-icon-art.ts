@@ -89,6 +89,9 @@ export const NOTATION_ICON_NAMES = [
   'SunMoonIcon',
   'ThirtySecondNoteIcon',
   'TieIcon',
+  'TrackInfoFullIcon',
+  'TrackInfoHiddenIcon',
+  'TrackInfoIconIcon',
   'TripletIcon',
   'WholeNoteIcon',
 ] as const;
@@ -1058,6 +1061,135 @@ export const NOTATION_ICONS: Record<NotationIconName, readonly NotationIconShape
     {
       "kind": "path",
       "d": "M5.2 12.2 C8.2 4.9 15.8 4.9 18.8 12.2 C15.8 7.6 8.2 7.6 5.2 12.2 Z"
+    }
+  ],
+  "TrackInfoFullIcon": [
+    {
+      "kind": "rect",
+      "x": 3,
+      "y": 4,
+      "width": 18,
+      "height": 16,
+      "rx": 1.8,
+      "fill": "none",
+      "stroke": "currentColor",
+      "strokeWidth": 1.8
+    },
+    {
+      "kind": "rect",
+      "x": 10.6,
+      "y": 4,
+      "width": 1.6,
+      "height": 16
+    },
+    {
+      "kind": "rect",
+      "x": 5.4,
+      "y": 8,
+      "width": 3.4,
+      "height": 1.6,
+      "rx": 0.6
+    },
+    {
+      "kind": "rect",
+      "x": 5.4,
+      "y": 11.6,
+      "width": 3.4,
+      "height": 1.6,
+      "rx": 0.6
+    },
+    {
+      "kind": "rect",
+      "x": 14,
+      "y": 9,
+      "width": 5,
+      "height": 1.4,
+      "rx": 0.6
+    },
+    {
+      "kind": "rect",
+      "x": 14,
+      "y": 13.4,
+      "width": 5,
+      "height": 1.4,
+      "rx": 0.6
+    }
+  ],
+  "TrackInfoHiddenIcon": [
+    {
+      "kind": "rect",
+      "x": 3,
+      "y": 4,
+      "width": 18,
+      "height": 16,
+      "rx": 1.8,
+      "fill": "none",
+      "stroke": "currentColor",
+      "strokeWidth": 1.8
+    },
+    {
+      "kind": "rect",
+      "x": 6,
+      "y": 9,
+      "width": 12,
+      "height": 1.4,
+      "rx": 0.6
+    },
+    {
+      "kind": "rect",
+      "x": 6,
+      "y": 13.4,
+      "width": 12,
+      "height": 1.4,
+      "rx": 0.6
+    }
+  ],
+  "TrackInfoIconIcon": [
+    {
+      "kind": "rect",
+      "x": 3,
+      "y": 4,
+      "width": 18,
+      "height": 16,
+      "rx": 1.8,
+      "fill": "none",
+      "stroke": "currentColor",
+      "strokeWidth": 1.8
+    },
+    {
+      "kind": "rect",
+      "x": 7.6,
+      "y": 4,
+      "width": 1.6,
+      "height": 16
+    },
+    {
+      "kind": "circle",
+      "cx": 5.9,
+      "cy": 9.6,
+      "r": 1
+    },
+    {
+      "kind": "circle",
+      "cx": 5.9,
+      "cy": 14.2,
+      "r": 1
+    },
+    {
+      "kind": "rect",
+      "x": 11,
+      "y": 9,
+      "width": 8,
+      "height": 1.4,
+      "rx": 0.6
+    },
+    {
+      "kind": "rect",
+      "x": 11,
+      "y": 13.4,
+      "width": 8,
+      "height": 1.4,
+      "rx": 0.6
     }
   ],
   "TripletIcon": [

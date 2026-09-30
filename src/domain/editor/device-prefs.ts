@@ -7,6 +7,7 @@
  */
 import type { PitchDisplay } from "../score/display-score";
 import type { PickerOption } from "../notation/picker-options";
+import type { TrackInfoMode } from "./view-settings";
 
 /**
  * The colour scheme a reader asked for.
@@ -89,6 +90,8 @@ export type DevicePrefs = {
   pitchDisplay: PitchDisplay;
   /** The piano keyboard panel. Expanded by default on both apps. */
   keyboardCollapsed: boolean;
+  /** How much of the track-info column the score shows. `full` by default. */
+  trackInfo: TrackInfoMode;
   fontSize: FontSize;
   /**
    * The UI language as a BCP 47 tag, or `null` to follow the device.

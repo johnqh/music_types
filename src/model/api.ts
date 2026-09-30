@@ -125,6 +125,69 @@ export type CurrentUser = {
   siteAdmin: boolean;
 };
 
+/**
+ * What a user has said about themselves: the name they publish under and the
+ * picture beside it. From `GET /me/profile`.
+ *
+ * Apart from `CurrentUser` on purpose. That one answers "who is calling and
+ * what may they do", is read on every sign-in and must stay small; this one
+ * is what the user *wrote*, and is read where it is shown or edited.
+ *
+ * **`avatarId` is not the user's id, and says nothing about them.** It is a
+ * random name for one uploaded picture, replaced on every upload, and the
+ * picture is served publicly by that name — so a page strangers read can
+ * show it without the response carrying anything that identifies an account.
+ * Replaced rather than reused so that a cached copy of the old picture can
+ * never be served for the new one.
+ */
+export type UserProfile = {
+  /** Null until the user chooses one. Never the account email. */
+  nickname: string | null;
+  /** Null when there is no picture. */
+  avatarId: string | null;
+};
+
+/** The longest nickname, which is the longest publisher name: it becomes one. */
+export const NICKNAME_MAX_LENGTH = 80;
+
+/**
+ * The most a profile picture may weigh, in bytes.
+ *
+ * Small on purpose. It is stored in the database and drawn a few dozen pixels
+ * wide; the apps resize before they upload, and this is the server's refusal
+ * of anything that was not.
+ */
+export const AVATAR_MAX_BYTES = 256 * 1024;
+
+/** What a profile picture may be. An array, so a server can check against it. */
+export const AVATAR_MIME_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+] as const;
+export type AvatarMimeType = (typeof AVATAR_MIME_TYPES)[number];
+
+/**
+ * What an image actually is, read off its first bytes.
+ *
+ * The type a client *says* a file is costs nothing to lie about, and the
+ * picture is served to strangers under whatever type was stored with it. Null
+ * for anything that is not one of `AVATAR_MIME_TYPES`.
+ */
+export function avatarMimeTypeOf(bytes: Uint8Array): AvatarMimeType | null {
+  const starts = (signature: readonly number[], at = 0): boolean =>
+    signature.every((byte, index) => bytes[at + index] === byte);
+  if (starts([0xff, 0xd8, 0xff])) return "image/jpeg";
+  if (starts([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) {
+    return "image/png";
+  }
+  // "RIFF", four bytes of length, then "WEBP".
+  if (starts([0x52, 0x49, 0x46, 0x46]) && starts([0x57, 0x45, 0x42, 0x50], 8)) {
+    return "image/webp";
+  }
+  return null;
+}
+
 export type ProjectStatusResult = {
   status: ProjectStatus;
   /**
@@ -190,8 +253,17 @@ export type PublishedSnapshot = {
   createdAt: string;
 };
 
-/** One row of the Community list. No score — the list would be enormous. */
-export type CommunityItem = Omit<PublishedSnapshot, "score">;
+/**
+ * One row of the Community list. No score — the list would be enormous.
+ *
+ * `publisherAvatarId` is the picture the publisher has now, or null when they
+ * have none; an app turns it into a URL with the client's `avatarUrl`. It is
+ * `UserProfile.avatarId`, the random name of one upload, so the row still
+ * carries nothing that identifies an account.
+ */
+export type CommunityItem = Omit<PublishedSnapshot, "score"> & {
+  publisherAvatarId: string | null;
+};
 
 /** A snapshot without its score — what the picker lists, so it stays cheap. */
 export type SnapshotSummary = Omit<Snapshot, "score" | "uiPrefs">;
@@ -334,6 +406,20 @@ export const publishRequestSchema = z.object({
   publicName: z.string().min(1).max(200),
 });
 
+/**
+ * A change to the profile. The nickname is trimmed before it is measured, so
+ * a name of spaces is no name; `null` takes the nickname away again.
+ */
+export const profileUpdateRequestSchema = z.object({
+  nickname: z.string().trim().min(1).max(NICKNAME_MAX_LENGTH).nullable(),
+});
+export type ProfileUpdateRequest = z.infer<typeof profileUpdateRequestSchema>;
+
+export const userProfileSchema = z.object({
+  nickname: z.string().nullable(),
+  avatarId: z.string().nullable(),
+});
+
 export const snapshotCreateRequestSchema = z.object({
   name: z.string().min(1).max(200),
 });
@@ -395,6 +481,10 @@ export const API_ERROR_CODES = {
    * user buys more, which is a different thing to tell them.
    */
   INSUFFICIENT_CREDITS: "INSUFFICIENT_CREDITS",
+  /** The profile picture is over `AVATAR_MAX_BYTES`. */
+  AVATAR_TOO_LARGE: "AVATAR_TOO_LARGE",
+  /** The profile picture is not one of `AVATAR_MIME_TYPES`. */
+  AVATAR_UNSUPPORTED: "AVATAR_UNSUPPORTED",
 } as const;
 
 export type ApiErrorCode =

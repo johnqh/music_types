@@ -9,9 +9,7 @@ describe("paper and orientation options", () => {
       labelKey: "print.paperA4",
       css: "A4",
     });
-    expect(PAPER_OPTIONS.find((o) => o.value === "letter")?.css).toBe(
-      "letter",
-    );
+    expect(PAPER_OPTIONS.find((o) => o.value === "letter")?.css).toBe("letter");
   });
 
   it("lists portrait first", () => {
