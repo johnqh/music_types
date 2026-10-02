@@ -56,3 +56,51 @@ export const ORIENTATION_OPTIONS: ReadonlyArray<{
   value,
   labelKey: ORIENTATION_LABEL_KEY[value],
 }));
+
+/**
+ * The regions whose ordinary office paper is US Letter, from CLDR's
+ * `paperSize` supplemental data (the rest of the world is A4).
+ *
+ * A list rather than "the US", because Canada, Mexico, the Philippines and
+ * much of Latin America print on Letter too, and handing a reader there a page
+ * laid out for a sheet their printer does not hold is the failure this exists
+ * to stop.
+ */
+const LETTER_REGIONS: ReadonlySet<string> = new Set([
+  "BZ",
+  "CA",
+  "CL",
+  "CO",
+  "CR",
+  "GT",
+  "MX",
+  "NI",
+  "PA",
+  "PE",
+  "PH",
+  "PR",
+  "SV",
+  "US",
+  "VE",
+]);
+
+/**
+ * The paper to offer before the reader has chosen one: Letter where the
+ * device's region prints on Letter, A4 everywhere else.
+ *
+ * Read off the first of the device's locale tags that names a region (`en-US`,
+ * `zh-Hans-CN`), in preference order — the region, not the language, is what
+ * decides it: an English reader in London prints on A4. With no region to go
+ * on, A4, which most of the world uses.
+ */
+export function defaultPaperSizeFor(localeTags: readonly string[]): PaperSize {
+  for (const tag of localeTags) {
+    const region = tag
+      .split(/[-_]/)
+      .slice(1)
+      .find((part) => /^[A-Za-z]{2}$/.test(part));
+    if (region)
+      return LETTER_REGIONS.has(region.toUpperCase()) ? "letter" : "a4";
+  }
+  return "a4";
+}

@@ -8,6 +8,7 @@
 import type { PitchDisplay } from "../score/display-score";
 import type { PickerOption } from "../notation/picker-options";
 import type { TrackInfoMode } from "./view-settings";
+import type { PaperSize } from "./print";
 
 /**
  * The colour scheme a reader asked for.
@@ -100,6 +101,15 @@ export type DevicePrefs = {
    * device" has to survive the device changing language.
    */
   language: string | null;
+  /**
+   * The paper the reader last printed on, or `null` to follow the device's
+   * region (`defaultPaperSizeFor`).
+   *
+   * Remembered because a reader's printer does not change between printouts;
+   * `null` until they choose, for the same reason `language` is — "follow the
+   * device" has to survive the device moving.
+   */
+  paperSize: PaperSize | null;
 };
 
 /**

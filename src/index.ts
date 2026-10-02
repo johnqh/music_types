@@ -109,6 +109,7 @@ export * from "./domain/instruments/gm-transposition";
 export * from "./domain/instruments/gm-percussion";
 export * from "./domain/generation/style-presets";
 export * from "./domain/generation/option-order";
+export * from "./domain/generation/style-families";
 export * from "./domain/documents/project-file";
 export * from "./domain/generation/score-presets";
 export * from "./domain/selection/selection";
